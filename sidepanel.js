@@ -16,13 +16,16 @@ async function renderList() {
     const item = document.createElement('div');
     item.className = 'issue-item';
 
+    // インスタンスを区別するためにドメインを表示
+    const domain = new URL(issue.url).hostname;
+
     item.innerHTML = `
       <div class="status-indicators">
         <div class="indicator ${issue.isOpened ? 'is-opened' : ''}" title="${issue.isOpened ? 'Tab is open' : 'Tab is closed'}"></div>
         <div class="indicator ${issue.isEditing ? 'is-editing' : ''}" title="${issue.isEditing ? 'Currently editing' : ''}"></div>
       </div>
       <div class="issue-content">
-        <span class="issue-key">${issue.issueKey}</span>
+        <span class="issue-key">${issue.issueKey} <small style="color: #6b778c; font-weight: normal;">(${domain})</small></span>
         <span class="issue-title">${escapeHtml(issue.title)}</span>
       </div>
     `;
@@ -43,27 +46,22 @@ function escapeHtml(str) {
 
 async function handleIssueClick(issue) {
   if (issue.isOpened && issue.tabId) {
-    // 既存のタブをアクティブにする
     try {
       await chrome.tabs.update(issue.tabId, { active: true });
       const tab = await chrome.tabs.get(issue.tabId);
       await chrome.windows.update(tab.windowId, { focused: true });
     } catch (e) {
-      // タブが見つからない場合は新規で開く
       chrome.tabs.create({ url: issue.url });
     }
   } else {
-    // 新規タブで開く
     chrome.tabs.create({ url: issue.url });
   }
 }
 
-// バックグラウンドからの更新通知を受信
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'DB_UPDATED') {
     renderList();
   }
 });
 
-// 初期表示
 renderList();

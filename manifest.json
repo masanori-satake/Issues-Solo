@@ -10,7 +10,8 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://*.atlassian.net/*"
+    "https://*.atlassian.net/*",
+    "https://*/browse/*"
   ],
   "background": {
     "service_worker": "background.js",
@@ -19,7 +20,8 @@
   "content_scripts": [
     {
       "matches": [
-        "https://*.atlassian.net/browse/*"
+        "https://*.atlassian.net/browse/*",
+        "https://*/browse/*"
       ],
       "js": [
         "content.js"

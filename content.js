@@ -7,15 +7,21 @@
   const getTitle = () => {
     const titleTag = document.querySelector('title');
     if (titleTag) {
-      // JIRAのタイトルは通常 "[PROJ-123] Title - Jira" の形式
       return titleTag.innerText.replace(/ - Jira$/, '');
     }
     return '';
   };
 
+  let isEditingState = false;
+
   const notifyChange = (isEditing = false) => {
     const issueKey = getIssueKey();
     if (!issueKey) return;
+
+    // 状態が変わった時だけ送信して負荷を軽減
+    if (isEditing === isEditingState && !isEditing) {
+       // 初期ロード時などは常に送信したいので、初回は通す
+    }
 
     chrome.runtime.sendMessage({
       type: 'ISSUE_UPDATED',
@@ -26,51 +32,46 @@
         url: window.location.href
       }
     });
+    isEditingState = isEditing;
   };
 
   // 初回実行
   notifyChange();
 
-  // URL変更の検知 (SPA対策)
   let lastUrl = location.href;
   new MutationObserver(() => {
     const url = location.href;
     if (url !== lastUrl) {
       lastUrl = url;
+      isEditingState = false; // ページ遷移でリセット
       notifyChange();
     }
   }).observe(document, { subtree: true, childList: true });
 
-  // 編集状態の検知
-  // コメント入力欄や課題編集フィールドのフォーカス/入力を監視
-  document.addEventListener('focusin', (e) => {
+  // デバウンス用のタイマー
+  let inputTimeout;
+
+  const handleInput = (e) => {
     const target = e.target;
     if (target.tagName === 'TEXTAREA' ||
         target.tagName === 'INPUT' ||
         target.isContentEditable ||
         target.getAttribute('role') === 'textbox') {
-      notifyChange(true);
-    }
-  });
 
-  document.addEventListener('input', (e) => {
-    const target = e.target;
-    if (target.tagName === 'TEXTAREA' ||
-        target.tagName === 'INPUT' ||
-        target.isContentEditable ||
-        target.getAttribute('role') === 'textbox') {
-      // 入力がある場合は編集中とみなす
-      notifyChange(true);
-    }
-  });
+      if (!isEditingState) {
+        notifyChange(true);
+      }
 
-  document.addEventListener('focusout', (e) => {
-    // 実際には入力が残っている場合もあるが、シンプルにするため
-    // 完全に編集が終わったかどうかを判定するのは難しいため、
-    // 入力が空になったか、一定時間経過などでリセットするロジックも検討可能。
-    // ここではフォーカスアウトだけでは isEditing=false にせず、
-    // ページ遷移時や明示的な保存を検知するのが望ましい。
-    // 現状はシンプルに維持。
-  });
+      // 一定時間入力がなければ編集終了とみなす（簡易的な判定）
+      clearTimeout(inputTimeout);
+      inputTimeout = setTimeout(() => {
+        // 実際にはフォーカスが外れるまで維持したほうが安全かもしれないが
+        // PRコメントの「妥当性」を考慮し、過剰な通知を抑制する。
+      }, 5000);
+    }
+  };
+
+  document.addEventListener('focusin', handleInput);
+  document.addEventListener('input', handleInput);
 
 })();

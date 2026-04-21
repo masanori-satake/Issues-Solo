@@ -2,7 +2,6 @@ import { IssuesDB } from './db.js';
 
 const db = new IssuesDB();
 
-// サイドパネルを有効化
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -13,21 +12,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       isOpened: true
     };
     db.upsertIssue(issueData).then(() => {
-      // 必要に応じてサイドパネルに更新を通知
-      chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {
-        // サイドパネルが閉じてる場合はエラーになるが無視して良い
-      });
+      chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
     });
   }
 });
 
-// タブのクローズを監視
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   const issues = await db.getAllIssues();
   const issueToUpdate = issues.find(i => i.tabId === tabId);
   if (issueToUpdate) {
     await db.upsertIssue({
-      issueKey: issueToUpdate.issueKey,
+      url: issueToUpdate.url, // URL をキーに使用
       isOpened: false,
       isEditing: false,
       tabId: null
@@ -36,16 +31,16 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
   }
 });
 
-// 起動時に既存のタブをチェック
 chrome.runtime.onInstalled.addListener(async () => {
-  const tabs = await chrome.tabs.query({ url: "https://*.atlassian.net/browse/*" });
+  // すべての JIRA インスタンスを対象にクエリ
+  const tabs = await chrome.tabs.query({ url: "*://*/browse/*" });
   const openTabIds = new Set(tabs.map(t => t.id));
 
   const issues = await db.getAllIssues();
   for (const issue of issues) {
     if (issue.isOpened && !openTabIds.has(issue.tabId)) {
       await db.upsertIssue({
-        issueKey: issue.issueKey,
+        url: issue.url,
         isOpened: false,
         isEditing: false,
         tabId: null
