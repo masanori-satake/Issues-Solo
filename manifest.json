@@ -1,0 +1,35 @@
+{
+  "manifest_version": 3,
+  "name": "Issues-Solo",
+  "version": "1.0.0",
+  "description": "JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能",
+  "permissions": [
+    "sidePanel",
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://*.atlassian.net/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.atlassian.net/browse/*"
+      ],
+      "js": [
+        "content.js"
+      ]
+    }
+  ],
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open Issues-Solo"
+  }
+}
