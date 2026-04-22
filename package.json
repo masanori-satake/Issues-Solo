@@ -3,7 +3,7 @@
   "version": "0.2.1",
   "description": "JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能",
   "scripts": {
-    "build": "mkdir -p releases && zip -r releases/issues-solo-v$npm_package_version.zip manifest.json *.js *.html *.css LICENSE"
+    "build": "./scripts/build.sh"
   },
   "keywords": [],
   "author": "",
