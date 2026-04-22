@@ -1,0 +1,14 @@
+{
+  "name": "issues-solo",
+  "version": "1.0.1",
+  "description": "JIRA viewing history and editing state management Chrome extension",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "version:bump": "python3 scripts/bump_version.py"
+  },
+  "author": "Masanori Satake",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
+}
