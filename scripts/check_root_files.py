@@ -18,11 +18,13 @@ ALLOWED_FILES = {
     '.gitignore',
     '.python-version',
     'README.md',
+    'SECURITY.md',
 }
 
 # List of allowed directories in the root directory.
 ALLOWED_DIRS = {
     'docs',
+    'projects',
     'scripts',
     '.github',
     'releases',
