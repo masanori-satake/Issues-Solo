@@ -18,7 +18,7 @@ def verify_no_external_libraries():
             # Check content_scripts
             for script in manifest.get('content_scripts', []):
                 for js in script.get('js', []):
-                    if re.match(r'^https?://', js):
+                    if re.match(r'^(?:https?:)?//', js):
                         print(f"Error: External script found in manifest.json (content_scripts): {js}")
                         passed = False
 
@@ -29,7 +29,7 @@ def verify_no_external_libraries():
                 else:
                     resources = [resource]
                 for res in resources:
-                    if re.match(r'^https?://', res):
+                    if re.match(r'^(?:https?:)?//', res):
                         print(f"Error: External resource found in manifest.json (web_accessible_resources): {res}")
                         passed = False
     except FileNotFoundError:
@@ -42,8 +42,9 @@ def verify_no_external_libraries():
     # 2. Check all .html files for external scripts/styles
     # We want to block external <script src="..."> and <link rel="stylesheet" href="...">
     # but allow regular <a href="..."> links.
-    external_script_src_pattern = re.compile(r'<script[^>]+src=["\'](https?://[^"\']+)["\']', re.IGNORECASE)
-    external_link_href_pattern = re.compile(r'<link[^>]+href=["\'](https?://[^"\']+)["\']', re.IGNORECASE)
+    # We also check for protocol-relative URLs (e.g., //cdn.example.com/lib.js).
+    external_script_src_pattern = re.compile(r'<script[^>]+src=["\']((?:https?:)?//[^"\']+)["\']', re.IGNORECASE)
+    external_link_href_pattern = re.compile(r'<link[^>]+href=["\']((?:https?:)?//[^"\']+)["\']', re.IGNORECASE)
 
     for root, dirs, files in os.walk('.'):
         if 'node_modules' in dirs:
@@ -67,8 +68,8 @@ def verify_no_external_libraries():
                         # Find all <link href="..."> (mostly for stylesheets)
                         links = external_link_href_pattern.findall(content)
                         for href in links:
-                            # Allow local links (not starting with http)
-                            if re.match(r'^https?://', href):
+                            # Allow local links (not starting with // or http://)
+                            if re.match(r'^(?:https?:)?//', href):
                                 print(f"Error: External resource link found in {file_path}: {href}")
                                 passed = False
                 except Exception as e:
