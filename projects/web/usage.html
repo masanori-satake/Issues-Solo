@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>使い方 - Issues-Solo</title>
+    <style>
+        :root {
+            --md-sys-color-primary: #0061a4;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-surface: #fdfbff;
+            --md-sys-color-on-surface: #1a1c1e;
+            --md-sys-color-outline: #73777f;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            line-height: 1.6;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--md-sys-color-outline);
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-decoration: none;
+            color: var(--md-sys-color-on-surface);
+        }
+        nav a {
+            margin-left: 1.5rem;
+            text-decoration: none;
+            color: var(--md-sys-color-on-surface);
+        }
+        main {
+            max-width: 800px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+        h1 {
+            color: var(--md-sys-color-primary);
+            border-bottom: 2px solid var(--md-sys-color-primary);
+            padding-bottom: 0.5rem;
+        }
+        h2 {
+            margin-top: 2rem;
+        }
+        footer {
+            text-align: center;
+            padding: 2rem;
+            border-top: 1px solid var(--md-sys-color-outline);
+            color: var(--md-sys-color-outline);
+            margin-top: 4rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="index.html" class="logo">Issues-Solo</a>
+        <nav>
+            <a href="index.html">トップ</a>
+            <a href="privacy.html">プライバシーポリシー</a>
+        </nav>
+    </header>
+
+    <main>
+        <h1>Issues-Solo の使い方</h1>
+
+        <section>
+            <h2>1. 履歴の自動記録</h2>
+            <p>JIRA（atlassian.net）の課題ページを表示すると、自動的にその課題キーとタイトルが履歴として保存されます。</p>
+        </section>
+
+        <section>
+            <h2>2. サイドパネルを開く</h2>
+            <p>ブラウザのツールバーにある拡張機能アイコンをクリック、またはサイドパネルから「Issues-Solo」を選択してパネルを開きます。</p>
+        </section>
+
+        <section>
+            <h2>3. 履歴の確認と移動</h2>
+            <p>サイドパネルに表示された履歴リストをクリックすると、該当するJIRA課題のタブに切り替わるか、新しいタブで開きます。</p>
+        </section>
+
+        <section>
+            <h2>4. 編集状態（書きかけ）の管理</h2>
+            <p>JIRAのコメント欄や説明文を編集しているときに「編集中」の状態が検知されます。ブラウザを閉じたり再起動したりしても、その状態は保持され、サイドパネルから確認できます。</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Issues-Solo. All rights reserved.</p>
+    </footer>
+</body>
+</html>
