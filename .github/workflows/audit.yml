@@ -5,7 +5,27 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+    paths:
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'manifest.json'
+      - '*.js'
+      - '*.html'
+      - '*.css'
   workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  actions: read
+  security-events: write
+  contents: read
 
 jobs:
   integrity-and-oss:
@@ -23,6 +43,18 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: '3.x'
+
+    - name: Get changed files
+      id: changed-files
+      uses: tj-actions/changed-files@v45
+      with:
+        files: |
+          scripts/**
+          package.json
+          manifest.json
+          *.js
+          *.html
+          *.css
 
     - name: 1. ルートディレクトリのクリーンネス確認 (Root Directory Cleanliness)
       run: python3 scripts/check_root_files.py
@@ -44,9 +76,11 @@ jobs:
         fi
 
     - name: 4. バージョンの一貫性確認 (Version Consistency)
+      if: steps.changed-files.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
       run: python3 scripts/check_version.py
 
     - name: 5. バージョン影響評価 (Version Impact)
+      if: (github.event_name == 'pull_request' && steps.changed-files.outputs.any_changed == 'true') || github.event_name == 'workflow_dispatch'
       run: python3 scripts/verify_version_impact.py
 
     - name: 6. 外部OSS依存関係なしの確認 (No Production Dependencies)
@@ -64,3 +98,12 @@ jobs:
           echo "- Pure Vanilla JS policy: failed" >> $GITHUB_STEP_SUMMARY
         fi
         echo "- Root cleanliness / policy / version checks: completed" >> $GITHUB_STEP_SUMMARY
+
+  osv-scan:
+    name: 8. Google OSV-Scanner による脆弱性検査 (Vulnerability Scan)
+    uses: "google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v1.9.1"
+    with:
+      scan-args: |-
+        --recursive
+        ./
+        ./package.json
