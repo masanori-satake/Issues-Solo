@@ -11,7 +11,7 @@ async function renderList() {
     return;
   }
 
-  listElement.innerHTML = '';
+  listElement.textContent = '';
   issues.forEach(issue => {
     const item = document.createElement('div');
     item.className = 'issue-item';
@@ -19,16 +19,43 @@ async function renderList() {
     // インスタンスを区別するためにドメインを表示
     const domain = new URL(issue.url).hostname;
 
-    item.innerHTML = `
-      <div class="status-indicators">
-        <div class="indicator ${issue.isOpened ? 'is-opened' : ''}" title="${issue.isOpened ? 'Tab is open' : 'Tab is closed'}"></div>
-        <div class="indicator ${issue.isEditing ? 'is-editing' : ''}" title="${issue.isEditing ? 'Currently editing' : ''}"></div>
-      </div>
-      <div class="issue-content">
-        <span class="issue-key">${issue.issueKey} <small style="color: #6b778c; font-weight: normal;">(${domain})</small></span>
-        <span class="issue-title">${escapeHtml(issue.title)}</span>
-      </div>
-    `;
+    const indicators = document.createElement('div');
+    indicators.className = 'status-indicators';
+
+    const openIndicator = document.createElement('div');
+    openIndicator.className = `indicator ${issue.isOpened ? 'is-opened' : ''}`;
+    openIndicator.title = issue.isOpened ? 'Tab is open' : 'Tab is closed';
+
+    const editIndicator = document.createElement('div');
+    editIndicator.className = `indicator ${issue.isEditing ? 'is-editing' : ''}`;
+    editIndicator.title = issue.isEditing ? 'Currently editing' : '';
+
+    indicators.appendChild(openIndicator);
+    indicators.appendChild(editIndicator);
+
+    const content = document.createElement('div');
+    content.className = 'issue-content';
+
+    const keySpan = document.createElement('span');
+    keySpan.className = 'issue-key';
+    keySpan.textContent = issue.issueKey + ' ';
+
+    const domainSmall = document.createElement('small');
+    domainSmall.style.color = '#6b778c';
+    domainSmall.style.fontWeight = 'normal';
+    domainSmall.textContent = `(${domain})`;
+
+    keySpan.appendChild(domainSmall);
+
+    const titleSpan = document.createElement('span');
+    titleSpan.className = 'issue-title';
+    titleSpan.textContent = issue.title;
+
+    content.appendChild(keySpan);
+    content.appendChild(titleSpan);
+
+    item.appendChild(indicators);
+    item.appendChild(content);
 
     item.addEventListener('click', () => {
       handleIssueClick(issue);
@@ -36,12 +63,6 @@ async function renderList() {
 
     listElement.appendChild(item);
   });
-}
-
-function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
 }
 
 async function handleIssueClick(issue) {

@@ -18,11 +18,6 @@
     const issueKey = getIssueKey();
     if (!issueKey) return;
 
-    // 状態が変わった時だけ送信して負荷を軽減
-    if (isEditing === isEditingState && !isEditing) {
-       // 初期ロード時などは常に送信したいので、初回は通す
-    }
-
     chrome.runtime.sendMessage({
       type: 'ISSUE_UPDATED',
       data: {
@@ -48,30 +43,62 @@
     }
   }).observe(document, { subtree: true, childList: true });
 
-  // デバウンス用のタイマー
-  let inputTimeout;
+  const isEditableElement = (el) => {
+    if (!el) return false;
+    const tagName = el.tagName;
+    const role = el.getAttribute('role');
+    const isContentEditable = el.isContentEditable;
 
-  const handleInput = (e) => {
-    const target = e.target;
-    if (target.tagName === 'TEXTAREA' ||
-        target.tagName === 'INPUT' ||
-        target.isContentEditable ||
-        target.getAttribute('role') === 'textbox') {
+    return (
+      tagName === 'TEXTAREA' ||
+      (tagName === 'INPUT' && !['button', 'submit', 'checkbox', 'radio', 'hidden'].includes(el.type)) ||
+      isContentEditable ||
+      role === 'textbox' ||
+      role === 'combobox'
+    );
+  };
 
-      if (!isEditingState) {
-        notifyChange(true);
-      }
+  const checkEditingState = () => {
+    const activeElement = document.activeElement;
+    const isEditing = isEditableElement(activeElement);
 
-      // 一定時間入力がなければ編集終了とみなす（簡易的な判定）
-      clearTimeout(inputTimeout);
-      inputTimeout = setTimeout(() => {
-        // 実際にはフォーカスが外れるまで維持したほうが安全かもしれないが
-        // PRコメントの「妥当性」を考慮し、過剰な通知を抑制する。
-      }, 5000);
+    if (isEditing !== isEditingState) {
+      notifyChange(isEditing);
     }
   };
 
-  document.addEventListener('focusin', handleInput);
-  document.addEventListener('input', handleInput);
+  // 編集状態の監視
+  document.addEventListener('focusin', checkEditingState);
+  document.addEventListener('focusout', () => {
+    // フォーカスが外れた直後は次の要素にフォーカスが移る前なので、少し待ってから確認
+    setTimeout(checkEditingState, 200);
+  });
+
+  // キー操作による編集終了（EnterやEscape）の検知
+  document.addEventListener('keydown', (e) => {
+    if (isEditingState) {
+      if (e.key === 'Escape') {
+        // Escapeはキャンセル扱いで編集終了とみなす
+        setTimeout(checkEditingState, 200);
+      } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        // Ctrl+Enter / Cmd+Enter は保存扱いで編集終了とみなす
+        setTimeout(checkEditingState, 200);
+      }
+    }
+  }, true);
+
+  // 保存・キャンセルボタンのクリックを検知
+  document.addEventListener('click', (e) => {
+    const target = e.target;
+    // Jiraの保存・キャンセルボタンは button か span/div で構成されていることが多い
+    const isButton = target.closest('button') ||
+                     target.tagName === 'BUTTON' ||
+                     (target.getAttribute('role') === 'button');
+
+    if (isButton) {
+      // ボタンクリック時は編集状態が変わる可能性が高い
+      setTimeout(checkEditingState, 500);
+    }
+  }, true);
 
 })();
