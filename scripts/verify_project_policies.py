@@ -1,42 +1,76 @@
 import sys
 import os
 import json
+import re
 
 def verify_no_external_libraries():
     """
     Check if there are any external libraries mentioned in manifest.json
-    (e.g., in content_scripts or as web_accessible_resources).
-    Also checks for <script> tags with external sources in sidepanel.html.
+    or any .html files. The 'Solo' series prohibits external dependencies.
     """
     passed = True
 
-    # Check manifest.json
+    # 1. Check manifest.json
     try:
         with open('manifest.json', 'r') as f:
             manifest = json.load(f)
 
-            # Content scripts should only be local files
+            # Check content_scripts
             for script in manifest.get('content_scripts', []):
                 for js in script.get('js', []):
-                    if js.startswith('http'):
-                        print(f"Error: External script found in manifest.json: {js}")
+                    if re.match(r'^https?://', js):
+                        print(f"Error: External script found in manifest.json (content_scripts): {js}")
+                        passed = False
+
+            # Check web_accessible_resources
+            for resource in manifest.get('web_accessible_resources', []):
+                if isinstance(resource, dict):
+                    resources = resource.get('resources', [])
+                else:
+                    resources = [resource]
+                for res in resources:
+                    if re.match(r'^https?://', res):
+                        print(f"Error: External resource found in manifest.json (web_accessible_resources): {res}")
                         passed = False
     except FileNotFoundError:
         print("Error: manifest.json not found")
         passed = False
+    except json.JSONDecodeError:
+        print("Error: manifest.json is not a valid JSON")
+        passed = False
 
-    # Check sidepanel.html for external scripts
-    try:
-        with open('sidepanel.html', 'r') as f:
-            content = f.read()
-            if '<script' in content and 'src="http' in content:
-                print("Error: External script source found in sidepanel.html")
-                passed = False
-            if '<link' in content and 'href="http' in content:
-                print("Error: External stylesheet found in sidepanel.html")
-                passed = False
-    except FileNotFoundError:
-        pass # Optional file
+    # 2. Check all .html files for external scripts/styles
+    external_src_pattern = re.compile(r'src=["\'](https?://[^"\']+)["\']', re.IGNORECASE)
+    external_href_pattern = re.compile(r'href=["\'](https?://[^"\']+)["\']', re.IGNORECASE)
+
+    for root, dirs, files in os.walk('.'):
+        if 'node_modules' in dirs:
+            dirs.remove('node_modules')
+        if '.git' in dirs:
+            dirs.remove('.git')
+
+        for file in files:
+            if file.endswith('.html'):
+                file_path = os.path.join(root, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+
+                        # Find all <script src="...">
+                        scripts = external_src_pattern.findall(content)
+                        for src in scripts:
+                            print(f"Error: External script source found in {file_path}: {src}")
+                            passed = False
+
+                        # Find all <link href="..."> (mostly for stylesheets)
+                        links = external_href_pattern.findall(content)
+                        for href in links:
+                            # Allow local links (not starting with http)
+                            if re.match(r'^https?://', href):
+                                print(f"Error: External resource link found in {file_path}: {href}")
+                                passed = False
+                except Exception as e:
+                    print(f"Warning: Could not read {file_path}: {e}")
 
     if passed:
         print("Project policy check passed: No external libraries detected.")
