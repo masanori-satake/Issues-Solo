@@ -11,6 +11,13 @@ def check_version():
         with open('package.json', 'r') as f:
             package_version = json.load(f).get('version')
 
+        # Load version from package-lock.json
+        if not os.path.exists('package-lock.json'):
+            print("Error: package-lock.json is missing.")
+            return False
+        with open('package-lock.json', 'r') as f:
+            lock_version = json.load(f).get('version')
+
         # Load version from manifest.json
         if not os.path.exists('manifest.json'):
             print("Error: manifest.json is missing.")
@@ -20,6 +27,10 @@ def check_version():
 
         if not package_version:
             print("Error: package.json is missing version field.")
+            return False
+
+        if package_version != lock_version:
+            print(f"Error: package-lock.json version ({lock_version}) does not match package.json ({package_version})")
             return False
 
         if package_version != manifest_version:
