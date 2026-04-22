@@ -11,19 +11,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 async function handleIssueUpdated(data, tabId) {
-  const issues = await db.getAllIssues();
-
-  // 同じタブで以前開いていた他の課題のステータスを更新
-  for (const issue of issues) {
-    if (issue.tabId === tabId && issue.url !== data.url) {
-      await db.upsertIssue({
-        url: issue.url,
-        isOpened: false,
-        isEditing: false,
-        tabId: null
-      });
-    }
-  }
+  // 同じタブで以前開いていた他の課題のステータスを効率的に更新
+  await db.clearTabAssociation(tabId, data.url);
 
   const issueData = {
     ...data,
@@ -35,20 +24,8 @@ async function handleIssueUpdated(data, tabId) {
 }
 
 chrome.tabs.onRemoved.addListener(async (tabId) => {
-  const issues = await db.getAllIssues();
-  const issuesToUpdate = issues.filter(i => i.tabId === tabId);
-
-  if (issuesToUpdate.length > 0) {
-    for (const issue of issuesToUpdate) {
-      await db.upsertIssue({
-        url: issue.url,
-        isOpened: false,
-        isEditing: false,
-        tabId: null
-      });
-    }
-    chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
-  }
+  await db.clearTabAssociation(tabId);
+  chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
