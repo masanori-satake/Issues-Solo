@@ -1,14 +1,14 @@
 {
   "name": "issues-solo",
-  "version": "0.1.0",
-  "description": "JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能",
+  "version": "0.2.0",
+  "description": "JIRA viewing history and editing state management Chrome extension",
+  "private": true,
   "scripts": {
-    "build": "mkdir -p releases && zip -r releases/issues-solo-v$npm_package_version.zip manifest.json background.js content.js db.js sidepanel.html sidepanel.js sidepanel.css LICENSE"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "version:bump": "python3 scripts/bump_version.py"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@playwright/test": "^1.49.0"
-  }
+  "author": "Masanori Satake",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {}
 }
