@@ -6,27 +6,47 @@ chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'ISSUE_UPDATED') {
-    const issueData = {
-      ...message.data,
-      tabId: sender.tab.id,
-      isOpened: true
-    };
-    db.upsertIssue(issueData).then(() => {
-      chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
-    });
+    handleIssueUpdated(message.data, sender.tab.id);
   }
 });
 
+async function handleIssueUpdated(data, tabId) {
+  const issues = await db.getAllIssues();
+
+  // 同じタブで以前開いていた他の課題のステータスを更新
+  for (const issue of issues) {
+    if (issue.tabId === tabId && issue.url !== data.url) {
+      await db.upsertIssue({
+        url: issue.url,
+        isOpened: false,
+        isEditing: false,
+        tabId: null
+      });
+    }
+  }
+
+  const issueData = {
+    ...data,
+    tabId: tabId,
+    isOpened: true
+  };
+  await db.upsertIssue(issueData);
+  chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
+}
+
 chrome.tabs.onRemoved.addListener(async (tabId) => {
   const issues = await db.getAllIssues();
-  const issueToUpdate = issues.find(i => i.tabId === tabId);
-  if (issueToUpdate) {
-    await db.upsertIssue({
-      url: issueToUpdate.url, // URL をキーに使用
-      isOpened: false,
-      isEditing: false,
-      tabId: null
-    });
+  const issuesToUpdate = issues.filter(i => i.tabId === tabId);
+
+  if (issuesToUpdate.length > 0) {
+    for (const issue of issuesToUpdate) {
+      await db.upsertIssue({
+        url: issue.url,
+        isOpened: false,
+        isEditing: false,
+        tabId: null
+      });
+    }
     chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
   }
 });
