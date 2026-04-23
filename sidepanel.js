@@ -26,12 +26,12 @@ let currentSettings = [];
 const PRIORITY_MAP = {
   'Highest': { glyph: '↑↑', color: '#DE350B' }, // Jira Red
   'High': { glyph: '↑', color: '#FF5630' },    // Jira Orange-Red
-  'Medium': { glyph: '─', color: '#FFAB00' },  // Jira Yellow/Orange
+  'Medium': { glyph: '•', color: '#FFAB00' },  // Jira Yellow/Orange
   'Low': { glyph: '↓', color: '#0052CC' },     // Jira Blue
   'Lowest': { glyph: '↓↓', color: '#00B8D9' }, // Jira Sky Blue
   '最高': { glyph: '↑↑', color: '#DE350B' },
   '高': { glyph: '↑', color: '#FF5630' },
-  '中': { glyph: '─', color: '#FFAB00' },
+  '中': { glyph: '•', color: '#FFAB00' },
   '低': { glyph: '↓', color: '#0052CC' },
   '最低': { glyph: '↓↓', color: '#00B8D9' }
 };
