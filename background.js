@@ -42,7 +42,8 @@ chrome.runtime.onInstalled.addListener(async () => {
         files: ['content.js']
       });
     } catch (e) {
-      console.error(`Failed to inject content script into tab ${tab.id}:`, e);
+      // 権限のないページや特殊なタブでは注入に失敗する場合があるが、
+      // ユーザーへの影響はないため、エラー出力は抑制する
     }
   }
 
