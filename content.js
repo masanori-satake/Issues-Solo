@@ -42,8 +42,14 @@
     // Cloud
     const cloudPriority = document.querySelector('[data-testid="issue.views.issue-base.foundation.priority.priority-view"]');
     if (cloudPriority) {
+      // <img>タグのalt属性を確認
       const img = cloudPriority.querySelector('img');
       if (img && img.getAttribute('alt')) return img.getAttribute('alt');
+
+      // <svg>タグのaria-labelを確認（Jira Cloudの新しいUI対応）
+      const svg = cloudPriority.querySelector('svg');
+      if (svg && svg.getAttribute('aria-label')) return svg.getAttribute('aria-label');
+
       return cloudPriority.innerText.trim();
     }
     // Data Center
