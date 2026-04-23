@@ -53,36 +53,34 @@ async function renderList() {
     return { host, issues: hostIssues };
   }).filter(group => group.issues.length > 0);
 
-  const showHeaders = visibleSettings.length > 1;
-  const showGlyphs = hostGroups.length > 1;
+  const useAccordion = hostGroups.length > 1;
 
   hostGroups.forEach(({ host, issues: hostIssues }) => {
-    if (showHeaders) {
+    if (useAccordion) {
       const header = document.createElement('div');
-      header.className = 'host-group-header';
-      if (showGlyphs) {
-        header.classList.add('clickable');
-        const glyph = document.createElement('span');
-        glyph.className = 'collapse-glyph';
-        const isCollapsed = host.isCollapsed || false;
-        glyph.innerHTML = isCollapsed
-          ? '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' // 右向き
-          : '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>'; // 下向き
-        header.appendChild(glyph);
+      header.className = 'host-group-header clickable';
 
-        header.addEventListener('click', async () => {
-          host.isCollapsed = !host.isCollapsed;
-          await db.setSettings(settings);
-          renderList();
-        });
-      }
+      const glyph = document.createElement('span');
+      glyph.className = 'collapse-glyph';
+      const isCollapsed = !!host.isCollapsed;
+      glyph.innerHTML = isCollapsed
+        ? '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' // 右向き
+        : '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>'; // 下向き
+      header.appendChild(glyph);
+
+      header.addEventListener('click', async () => {
+        host.isCollapsed = !host.isCollapsed;
+        await db.setSettings(settings);
+        renderList();
+      });
+
       const name = document.createElement('span');
       name.textContent = host.name;
       header.appendChild(name);
       listElement.appendChild(header);
     }
 
-    if (!showGlyphs || !host.isCollapsed) {
+    if (!useAccordion || !host.isCollapsed) {
       hostIssues.forEach(issue => {
         const item = createIssueItem(issue);
         listElement.appendChild(item);
