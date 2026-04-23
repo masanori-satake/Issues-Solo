@@ -1,19 +1,89 @@
 (function() {
+  /**
+   * 現在のURLから課題キー（例: KAN-1）を抽出する
+   */
   const getIssueKey = () => {
     const match = window.location.pathname.match(/\/browse\/([A-Z0-9]+-[0-9]+)/);
     return match ? match[1] : null;
   };
 
-  const getTitle = () => {
+  /**
+   * DOMから課題の要約（Summary）を取得する
+   * Cloud版とData Center版の両方に対応
+   */
+  const getSummary = () => {
+    // Cloud
+    const cloudSummary = document.querySelector('[data-testid="issue.views.issue-base.foundation.summary.heading"]');
+    if (cloudSummary && cloudSummary.innerText.trim()) {
+      return cloudSummary.innerText.trim();
+    }
+    // Data Center
+    const dcSummary = document.querySelector('#summary-val');
+    if (dcSummary && dcSummary.innerText.trim()) {
+      return dcSummary.innerText.trim();
+    }
+    // フォールバック: h1タグ (多くのJiraビューでサマリーに使用される)
+    const h1 = document.querySelector('h1');
+    if (h1 && h1.innerText.trim()) {
+      return h1.innerText.trim();
+    }
+    // 最終フォールバック: titleタグからサイト名やキーを除去
     const titleTag = document.querySelector('title');
     if (titleTag) {
-      return titleTag.innerText.replace(/ - Jira$/, '');
+      return titleTag.innerText.replace(/ - Jira$/, '').replace(/^\[[^\]]+\]\s*/, '');
+    }
+    return '';
+  };
+
+  /**
+   * DOMから優先度を取得する
+   */
+  const getPriority = () => {
+    // Cloud
+    const cloudPriority = document.querySelector('[data-testid="issue.views.issue-base.foundation.priority.priority-view"]');
+    if (cloudPriority) {
+      // <img>タグのalt属性を確認
+      const img = cloudPriority.querySelector('img');
+      if (img && img.getAttribute('alt')) return img.getAttribute('alt');
+
+      // <svg>タグのaria-labelを確認（Jira Cloudの新しいUI対応）
+      const svg = cloudPriority.querySelector('svg');
+      if (svg && svg.getAttribute('aria-label')) return svg.getAttribute('aria-label');
+
+      return cloudPriority.innerText.trim();
+    }
+    // Data Center
+    const dcPriority = document.querySelector('#priority-val');
+    if (dcPriority) {
+      const img = dcPriority.querySelector('img');
+      if (img && img.getAttribute('alt')) return img.getAttribute('alt');
+      return dcPriority.innerText.trim();
+    }
+    return '';
+  };
+
+  /**
+   * DOMからステータスを取得する
+   */
+  const getStatus = () => {
+    // Cloud
+    const cloudStatus = document.querySelector('[data-testid="issue.views.issue-base.foundation.status.status-button-item"]');
+    if (cloudStatus && cloudStatus.innerText.trim()) {
+      return cloudStatus.innerText.trim();
+    }
+    // Data Center
+    const dcStatus = document.querySelector('#status-val');
+    if (dcStatus && dcStatus.innerText.trim()) {
+      return dcStatus.innerText.trim();
     }
     return '';
   };
 
   let isEditingState = false;
 
+  /**
+   * 要素が保存またはキャンセルボタンかどうかを判定する
+   */
   const isSaveOrCancelButton = (el) => {
     if (!el) return false;
     const button = el.closest('button, [role="button"]');
@@ -30,14 +100,15 @@
     return isSave || isCancel;
   };
 
+  /**
+   * DOMの状態から現在の編集状態を推測する
+   */
   const detectEditingStateFromDOM = () => {
     // 保存・キャンセルボタンが存在する場合は、編集中である可能性が高い（Jiraの仕様）
     const buttons = document.querySelectorAll('button, [role="button"]');
     for (const btn of buttons) {
       if (isSaveOrCancelButton(btn)) {
         // ボタンが表示されている＝編集フォームが開いているとみなす
-        // ただし、Jiraのグローバルなボタンと混同しないよう、特定のコンテナ内にあるか等のチェックが必要な場合がある
-        // ここではシンプルに、編集可能な要素が存在し、かつ保存ボタンがある場合に限定する
         const hasEditable = !!document.querySelector('textarea, [contenteditable="true"], [role="textbox"]');
         if (hasEditable) return true;
       }
@@ -45,15 +116,24 @@
     return false;
   };
 
-  const notifyChange = (isEditing = false) => {
+  /**
+   * 変更をバックグラウンドに通知する
+   */
+  const notifyChange = (isEditing = null) => {
     const issueKey = getIssueKey();
     if (!issueKey) return;
+
+    if (isEditing === null) {
+      isEditing = detectEditingStateFromDOM();
+    }
 
     chrome.runtime.sendMessage({
       type: 'ISSUE_UPDATED',
       data: {
         issueKey,
-        title: getTitle(),
+        title: getSummary(),
+        priority: getPriority(),
+        status: getStatus(),
         isEditing,
         url: window.location.href
       }
@@ -62,18 +142,62 @@
   };
 
   // 初回実行
-  // 他のPCで編集が終わった後にページをリロードした場合などを考慮し、DOMから現在の状態を推測する
-  notifyChange(detectEditingStateFromDOM());
+  notifyChange();
 
   let lastUrl = location.href;
-  new MutationObserver(() => {
+  let lastInfo = '';
+  let debounceTimer = null;
+
+  /**
+   * 課題情報の変更をチェックし、変化があれば通知する
+   */
+  const checkInfoChange = () => {
+    const isEditing = detectEditingStateFromDOM();
+    const info = JSON.stringify({
+      s: getSummary(),
+      p: getPriority(),
+      st: getStatus(),
+      e: isEditing
+    });
+    if (info !== lastInfo) {
+      lastInfo = info;
+      // 既に編集状態を取得済みなので、notifyChangeに渡して二重実行を避ける
+      notifyChange(isEditing);
+    }
+  };
+
+  /**
+   * 監視対象のルート要素を取得する
+   * パフォーマンスのため監視範囲をメインコンテンツに絞り込む
+   */
+  const getObserverTarget = () => {
+    return document.getElementById('jira-frontend') ||
+           document.querySelector('[role="main"]') ||
+           document.getElementById('content') ||
+           document.body;
+  };
+
+  // DOMの変化を監視してリアルタイムに更新（デバウンス処理と範囲絞り込みで負荷を軽減）
+  const observer = new MutationObserver(() => {
     const url = location.href;
     if (url !== lastUrl) {
       lastUrl = url;
-      // ページ遷移（SPA）時は、まず現在のDOM状態から編集状態を再判定する
-      notifyChange(detectEditingStateFromDOM());
+      // ページ遷移（SPA）時は即座に再判定
+      notifyChange();
+      // SPA遷移後はターゲット要素が変わっている可能性があるため再接続を検討
+      reconnectObserver();
+    } else {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(checkInfoChange, 200);
     }
-  }).observe(document, { subtree: true, childList: true });
+  });
+
+  const reconnectObserver = () => {
+    observer.disconnect();
+    observer.observe(getObserverTarget(), { subtree: true, childList: true, characterData: true });
+  };
+
+  reconnectObserver();
 
   const isEditableElement = (el) => {
     if (!el) return false;
@@ -111,10 +235,8 @@
   document.addEventListener('keydown', (e) => {
     if (isEditingState) {
       if (e.key === 'Escape') {
-        // Escapeはキャンセル扱いで編集終了とみなす
         stopEditing();
       } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-        // Ctrl+Enter / Cmd+Enter は保存扱いで編集終了とみなす
         stopEditing();
       }
     }
@@ -123,9 +245,7 @@
   // 保存・キャンセルボタンのクリックを検知
   document.addEventListener('click', (e) => {
     if (!isEditingState) return;
-
     if (isSaveOrCancelButton(e.target)) {
-      // JiraがDOMを更新するのを待つ必要はなく、ユーザーの意図として編集終了を即座に反映
       stopEditing();
     }
   }, true);

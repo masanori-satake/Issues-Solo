@@ -7,6 +7,7 @@
   --active-indicator: #36b37e;
   --editing-indicator: #ffab00;
   --secondary-text: #6b778c;
+  --issue-key-color: #0052cc;
 }
 
 body {
@@ -67,12 +68,13 @@ header {
 
 .issue-item {
   display: flex;
-  padding: 12px 16px;
+  padding: 10px 16px;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: background-color 0.2s;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
+  overflow: hidden;
 }
 
 .issue-item:hover {
@@ -83,7 +85,7 @@ header {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding-top: 4px;
+  flex-shrink: 0;
 }
 
 .indicator {
@@ -102,26 +104,54 @@ header {
   background-color: var(--editing-indicator);
   mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>');
   -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>');
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border-radius: 0;
 }
 
 .issue-content {
   flex-grow: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0; /* Important for ellipsis */
 }
 
 .issue-key {
   font-weight: bold;
-  color: #0052cc;
-  margin-bottom: 4px;
-  display: block;
+  color: var(--issue-key-color);
+  flex-shrink: 0;
+  font-size: 13px;
 }
 
 .issue-title {
-  display: block;
-  line-height: 1.4;
-  word-break: break-word;
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.issue-glyphs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.priority-glyph {
+  font-weight: bold;
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+  display: inline-block;
+}
+
+.status-glyph {
+  font-size: 12px;
+  width: 12px;
+  text-align: center;
+  display: inline-block;
 }
 
 .loading {
