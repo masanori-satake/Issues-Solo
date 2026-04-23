@@ -39,19 +39,30 @@
    * DOMから優先度を取得する
    */
   const getPriority = () => {
-    // Cloud
-    const cloudPriority = document.querySelector('[data-testid="issue.views.issue-base.foundation.priority.priority-view"]');
-    if (cloudPriority) {
-      // <img>タグのalt属性を確認
-      const img = cloudPriority.querySelector('img');
-      if (img && img.getAttribute('alt')) return img.getAttribute('alt');
+    // Cloud: 複数のセレクタ候補を試行（チーム管理対象プロジェクト等への対応）
+    const cloudPrioritySelectors = [
+      '[data-testid="issue.views.issue-base.foundation.priority.priority-view"]',
+      '[data-testid="issue-field-priority.ui.priority-view.priority-wrapper"]',
+      '[data-testid*="priority-view"]',
+      '[data-testid*="priority-field"]'
+    ];
 
-      // <svg>タグのaria-labelを確認（Jira Cloudの新しいUI対応）
-      const svg = cloudPriority.querySelector('svg');
-      if (svg && svg.getAttribute('aria-label')) return svg.getAttribute('aria-label');
+    for (const selector of cloudPrioritySelectors) {
+      const el = document.querySelector(selector);
+      if (el) {
+        // <img>タグのalt属性を確認
+        const img = el.querySelector('img');
+        if (img && img.getAttribute('alt')) return img.getAttribute('alt');
 
-      return cloudPriority.innerText.trim();
+        // <svg>タグのaria-labelを確認（Jira Cloudの新しいUI対応）
+        const svg = el.querySelector('svg');
+        if (svg && svg.getAttribute('aria-label')) return svg.getAttribute('aria-label');
+
+        const text = el.innerText.trim();
+        if (text && text !== '優先度' && text !== 'Priority') return text;
+      }
     }
+
     // Data Center
     const dcPriority = document.querySelector('#priority-val');
     if (dcPriority) {
@@ -66,11 +77,24 @@
    * DOMからステータスを取得する
    */
   const getStatus = () => {
-    // Cloud
-    const cloudStatus = document.querySelector('[data-testid="issue.views.issue-base.foundation.status.status-button-item"]');
-    if (cloudStatus && cloudStatus.innerText.trim()) {
-      return cloudStatus.innerText.trim();
+    // Cloud: 複数のセレクタ候補を試行（ステータスボタン、ピッカーなど）
+    const cloudStatusSelectors = [
+      '[data-testid="issue.views.issue-base.foundation.status.status-button-item"]',
+      '[data-testid="issue-field-status.ui.status-view.status-wrapper"]',
+      '[data-testid*="status.status-button-item"]',
+      '[data-testid*="status-view"]',
+      'button[aria-label*="Status"]',
+      'button[aria-label*="ステータス"]'
+    ];
+
+    for (const selector of cloudStatusSelectors) {
+      const el = document.querySelector(selector);
+      if (el) {
+        const text = el.innerText.trim();
+        if (text) return text;
+      }
     }
+
     // Data Center
     const dcStatus = document.querySelector('#status-val');
     if (dcStatus && dcStatus.innerText.trim()) {

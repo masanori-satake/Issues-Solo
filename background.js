@@ -30,7 +30,22 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 
 chrome.runtime.onInstalled.addListener(async () => {
   // すべての JIRA インスタンスを対象にクエリ
-  const tabs = await chrome.tabs.query({ url: "*://*/browse/*" });
+  const tabs = await chrome.tabs.query({
+    url: ["https://*.atlassian.net/browse/*", "https://*/browse/*"]
+  });
+
+  // インストール時に既存のタブに content.js を注入する
+  for (const tab of tabs) {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        files: ['content.js']
+      });
+    } catch (e) {
+      console.error(`Failed to inject content script into tab ${tab.id}:`, e);
+    }
+  }
+
   const openTabIds = new Set(tabs.map(t => t.id));
 
   const issues = await db.getAllIssues();
