@@ -51,7 +51,9 @@ jobs:
         files: |
           scripts/**
           package.json
+          package-lock.json
           manifest.json
+          README.md
           *.js
           *.html
           *.css
