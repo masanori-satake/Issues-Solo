@@ -8,6 +8,11 @@
   };
 
   /**
+   * 抽出時に除外するラベル（フィールド名自体が取得された場合のフィルタリング用）
+   */
+  const EXCLUDED_LABELS = ['優先度', 'Priority', 'ステータス', 'Status'];
+
+  /**
    * DOMから課題の要約（Summary）を取得する
    * Cloud版とData Center版の両方に対応
    */
@@ -59,7 +64,7 @@
         if (svg && svg.getAttribute('aria-label')) return svg.getAttribute('aria-label');
 
         const text = el.innerText.trim();
-        if (text && text !== '優先度' && text !== 'Priority') return text;
+        if (text && !EXCLUDED_LABELS.includes(text)) return text;
       }
     }
 
