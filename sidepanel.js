@@ -22,6 +22,43 @@ const confirmDeleteHostBtn = document.getElementById('confirm-delete-host');
 let selectedHostIds = new Set();
 let currentSettings = [];
 
+// 優先度のマッピングと色設定 (Material 3 パレット準拠)
+const PRIORITY_MAP = {
+  'Highest': { glyph: '↑↑', color: '#DE350B' }, // Jira Red
+  'High': { glyph: '↑', color: '#FF5630' },    // Jira Orange-Red
+  'Medium': { glyph: '─', color: '#FFAB00' },  // Jira Yellow/Orange
+  'Low': { glyph: '↓', color: '#0052CC' },     // Jira Blue
+  'Lowest': { glyph: '↓↓', color: '#00B8D9' }, // Jira Sky Blue
+  '最高': { glyph: '↑↑', color: '#DE350B' },
+  '高': { glyph: '↑', color: '#FF5630' },
+  '中': { glyph: '─', color: '#FFAB00' },
+  '低': { glyph: '↓', color: '#0052CC' },
+  '最低': { glyph: '↓↓', color: '#00B8D9' }
+};
+
+// ステータスの色設定
+const STATUS_COLOR_MAP = {
+  // 未着手系 (Grey)
+  'To Do': '#7A869A',
+  '未着手': '#7A869A',
+  'Open': '#7A869A',
+  'Reopened': '#7A869A',
+  // 進行中系 (Blue)
+  'In Progress': '#0052CC',
+  '進行中': '#0052CC',
+  'In Review': '#0052CC',
+  'レビュー中': '#0052CC',
+  // 完了系 (Green)
+  'Done': '#36B37E',
+  '完了': '#36B37E',
+  'Resolved': '#36B37E',
+  '解決済': '#36B37E',
+  'Closed': '#36B37E'
+};
+
+/**
+ * 履歴リストのレンダリング
+ */
 async function renderList() {
   const issues = await db.getAllIssues();
   const settings = await db.getSettings();
@@ -89,11 +126,13 @@ async function renderList() {
   });
 }
 
+/**
+ * 課題アイテム（1行分）のDOMを生成
+ */
 function createIssueItem(issue) {
   const item = document.createElement('div');
   item.className = 'issue-item';
-
-  const domain = new URL(issue.url).hostname;
+  item.title = issue.title; // ツールチップで全文を表示
 
   const indicators = document.createElement('div');
   indicators.className = 'status-indicators';
@@ -114,14 +153,7 @@ function createIssueItem(issue) {
 
   const keySpan = document.createElement('span');
   keySpan.className = 'issue-key';
-  keySpan.textContent = issue.issueKey + ' ';
-
-  const domainSmall = document.createElement('small');
-  domainSmall.style.color = '#6b778c';
-  domainSmall.style.fontWeight = 'normal';
-  domainSmall.textContent = `(${domain})`;
-
-  keySpan.appendChild(domainSmall);
+  keySpan.textContent = issue.issueKey;
 
   const titleSpan = document.createElement('span');
   titleSpan.className = 'issue-title';
@@ -130,8 +162,33 @@ function createIssueItem(issue) {
   content.appendChild(keySpan);
   content.appendChild(titleSpan);
 
+  // 優先度とステータスのグリフ表示
+  const glyphs = document.createElement('div');
+  glyphs.className = 'issue-glyphs';
+
+  if (issue.priority) {
+    const pInfo = PRIORITY_MAP[issue.priority] || { glyph: '•', color: '#7A869A' };
+    const pGlyph = document.createElement('span');
+    pGlyph.className = 'priority-glyph';
+    pGlyph.textContent = pInfo.glyph;
+    pGlyph.style.color = pInfo.color;
+    pGlyph.title = `優先度: ${issue.priority}`;
+    glyphs.appendChild(pGlyph);
+  }
+
+  if (issue.status) {
+    const sColor = STATUS_COLOR_MAP[issue.status] || '#7A869A';
+    const sGlyph = document.createElement('span');
+    sGlyph.className = 'status-glyph';
+    sGlyph.textContent = '●';
+    sGlyph.style.color = sColor;
+    sGlyph.title = `ステータス: ${issue.status}`;
+    glyphs.appendChild(sGlyph);
+  }
+
   item.appendChild(indicators);
   item.appendChild(content);
+  item.appendChild(glyphs);
 
   item.addEventListener('click', () => {
     handleIssueClick(issue);
@@ -140,6 +197,9 @@ function createIssueItem(issue) {
   return item;
 }
 
+/**
+ * 課題クリック時の動作（タブ切り替えまたは新規作成）
+ */
 async function handleIssueClick(issue) {
   if (issue.isOpened && issue.tabId) {
     try {
@@ -154,7 +214,7 @@ async function handleIssueClick(issue) {
   }
 }
 
-// Settings Logic
+// 設定画面の制御ロジック
 settingsBtn.addEventListener('click', () => {
   settingsPanel.classList.remove('hidden');
   renderHostSettings();
@@ -172,6 +232,9 @@ tabButtons.forEach(btn => {
   });
 });
 
+/**
+ * ホスト設定リストのレンダリング
+ */
 async function renderHostSettings() {
   const settings = await db.getSettings();
   currentSettings = settings;
@@ -232,7 +295,7 @@ async function renderHostSettings() {
     li.appendChild(info);
     li.appendChild(toggle);
 
-    // Drag and Drop
+    // ドラッグ＆ドロップ
     li.addEventListener('dragstart', (e) => {
       li.classList.add('dragging');
       e.dataTransfer.setData('text/plain', index);
@@ -246,7 +309,7 @@ async function renderHostSettings() {
   });
 }
 
-// Drag and Drop global listeners to avoid duplication
+// ドラッグ＆ドロップのグローバルリスナー（重複防止）
 hostList.addEventListener('dragover', (e) => {
   e.preventDefault();
   const draggingItem = document.querySelector('.dragging');
@@ -269,7 +332,7 @@ hostList.addEventListener('drop', async (e) => {
   renderList();
 });
 
-// Add Host
+// ホスト追加
 addHostBtn.addEventListener('click', () => {
   addHostDialog.classList.remove('hidden');
   hostNameInput.value = '';
@@ -289,7 +352,7 @@ confirmAddHostBtn.addEventListener('click', async () => {
         url = new URL(url).hostname;
       }
     } catch (e) {
-      // If parsing fails, keep the original trimmed input
+      // パース失敗時はトリミングした入力をそのまま使用
     }
 
     const settings = await db.getSettings();
@@ -306,7 +369,7 @@ confirmAddHostBtn.addEventListener('click', async () => {
   }
 });
 
-// Delete Host
+// ホスト削除
 deleteHostBtn.addEventListener('click', () => {
   deleteConfirmDialog.classList.remove('hidden');
 });
@@ -326,6 +389,7 @@ confirmDeleteHostBtn.addEventListener('click', async () => {
   renderList();
 });
 
+// DB更新通知の受信
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'DB_UPDATED') {
     renderList();
