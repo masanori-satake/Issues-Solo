@@ -105,4 +105,28 @@ export class IssuesDB {
       request.onerror = () => reject(request.error);
     });
   }
+
+  async getSettings() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(['settings'], (result) => {
+        if (result.settings) {
+          resolve(result.settings);
+        } else {
+          const defaultSettings = [
+            { id: Date.now().toString(), name: 'Jira Cloud', url: 'atlassian.net', visible: true }
+          ];
+          chrome.storage.local.set({ settings: defaultSettings });
+          resolve(defaultSettings);
+        }
+      });
+    });
+  }
+
+  async setSettings(settings) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ settings }, () => {
+        resolve();
+      });
+    });
+  }
 }
