@@ -389,6 +389,12 @@ confirmDeleteHostBtn.addEventListener('click', async () => {
   renderList();
 });
 
+// バージョン情報の表示
+const versionSpan = document.getElementById('extension-version');
+if (versionSpan) {
+  versionSpan.textContent = chrome.runtime.getManifest().version;
+}
+
 // DB更新通知の受信
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'DB_UPDATED') {
