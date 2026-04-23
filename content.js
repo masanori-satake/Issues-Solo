@@ -109,8 +109,6 @@
     for (const btn of buttons) {
       if (isSaveOrCancelButton(btn)) {
         // ボタンが表示されている＝編集フォームが開いているとみなす
-        // ただし、Jiraのグローバルなボタンと混同しないよう、特定のコンテナ内にあるか等のチェックが必要な場合がある
-        // ここではシンプルに、編集可能な要素が存在し、かつ保存ボタンがある場合に限定する
         const hasEditable = !!document.querySelector('textarea, [contenteditable="true"], [role="textbox"]');
         if (hasEditable) return true;
       }
@@ -144,7 +142,6 @@
   };
 
   // 初回実行
-  // 他のPCで編集が終わった後にページをリロードした場合などを考慮し、DOMから現在の状態を推測する
   notifyChange();
 
   let lastUrl = location.href;
@@ -155,30 +152,52 @@
    * 課題情報の変更をチェックし、変化があれば通知する
    */
   const checkInfoChange = () => {
+    const isEditing = detectEditingStateFromDOM();
     const info = JSON.stringify({
       s: getSummary(),
       p: getPriority(),
       st: getStatus(),
-      e: detectEditingStateFromDOM()
+      e: isEditing
     });
     if (info !== lastInfo) {
       lastInfo = info;
-      notifyChange();
+      // 既に編集状態を取得済みなので、notifyChangeに渡して二重実行を避ける
+      notifyChange(isEditing);
     }
   };
 
-  // DOMの変化を監視してリアルタイムに更新（デバウンス処理付きで負荷を軽減）
-  new MutationObserver(() => {
+  /**
+   * 監視対象のルート要素を取得する
+   * パフォーマンスのため監視範囲をメインコンテンツに絞り込む
+   */
+  const getObserverTarget = () => {
+    return document.getElementById('jira-frontend') ||
+           document.querySelector('[role="main"]') ||
+           document.getElementById('content') ||
+           document.body;
+  };
+
+  // DOMの変化を監視してリアルタイムに更新（デバウンス処理と範囲絞り込みで負荷を軽減）
+  const observer = new MutationObserver(() => {
     const url = location.href;
     if (url !== lastUrl) {
       lastUrl = url;
       // ページ遷移（SPA）時は即座に再判定
       notifyChange();
+      // SPA遷移後はターゲット要素が変わっている可能性があるため再接続を検討
+      reconnectObserver();
     } else {
       if (debounceTimer) clearTimeout(debounceTimer);
       debounceTimer = setTimeout(checkInfoChange, 200);
     }
-  }).observe(document, { subtree: true, childList: true, characterData: true });
+  });
+
+  const reconnectObserver = () => {
+    observer.disconnect();
+    observer.observe(getObserverTarget(), { subtree: true, childList: true, characterData: true });
+  };
+
+  reconnectObserver();
 
   const isEditableElement = (el) => {
     if (!el) return false;
@@ -216,10 +235,8 @@
   document.addEventListener('keydown', (e) => {
     if (isEditingState) {
       if (e.key === 'Escape') {
-        // Escapeはキャンセル扱いで編集終了とみなす
         stopEditing();
       } else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-        // Ctrl+Enter / Cmd+Enter は保存扱いで編集終了とみなす
         stopEditing();
       }
     }
@@ -229,7 +246,6 @@
   document.addEventListener('click', (e) => {
     if (!isEditingState) return;
     if (isSaveOrCancelButton(e.target)) {
-      // JiraがDOMを更新するのを待つ必要はなく、ユーザーの意図として編集終了を即座に反映
       stopEditing();
     }
   }, true);
