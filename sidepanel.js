@@ -45,7 +45,7 @@ async function renderList() {
     const hostIssues = issues.filter(issue => {
       try {
         const url = new URL(issue.url);
-        return url.hostname.includes(host.url);
+        return url.hostname === host.url || url.hostname.endsWith('.' + host.url);
       } catch (e) {
         return false;
       }
@@ -260,8 +260,16 @@ cancelAddHostBtn.addEventListener('click', () => {
 
 confirmAddHostBtn.addEventListener('click', async () => {
   const name = hostNameInput.value.trim();
-  const url = hostUrlInput.value.trim();
+  let url = hostUrlInput.value.trim();
   if (name && url) {
+    try {
+      if (url.includes('://')) {
+        url = new URL(url).hostname;
+      }
+    } catch (e) {
+      // If parsing fails, keep the original trimmed input
+    }
+
     const settings = await db.getSettings();
     settings.push({
       id: Date.now().toString(),
