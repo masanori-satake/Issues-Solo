@@ -134,9 +134,14 @@ async function renderList() {
       const glyph = document.createElement('span');
       glyph.className = 'collapse-glyph';
       const isCollapsed = !!host.isCollapsed;
-      glyph.innerHTML = isCollapsed
-        ? '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' // 右向き
-        : '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>'; // 下向き
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', isCollapsed ? 'M8 5v14l11-7z' : 'M7 10l5 5 5-5z');
+      svg.appendChild(path);
+      glyph.appendChild(svg);
+
       header.appendChild(glyph);
 
       header.addEventListener('click', async () => {
@@ -156,7 +161,12 @@ async function renderList() {
       let remainingIssues = [...hostIssues];
 
       projectSettings.forEach(proj => {
-        const projIssues = remainingIssues.filter(i => i.issueKey.startsWith(proj.key + '-'));
+        // プロジェクトキーが完全一致することを確認 (例: ABC-1 が ABCD のグループに入らないように)
+        const projIssues = remainingIssues.filter(i => {
+          const parts = i.issueKey.split('-');
+          return parts.length > 1 && parts[0] === proj.key;
+        });
+
         if (projIssues.length > 0) {
           remainingIssues = remainingIssues.filter(i => !projIssues.includes(i));
 
@@ -169,9 +179,14 @@ async function renderList() {
           const glyph = document.createElement('span');
           glyph.className = 'collapse-glyph';
           const isCollapsed = !!proj.isCollapsed;
-          glyph.innerHTML = isCollapsed
-            ? '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>'
-            : '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>';
+
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 24 24');
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', isCollapsed ? 'M8 5v14l11-7z' : 'M7 10l5 5 5-5z');
+          svg.appendChild(path);
+          glyph.appendChild(svg);
+
           projHeader.appendChild(glyph);
 
           const name = document.createElement('span');
@@ -325,7 +340,12 @@ async function renderProjectSettings() {
 
     const dragHandle = document.createElement('div');
     dragHandle.className = 'drag-handle';
-    dragHandle.innerHTML = '<svg viewBox="0 0 24 24"><path d="M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>';
+    const dragSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    dragSvg.setAttribute('viewBox', '0 0 24 24');
+    const dragPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    dragPath.setAttribute('d', 'M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
+    dragSvg.appendChild(dragPath);
+    dragHandle.appendChild(dragSvg);
 
     const keyLabel = document.createElement('span');
     keyLabel.className = 'project-key-label';
@@ -348,7 +368,13 @@ async function renderProjectSettings() {
 
     const deleteBtn = document.createElement('button');
     deleteBtn.className = 'delete-btn';
-    deleteBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>';
+    const deleteSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    deleteSvg.setAttribute('viewBox', '0 0 24 24');
+    const deletePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    deletePath.setAttribute('d', 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z');
+    deleteSvg.appendChild(deletePath);
+    deleteBtn.appendChild(deleteSvg);
+
     deleteBtn.addEventListener('click', async () => {
       const newSettings = settings.filter((_, i) => i !== index);
       await db.setProjectSettings(newSettings);
