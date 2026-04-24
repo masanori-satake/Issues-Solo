@@ -129,4 +129,24 @@ export class IssuesDB {
       });
     });
   }
+
+  async getProjectSettings() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(['projectSettings'], (result) => {
+        if (result.projectSettings) {
+          resolve(result.projectSettings);
+        } else {
+          resolve([]);
+        }
+      });
+    });
+  }
+
+  async setProjectSettings(projectSettings) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ projectSettings }, () => {
+        resolve();
+      });
+    });
+  }
 }

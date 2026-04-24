@@ -28,6 +28,7 @@
         </button>
         <div class="tabs">
           <button class="tab-btn active" data-tab="general">一般</button>
+          <button class="tab-btn" data-tab="projects">プロジェクトキー</button>
           <button class="tab-btn" data-tab="about">About</button>
         </div>
       </div>
@@ -41,6 +42,16 @@
           </button>
           <button id="delete-host-btn" class="fab-btn secondary" title="削除" disabled>
             <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="tab-content hidden" id="projects-tab">
+        <div class="project-list-container">
+          <ul id="project-list"></ul>
+        </div>
+        <div class="project-actions">
+          <button id="add-project-btn" class="fab-btn" title="追加">
+            <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
           </button>
         </div>
       </div>
@@ -58,6 +69,20 @@
             <li>Issues-Solo</li>
           </ul>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="add-project-dialog" class="overlay hidden">
+    <div class="dialog">
+      <h3>プロジェクトキーの追加</h3>
+      <div class="input-field">
+        <label for="project-key-input">プロジェクトキー</label>
+        <input type="text" id="project-key-input" placeholder="例: PROJ">
+      </div>
+      <div class="dialog-actions">
+        <button id="cancel-add-project" class="text-btn">キャンセル</button>
+        <button id="confirm-add-project" class="text-btn">OK</button>
       </div>
     </div>
   </div>

@@ -19,8 +19,25 @@ const deleteConfirmDialog = document.getElementById('delete-confirm-dialog');
 const cancelDeleteHostBtn = document.getElementById('cancel-delete-host');
 const confirmDeleteHostBtn = document.getElementById('confirm-delete-host');
 
+const projectList = document.getElementById('project-list');
+const addProjectBtn = document.getElementById('add-project-btn');
+const addProjectDialog = document.getElementById('add-project-dialog');
+const cancelAddProjectBtn = document.getElementById('cancel-add-project');
+const confirmAddProjectBtn = document.getElementById('confirm-add-project');
+const projectKeyInput = document.getElementById('project-key-input');
+
 let selectedHostIds = new Set();
 let currentSettings = [];
+let currentProjectSettings = [];
+
+const M3_COLORS = [
+  '#0061A4', // Blue
+  '#006D39', // Green
+  '#695F00', // Yellow
+  '#B3261E', // Red
+  '#6750A4', // Purple
+  '#006A60', // Teal
+];
 
 // 優先度のマッピングと色設定 (Material 3 パレット準拠)
 const PRIORITY_MAP = {
@@ -62,7 +79,9 @@ const STATUS_COLOR_MAP = {
 async function renderList() {
   const issues = await db.getAllIssues();
   const settings = await db.getSettings();
+  const projectSettings = await db.getProjectSettings();
   currentSettings = settings;
+  currentProjectSettings = projectSettings;
 
   if (issues.length === 0) {
     listElement.textContent = '';
@@ -115,9 +134,14 @@ async function renderList() {
       const glyph = document.createElement('span');
       glyph.className = 'collapse-glyph';
       const isCollapsed = !!host.isCollapsed;
-      glyph.innerHTML = isCollapsed
-        ? '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>' // 右向き
-        : '<svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>'; // 下向き
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', isCollapsed ? 'M8 5v14l11-7z' : 'M7 10l5 5 5-5z');
+      svg.appendChild(path);
+      glyph.appendChild(svg);
+
       header.appendChild(glyph);
 
       header.addEventListener('click', async () => {
@@ -133,9 +157,61 @@ async function renderList() {
     }
 
     if (!useAccordion || !host.isCollapsed) {
-      hostIssues.forEach(issue => {
-        const item = createIssueItem(issue);
-        listElement.appendChild(item);
+      // プロジェクトキー設定に従ってグルーピング
+      let remainingIssues = [...hostIssues];
+
+      projectSettings.forEach(proj => {
+        // プロジェクトキーが完全一致することを確認 (例: ABC-1 が ABCD のグループに入らないように)
+        const projIssues = remainingIssues.filter(i => {
+          const parts = i.issueKey.split('-');
+          return parts.length > 1 && parts[0] === proj.key;
+        });
+
+        if (projIssues.length > 0) {
+          remainingIssues = remainingIssues.filter(i => !projIssues.includes(i));
+
+          const projHeader = document.createElement('div');
+          projHeader.className = 'project-group-header';
+          projHeader.style.backgroundColor = proj.color + '22'; // 薄く背景色をつける (alpha 22)
+          projHeader.style.color = proj.color;
+          projHeader.style.borderLeft = `4px solid ${proj.color}`;
+
+          const glyph = document.createElement('span');
+          glyph.className = 'collapse-glyph';
+          const isCollapsed = !!proj.isCollapsed;
+
+          const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          svg.setAttribute('viewBox', '0 0 24 24');
+          const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+          path.setAttribute('d', isCollapsed ? 'M8 5v14l11-7z' : 'M7 10l5 5 5-5z');
+          svg.appendChild(path);
+          glyph.appendChild(svg);
+
+          projHeader.appendChild(glyph);
+
+          const name = document.createElement('span');
+          name.textContent = proj.key;
+          projHeader.appendChild(name);
+
+          projHeader.addEventListener('click', async () => {
+            proj.isCollapsed = !proj.isCollapsed;
+            await db.setProjectSettings(projectSettings);
+            renderList();
+          });
+
+          listElement.appendChild(projHeader);
+
+          if (!isCollapsed) {
+            projIssues.forEach(issue => {
+              listElement.appendChild(createIssueItem(issue));
+            });
+          }
+        }
+      });
+
+      // 設定にないプロジェクトキーのIssue
+      remainingIssues.forEach(issue => {
+        listElement.appendChild(createIssueItem(issue));
       });
     }
   });
@@ -233,6 +309,7 @@ async function handleIssueClick(issue) {
 settingsBtn.addEventListener('click', () => {
   settingsPanel.classList.remove('hidden');
   renderHostSettings();
+  renderProjectSettings();
 });
 
 closeSettingsBtn.addEventListener('click', () => {
@@ -245,6 +322,135 @@ tabButtons.forEach(btn => {
     tabButtons.forEach(b => b.classList.toggle('active', b === btn));
     tabContents.forEach(c => c.classList.toggle('hidden', c.id !== `${tabName}-tab`));
   });
+});
+
+/**
+ * プロジェクト設定リストのレンダリング
+ */
+async function renderProjectSettings() {
+  const settings = await db.getProjectSettings();
+  currentProjectSettings = settings;
+  projectList.textContent = '';
+
+  settings.forEach((proj, index) => {
+    const li = document.createElement('li');
+    li.className = 'project-item';
+    li.dataset.key = proj.key;
+    li.draggable = true;
+
+    const dragHandle = document.createElement('div');
+    dragHandle.className = 'drag-handle';
+    const dragSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    dragSvg.setAttribute('viewBox', '0 0 24 24');
+    const dragPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    dragPath.setAttribute('d', 'M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z');
+    dragSvg.appendChild(dragPath);
+    dragHandle.appendChild(dragSvg);
+
+    const keyLabel = document.createElement('span');
+    keyLabel.className = 'project-key-label';
+    keyLabel.textContent = proj.key;
+
+    const colorPicker = document.createElement('div');
+    colorPicker.className = 'color-picker';
+    M3_COLORS.forEach(color => {
+      const option = document.createElement('div');
+      option.className = `color-option ${proj.color === color ? 'selected' : ''}`;
+      option.style.backgroundColor = color;
+      option.addEventListener('click', async () => {
+        proj.color = color;
+        await db.setProjectSettings(settings);
+        renderProjectSettings();
+        renderList();
+      });
+      colorPicker.appendChild(option);
+    });
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    const deleteSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    deleteSvg.setAttribute('viewBox', '0 0 24 24');
+    const deletePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    deletePath.setAttribute('d', 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z');
+    deleteSvg.appendChild(deletePath);
+    deleteBtn.appendChild(deleteSvg);
+
+    deleteBtn.addEventListener('click', async () => {
+      const newSettings = settings.filter((_, i) => i !== index);
+      await db.setProjectSettings(newSettings);
+      renderProjectSettings();
+      renderList();
+    });
+
+    li.appendChild(dragHandle);
+    li.appendChild(keyLabel);
+    li.appendChild(colorPicker);
+    li.appendChild(deleteBtn);
+
+    // ドラッグ＆ドロップ
+    li.addEventListener('dragstart', (e) => {
+      li.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', index);
+    });
+
+    li.addEventListener('dragend', () => {
+      li.classList.remove('dragging');
+    });
+
+    projectList.appendChild(li);
+  });
+}
+
+// プロジェクトリストのドラッグ＆ドロップ
+projectList.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  const draggingItem = document.querySelector('.project-item.dragging');
+  if (!draggingItem) return;
+
+  const siblings = [...projectList.querySelectorAll('.project-item:not(.dragging)')];
+  const nextSibling = siblings.find(sibling => {
+    return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
+  });
+  projectList.insertBefore(draggingItem, nextSibling);
+});
+
+projectList.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  const newSettings = [...projectList.querySelectorAll('.project-item')].map(item => {
+    return currentProjectSettings.find(p => p.key === item.dataset.key);
+  });
+  await db.setProjectSettings(newSettings);
+  currentProjectSettings = newSettings;
+  renderList();
+});
+
+// プロジェクト追加
+addProjectBtn.addEventListener('click', () => {
+  addProjectDialog.classList.remove('hidden');
+  projectKeyInput.value = '';
+  projectKeyInput.focus();
+});
+
+cancelAddProjectBtn.addEventListener('click', () => {
+  addProjectDialog.classList.add('hidden');
+});
+
+confirmAddProjectBtn.addEventListener('click', async () => {
+  const key = projectKeyInput.value.trim().toUpperCase();
+  if (key) {
+    const settings = await db.getProjectSettings();
+    if (!settings.some(p => p.key === key)) {
+      settings.push({
+        key,
+        color: M3_COLORS[0],
+        isCollapsed: false
+      });
+      await db.setProjectSettings(settings);
+    }
+    addProjectDialog.classList.add('hidden');
+    renderProjectSettings();
+    renderList();
+  }
 });
 
 /**
