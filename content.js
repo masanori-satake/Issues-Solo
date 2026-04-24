@@ -41,30 +41,70 @@
   };
 
   /**
+   * 優先度のキーワード一覧 (長いキーワードから順に判定)
+   */
+  const PRIORITY_KEYWORDS = [
+    'Highest', 'Lowest', 'Medium', 'High', 'Low',
+    '最高', '最低', '高', '中', '低'
+  ];
+
+  /**
    * DOMから優先度を取得する
    */
   const getPriority = () => {
-    // Cloud: 複数のセレクタ候補を試行（チーム管理対象プロジェクト等への対応）
+    // Cloud: 複数のセレクタ候補を試行
     const cloudPrioritySelectors = [
       '[data-testid="issue.views.issue-base.foundation.priority.priority-view"]',
       '[data-testid="issue-field-priority.ui.priority-view.priority-wrapper"]',
       '[data-testid*="priority-view"]',
-      '[data-testid*="priority-field"]'
+      '[data-testid*="priority-field"]',
+      '[data-testid*="priority.wrapper"]'
     ];
 
     for (const selector of cloudPrioritySelectors) {
-      const el = document.querySelector(selector);
-      if (el) {
-        // <img>タグのalt属性を確認
+      const elements = document.querySelectorAll(selector);
+      for (const el of elements) {
+        // 1. <img>タグのalt属性を確認
         const img = el.querySelector('img');
         if (img && img.getAttribute('alt')) return img.getAttribute('alt');
 
-        // <svg>タグのaria-labelを確認（Jira Cloudの新しいUI対応）
+        // 2. <img>タグのsrcから推測 (altが空の場合の対応)
+        if (img && img.getAttribute('src')) {
+          const src = img.getAttribute('src').toLowerCase();
+          // 長いキーワードから順に判定することで「low」が「lowest」に部分一致するのを防ぐ
+          for (const kw of ['highest', 'lowest', 'medium', 'high', 'low']) {
+            if (src.includes(kw)) {
+              return kw.charAt(0).toUpperCase() + kw.slice(1);
+            }
+          }
+        }
+
+        // 3. <svg>タグのaria-labelを確認
         const svg = el.querySelector('svg');
         if (svg && svg.getAttribute('aria-label')) return svg.getAttribute('aria-label');
 
-        const text = el.innerText.trim();
-        if (text && !EXCLUDED_LABELS.includes(text)) return text;
+        // 4. テキスト内容からキーワードを抽出
+        let text = el.innerText || '';
+        // 不要なラベルを除去
+        for (const label of EXCLUDED_LABELS) {
+          text = text.replace(label, '');
+        }
+        text = text.trim();
+
+        if (text) {
+          // キーワードがそのまま含まれているか確認
+          for (const kw of PRIORITY_KEYWORDS) {
+            if (text.includes(kw)) return kw;
+          }
+          // 特殊ケース：改行などで区切られている場合、最後の行が値である可能性が高い
+          const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+          if (lines.length > 0) {
+            const lastLine = lines[lines.length - 1];
+            if (PRIORITY_KEYWORDS.includes(lastLine)) return lastLine;
+          }
+
+          if (!EXCLUDED_LABELS.includes(text)) return text;
+        }
       }
     }
 
@@ -93,10 +133,27 @@
     ];
 
     for (const selector of cloudStatusSelectors) {
-      const el = document.querySelector(selector);
-      if (el) {
-        const text = el.innerText.trim();
-        if (text) return text;
+      const elements = document.querySelectorAll(selector);
+      for (const el of elements) {
+        let text = el.innerText || '';
+        // 不要なラベルを除去
+        for (const label of EXCLUDED_LABELS) {
+          text = text.replace(label, '');
+        }
+        text = text.trim();
+
+        // Jiraのステータスボタンなどは改行を含んで「ステータス\n完了」のようになっていることがある
+        const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+        if (lines.length > 0) {
+          // 最も長い行か、最後の行をステータス名として採用する可能性が高い
+          // ここでは最後の行を採用（Jiraの一般的な構造に準拠）
+          const statusCandidate = lines[lines.length - 1];
+          if (statusCandidate && !EXCLUDED_LABELS.includes(statusCandidate)) {
+            return statusCandidate;
+          }
+        }
+
+        if (text && !EXCLUDED_LABELS.includes(text)) return text;
       }
     }
 
