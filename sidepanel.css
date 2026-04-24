@@ -235,7 +235,7 @@ header {
   background-color: var(--bg-color);
   width: 90%;
   max-width: 320px;
-  height: 80%;
+  max-height: 80%;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
@@ -244,24 +244,43 @@ header {
 }
 
 .settings-header {
-  padding: 8px;
+  padding: 8px 16px;
   border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-title {
+  font-weight: bold;
+  font-size: 16px;
 }
 
 .tabs {
   display: flex;
   gap: 8px;
-  padding: 0 8px;
+  padding: 8px;
+  justify-content: space-around;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .tab-btn {
   background: none;
   border: none;
-  padding: 8px 16px;
+  padding: 8px;
   cursor: pointer;
-  font-size: 14px;
   color: var(--secondary-text);
   border-bottom: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.tab-btn svg {
+  width: 24px;
+  height: 24px;
+  fill: currentColor;
 }
 
 .tab-btn.active {
@@ -277,6 +296,13 @@ header {
 }
 
 /* Host List */
+.host-list-container {
+  height: calc(48px * 3.5);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow-y: scroll;
+}
+
 #host-list {
   list-style: none;
   padding: 0;
@@ -287,11 +313,15 @@ header {
   display: flex;
   align-items: center;
   padding: 8px;
-  border-radius: 8px;
+  height: 48px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border-color);
   gap: 8px;
   background-color: #fff;
-  margin-bottom: 4px;
-  border: 1px solid transparent;
+}
+
+.host-item:last-child {
+  border-bottom: none;
 }
 
 .host-item.dragging {
@@ -404,6 +434,19 @@ header {
 
 .color-option.selected {
   border-color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-option.selected::after {
+  content: "";
+  width: 8px;
+  height: 4px;
+  border-left: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(-45deg);
+  margin-top: -2px;
 }
 
 .delete-btn {
@@ -420,6 +463,12 @@ header {
   width: 18px;
   height: 18px;
   fill: currentColor;
+}
+
+.host-group-header .collapse-glyph svg,
+.project-group-header .collapse-glyph svg {
+  width: 16px;
+  height: 16px;
 }
 
 .fab-btn {
