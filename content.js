@@ -214,7 +214,11 @@
    */
   const notifyChange = (isEditing = null) => {
     const issueKey = getIssueKey();
-    if (!issueKey) return;
+    if (!issueKey) {
+      // 課題ページでない場合は、タブの関連付けを解除する
+      chrome.runtime.sendMessage({ type: 'CLEAR_TAB_ASSOCIATION' });
+      return;
+    }
 
     if (isEditing === null) {
       isEditing = detectEditingStateFromDOM();

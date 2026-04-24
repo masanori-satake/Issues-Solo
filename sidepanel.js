@@ -33,6 +33,8 @@ const M3_COLORS = [
   '#006A60', // Teal
 ];
 
+const OTHER_COLOR = '#79747E'; // Material 3 Outline color
+
 // 優先度のマッピングと色設定 (Material 3 パレット準拠)
 const PRIORITY_MAP = {
   'Highest': { glyph: '↑↑', color: '#DE350B' }, // Jira Red
@@ -74,6 +76,7 @@ async function renderList() {
   const issues = await db.getAllIssues();
   const settings = await db.getSettings();
   const projectSettings = await db.getProjectSettings();
+  const otherCollapsed = await db.getOtherCollapsed();
   currentSettings = settings;
   currentProjectSettings = projectSettings;
 
@@ -141,7 +144,6 @@ async function renderList() {
       header.addEventListener('click', async () => {
         host.isCollapsed = !host.isCollapsed;
         await db.setSettings(settings);
-        renderList();
       });
 
       const name = document.createElement('span');
@@ -190,7 +192,6 @@ async function renderList() {
           projHeader.addEventListener('click', async () => {
             proj.isCollapsed = !proj.isCollapsed;
             await db.setProjectSettings(projectSettings);
-            renderList();
           });
 
           listElement.appendChild(projHeader);
@@ -203,10 +204,42 @@ async function renderList() {
         }
       });
 
-      // 設定にないプロジェクトキーのIssue
-      remainingIssues.forEach(issue => {
-        listElement.appendChild(createIssueItem(issue));
-      });
+      // 設定にないプロジェクトキーのIssue ("other" グループ)
+      if (remainingIssues.length > 0) {
+        const otherHeader = document.createElement('div');
+        otherHeader.className = 'project-group-header';
+        otherHeader.style.backgroundColor = OTHER_COLOR + '22';
+        otherHeader.style.color = OTHER_COLOR;
+        otherHeader.style.borderLeft = `4px solid ${OTHER_COLOR}`;
+
+        const glyph = document.createElement('span');
+        glyph.className = 'collapse-glyph';
+
+        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        svg.setAttribute('viewBox', '0 0 24 24');
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', otherCollapsed ? 'M9 6v12l9-6z' : 'M6 9h12l-6 9z');
+        svg.appendChild(path);
+        glyph.appendChild(svg);
+
+        otherHeader.appendChild(glyph);
+
+        const name = document.createElement('span');
+        name.textContent = 'other';
+        otherHeader.appendChild(name);
+
+        otherHeader.addEventListener('click', async () => {
+          await db.setOtherCollapsed(!otherCollapsed);
+        });
+
+        listElement.appendChild(otherHeader);
+
+        if (!otherCollapsed) {
+          remainingIssues.forEach(issue => {
+            listElement.appendChild(createIssueItem(issue));
+          });
+        }
+      }
     }
   });
 }
@@ -253,22 +286,26 @@ function createIssueItem(issue) {
 
   if (issue.priority) {
     const pInfo = PRIORITY_MAP[issue.priority] || { glyph: '•', color: '#7A869A' };
-    const pGlyph = document.createElement('span');
-    pGlyph.className = 'priority-glyph';
-    pGlyph.textContent = pInfo.glyph;
-    pGlyph.style.color = pInfo.color;
-    pGlyph.title = `優先度: ${issue.priority}`;
-    glyphs.appendChild(pGlyph);
+    const pBadge = document.createElement('span');
+    pBadge.className = 'priority-badge';
+    pBadge.textContent = pInfo.glyph;
+    pBadge.style.color = pInfo.color;
+    pBadge.style.backgroundColor = pInfo.color + '15'; // 15 is approx 8% opacity
+    pBadge.style.border = `1px solid ${pInfo.color}44`; // 44 is approx 25% opacity
+    pBadge.title = `優先度: ${issue.priority}`;
+    glyphs.appendChild(pBadge);
   }
 
   if (issue.status) {
     const sColor = STATUS_COLOR_MAP[issue.status] || '#7A869A';
-    const sGlyph = document.createElement('span');
-    sGlyph.className = 'status-glyph';
-    sGlyph.textContent = '●';
-    sGlyph.style.color = sColor;
-    sGlyph.title = `ステータス: ${issue.status}`;
-    glyphs.appendChild(sGlyph);
+    const sBadge = document.createElement('span');
+    sBadge.className = 'status-badge';
+    sBadge.textContent = issue.status;
+    sBadge.style.color = sColor;
+    sBadge.style.backgroundColor = sColor + '15';
+    sBadge.style.border = `1px solid ${sColor}44`;
+    sBadge.title = `ステータス: ${issue.status}`;
+    glyphs.appendChild(sBadge);
   }
 
   item.appendChild(indicators);
@@ -354,8 +391,6 @@ async function renderProjectSettings() {
       option.addEventListener('click', async () => {
         proj.color = color;
         await db.setProjectSettings(settings);
-        renderProjectSettings();
-        renderList();
       });
       colorPicker.appendChild(option);
     });
@@ -372,8 +407,6 @@ async function renderProjectSettings() {
     deleteBtn.addEventListener('click', async () => {
       const newSettings = settings.filter((_, i) => i !== index);
       await db.setProjectSettings(newSettings);
-      renderProjectSettings();
-      renderList();
     });
 
     li.appendChild(dragHandle);
@@ -415,7 +448,6 @@ projectList.addEventListener('drop', async (e) => {
   });
   await db.setProjectSettings(newSettings);
   currentProjectSettings = newSettings;
-  renderList();
 });
 
 // プロジェクト追加
@@ -442,8 +474,6 @@ confirmAddProjectBtn.addEventListener('click', async () => {
       await db.setProjectSettings(settings);
     }
     addProjectDialog.classList.add('hidden');
-    renderProjectSettings();
-    renderList();
   }
 });
 
@@ -502,8 +532,6 @@ async function renderHostSettings() {
       e.stopPropagation();
       host.visible = !host.visible;
       await db.setSettings(settings);
-      renderHostSettings();
-      renderList();
     });
 
     const deleteBtn = document.createElement('button');
@@ -518,8 +546,6 @@ async function renderHostSettings() {
       e.stopPropagation();
       const newSettings = settings.filter((_, i) => i !== index);
       await db.setSettings(newSettings);
-      renderHostSettings();
-      renderList();
     });
 
     li.appendChild(dragHandle);
@@ -561,7 +587,6 @@ hostList.addEventListener('drop', async (e) => {
   });
   await db.setSettings(newSettings);
   currentSettings = newSettings;
-  renderList();
 });
 
 // ホスト追加
@@ -600,8 +625,6 @@ confirmAddHostBtn.addEventListener('click', async () => {
     });
     await db.setSettings(settings);
     addHostDialog.classList.add('hidden');
-    renderHostSettings();
-    renderList();
   }
 });
 
@@ -612,10 +635,22 @@ if (versionSpan) {
   versionSpan.textContent = chrome.runtime.getManifest().version;
 }
 
-// DB更新通知の受信
+// DB更新通知の受信 (Issueの追加・削除・タブ状態の変更など)
 chrome.runtime.onMessage.addListener((message) => {
   if (message.type === 'DB_UPDATED') {
     renderList();
+  }
+});
+
+// 設定変更の同期 (別ウィンドウでの設定変更を検知)
+chrome.storage.onChanged.addListener((changes) => {
+  if (changes.settings || changes.projectSettings || changes.otherCollapsed) {
+    renderList();
+    // 設定パネルが開いている場合は、そちらも更新する
+    if (!settingsPanel.classList.contains('hidden')) {
+      renderHostSettings();
+      renderProjectSettings();
+    }
   }
 });
 

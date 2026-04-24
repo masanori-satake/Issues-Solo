@@ -7,6 +7,8 @@ chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'ISSUE_UPDATED') {
     handleIssueUpdated(message.data, sender.tab.id);
+  } else if (message.type === 'CLEAR_TAB_ASSOCIATION') {
+    handleClearTabAssociation(sender.tab.id);
   }
 });
 
@@ -23,9 +25,31 @@ async function handleIssueUpdated(data, tabId) {
   chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
 }
 
+async function handleClearTabAssociation(tabId) {
+  const changed = await db.clearTabAssociation(tabId);
+  if (changed) {
+    chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
+  }
+}
+
 chrome.tabs.onRemoved.addListener(async (tabId) => {
-  await db.clearTabAssociation(tabId);
-  chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
+  const changed = await db.clearTabAssociation(tabId);
+  if (changed) {
+    chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
+  }
+});
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
+  // URLが変更され、かつ新しいURLがJiraの課題ページでない場合
+  if (changeInfo.url) {
+    const isIssuePage = /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/.test(changeInfo.url);
+    if (!isIssuePage) {
+      const changed = await db.clearTabAssociation(tabId);
+      if (changed) {
+        chrome.runtime.sendMessage({ type: 'DB_UPDATED' }).catch(() => {});
+      }
+    }
+  }
 });
 
 chrome.runtime.onInstalled.addListener(async () => {
