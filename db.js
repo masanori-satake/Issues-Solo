@@ -59,6 +59,7 @@ export class IssuesDB {
       const store = transaction.objectStore(this.storeName);
       const index = store.index('tabId');
       const request = index.openCursor(IDBKeyRange.only(tabId));
+      let changed = false;
 
       request.onsuccess = (event) => {
         const cursor = event.target.result;
@@ -69,10 +70,11 @@ export class IssuesDB {
             issue.isEditing = false;
             issue.tabId = null;
             cursor.update(issue);
+            changed = true;
           }
           cursor.continue();
         } else {
-          resolve();
+          resolve(changed);
         }
       };
       request.onerror = () => reject(request.error);
@@ -145,6 +147,22 @@ export class IssuesDB {
   async setProjectSettings(projectSettings) {
     return new Promise((resolve) => {
       chrome.storage.local.set({ projectSettings }, () => {
+        resolve();
+      });
+    });
+  }
+
+  async getOtherCollapsed() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(['otherCollapsed'], (result) => {
+        resolve(!!result.otherCollapsed);
+      });
+    });
+  }
+
+  async setOtherCollapsed(otherCollapsed) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ otherCollapsed }, () => {
         resolve();
       });
     });
