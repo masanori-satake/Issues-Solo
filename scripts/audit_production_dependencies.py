@@ -1,14 +1,17 @@
 import json
 import sys
 
+
 def audit_dependencies():
     try:
-        with open('package.json', 'r') as f:
+        with open("package.json", "r") as f:
             package = json.load(f)
-            dependencies = package.get('dependencies', {})
+            dependencies = package.get("dependencies", {})
 
             if dependencies:
-                print(f"Error: Production dependencies found in package.json: {list(dependencies.keys())}")
+                print(
+                    f"Error: Production dependencies found in package.json: {list(dependencies.keys())}"
+                )
                 print("The 'Solo' series strictly prohibits production dependencies.")
                 return False
 
@@ -17,6 +20,7 @@ def audit_dependencies():
     except Exception as e:
         print(f"Error auditing dependencies: {e}")
         return False
+
 
 if __name__ == "__main__":
     if not audit_dependencies():

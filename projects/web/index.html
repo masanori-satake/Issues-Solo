@@ -1,161 +1,180 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Issues-Solo - JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Issues-Solo - JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能
+    </title>
     <style>
-        :root {
-            --md-sys-color-primary: #0061a4;
-            --md-sys-color-on-primary: #ffffff;
-            --md-sys-color-primary-container: #d1e4ff;
-            --md-sys-color-on-primary-container: #001d36;
-            --md-sys-color-surface: #fdfbff;
-            --md-sys-color-on-surface: #1a1c1e;
-            --md-sys-color-outline: #73777f;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            background-color: var(--md-sys-color-surface);
-            color: var(--md-sys-color-on-surface);
-            line-height: 1.6;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem 2rem;
-            border-bottom: 1px solid var(--md-sys-color-outline);
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            text-decoration: none;
-            color: var(--md-sys-color-on-surface);
-        }
-        nav a {
-            margin-left: 1.5rem;
-            text-decoration: none;
-            color: var(--md-sys-color-on-surface);
-        }
-        main {
-            max-width: 800px;
-            margin: 4rem auto;
-            padding: 0 2rem;
-            text-align: center;
-        }
-        h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-        }
-        .tagline {
-            font-size: 1.2rem;
-            color: var(--md-sys-color-outline);
-            margin-bottom: 2rem;
-        }
-        .cta-button {
-            display: inline-block;
-            background-color: var(--md-sys-color-primary);
-            color: var(--md-sys-color-on-primary);
-            padding: 0.8rem 2rem;
-            border-radius: 100px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-bottom: 4rem;
-        }
-        section {
-            text-align: left;
-            margin-bottom: 4rem;
-        }
-        h2 {
-            border-bottom: 2px solid var(--md-sys-color-primary);
-            display: inline-block;
-            margin-bottom: 2rem;
-        }
-        .features {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 2rem;
-        }
-        .feature-item {
-            padding: 1.5rem;
-            border: 1px solid var(--md-sys-color-outline);
-            border-radius: 16px;
-        }
-        .feature-item h3 {
-            margin-top: 0;
-            color: var(--md-sys-color-primary);
-        }
-        footer {
-            text-align: center;
-            padding: 2rem;
-            border-top: 1px solid var(--md-sys-color-outline);
-            color: var(--md-sys-color-outline);
-            font-size: 0.9rem;
-        }
+      :root {
+        --md-sys-color-primary: #0061a4;
+        --md-sys-color-on-primary: #ffffff;
+        --md-sys-color-primary-container: #d1e4ff;
+        --md-sys-color-on-primary-container: #001d36;
+        --md-sys-color-surface: #fdfbff;
+        --md-sys-color-on-surface: #1a1c1e;
+        --md-sys-color-outline: #73777f;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        line-height: 1.6;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        border-bottom: 1px solid var(--md-sys-color-outline);
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        text-decoration: none;
+        color: var(--md-sys-color-on-surface);
+      }
+      nav a {
+        margin-left: 1.5rem;
+        text-decoration: none;
+        color: var(--md-sys-color-on-surface);
+      }
+      main {
+        max-width: 800px;
+        margin: 4rem auto;
+        padding: 0 2rem;
+        text-align: center;
+      }
+      h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+      }
+      .tagline {
+        font-size: 1.2rem;
+        color: var(--md-sys-color-outline);
+        margin-bottom: 2rem;
+      }
+      .cta-button {
+        display: inline-block;
+        background-color: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        padding: 0.8rem 2rem;
+        border-radius: 100px;
+        text-decoration: none;
+        font-weight: bold;
+        margin-bottom: 4rem;
+      }
+      section {
+        text-align: left;
+        margin-bottom: 4rem;
+      }
+      h2 {
+        border-bottom: 2px solid var(--md-sys-color-primary);
+        display: inline-block;
+        margin-bottom: 2rem;
+      }
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+      }
+      .feature-item {
+        padding: 1.5rem;
+        border: 1px solid var(--md-sys-color-outline);
+        border-radius: 16px;
+      }
+      .feature-item h3 {
+        margin-top: 0;
+        color: var(--md-sys-color-primary);
+      }
+      footer {
+        text-align: center;
+        padding: 2rem;
+        border-top: 1px solid var(--md-sys-color-outline);
+        color: var(--md-sys-color-outline);
+        font-size: 0.9rem;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <header>
-        <a href="index.html" class="logo">
-            Issues-Solo
-        </a>
-        <nav>
-            <a href="usage.html">使い方</a>
-            <a href="privacy.html">プライバシーポリシー</a>
-        </nav>
+      <a href="index.html" class="logo"> Issues-Solo </a>
+      <nav>
+        <a href="usage.html">使い方</a>
+        <a href="privacy.html">プライバシーポリシー</a>
+      </nav>
     </header>
 
     <main>
-        <h1>Issues-Solo</h1>
-        <p class="tagline">〜JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能〜</p>
-        <a href="https://chrome.google.com/webstore" class="cta-button">Chrome ウェブストアで追加</a>
+      <h1>Issues-Solo</h1>
+      <p class="tagline">
+        〜JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能〜
+      </p>
+      <a href="https://chrome.google.com/webstore" class="cta-button"
+        >Chrome ウェブストアで追加</a
+      >
 
-        <section>
-            <h2>プロジェクト概要</h2>
+      <section>
+        <h2>プロジェクト概要</h2>
+        <p>
+          Issues-Soloは、プライバシーを最優先に設計された、JIRA専用の閲覧履歴・編集状態管理ツールです。
+          「どのタスクをいつ見たか」「どこまで書き込んだか」をブラウザ内に安全に記録し、あなたの作業の文脈復元をサポートします。
+        </p>
+      </section>
+
+      <section>
+        <h2>特徴</h2>
+        <div class="features">
+          <div class="feature-item">
+            <h3>JIRA特化</h3>
             <p>
-                Issues-Soloは、プライバシーを最優先に設計された、JIRA専用の閲覧履歴・編集状態管理ツールです。
-                「どのタスクをいつ見たか」「どこまで書き込んだか」をブラウザ内に安全に記録し、あなたの作業の文脈復元をサポートします。
+              atlassian.netドメイン上の課題キーとタイトルを自動抽出し、閲覧履歴としてリスト化します。
             </p>
-        </section>
+          </div>
+          <div class="feature-item">
+            <h3>編集状態の保存</h3>
+            <p>
+              入力中のコメントや説明文の変更を検知し、保存。ブラウザを閉じても「書きかけ」の状態を復元できます。
+            </p>
+          </div>
+          <div class="feature-item">
+            <h3>完全ローカル実行</h3>
+            <p>
+              すべてのデータはブラウザ内の IndexedDB
+              に保存されます。外部サーバーへの送信は一切行われません。
+            </p>
+          </div>
+          <div class="feature-item">
+            <h3>Material 3 UI</h3>
+            <p>
+              Google Material 3 (M3)
+              デザインを採用。サイドパネルで作業を邪魔せず快適に操作できます。
+            </p>
+          </div>
+        </div>
+      </section>
 
-        <section>
-            <h2>特徴</h2>
-            <div class="features">
-                <div class="feature-item">
-                    <h3>JIRA特化</h3>
-                    <p>atlassian.netドメイン上の課題キーとタイトルを自動抽出し、閲覧履歴としてリスト化します。</p>
-                </div>
-                <div class="feature-item">
-                    <h3>編集状態の保存</h3>
-                    <p>入力中のコメントや説明文の変更を検知し、保存。ブラウザを閉じても「書きかけ」の状態を復元できます。</p>
-                </div>
-                <div class="feature-item">
-                    <h3>完全ローカル実行</h3>
-                    <p>すべてのデータはブラウザ内の IndexedDB に保存されます。外部サーバーへの送信は一切行われません。</p>
-                </div>
-                <div class="feature-item">
-                    <h3>Material 3 UI</h3>
-                    <p>Google Material 3 (M3) デザインを採用。サイドパネルで作業を邪魔せず快適に操作できます。</p>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <h2>インストール方法</h2>
-            <ol style="text-align: left; display: inline-block;">
-                <li><a href="https://chrome.google.com/webstore">Chrome ウェブストア</a>にアクセスします。</li>
-                <li>「Chromeに追加」ボタンをクリックします。</li>
-                <li>拡張機能の固定をオンにすると、サイドパネルからいつでもアクセスしやすくなります。</li>
-            </ol>
-        </section>
+      <section>
+        <h2>インストール方法</h2>
+        <ol style="text-align: left; display: inline-block">
+          <li>
+            <a href="https://chrome.google.com/webstore">Chrome ウェブストア</a
+            >にアクセスします。
+          </li>
+          <li>「Chromeに追加」ボタンをクリックします。</li>
+          <li>
+            拡張機能の固定をオンにすると、サイドパネルからいつでもアクセスしやすくなります。
+          </li>
+        </ol>
+      </section>
     </main>
 
     <footer>
-        <p>&copy; 2025 Issues-Solo. All rights reserved.</p>
+      <p>&copy; 2025 Issues-Solo. All rights reserved.</p>
     </footer>
-</body>
+  </body>
 </html>
