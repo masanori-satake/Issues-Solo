@@ -1,8 +1,8 @@
 export class IssuesDB {
   constructor() {
-    this.dbName = 'IssuesSoloDB';
+    this.dbName = "IssuesSoloDB";
     this.dbVersion = 3; // バージョンアップ: tabId インデックスの追加
-    this.storeName = 'issues';
+    this.storeName = "issues";
     this._db = null;
   }
 
@@ -16,13 +16,13 @@ export class IssuesDB {
         const db = event.target.result;
         let store;
         if (!db.objectStoreNames.contains(this.storeName)) {
-          store = db.createObjectStore(this.storeName, { keyPath: 'url' });
+          store = db.createObjectStore(this.storeName, { keyPath: "url" });
         } else {
           store = event.currentTarget.transaction.objectStore(this.storeName);
         }
 
-        if (!store.indexNames.contains('tabId')) {
-          store.createIndex('tabId', 'tabId', { unique: false });
+        if (!store.indexNames.contains("tabId")) {
+          store.createIndex("tabId", "tabId", { unique: false });
         }
       };
 
@@ -37,7 +37,7 @@ export class IssuesDB {
   async upsertIssue(issue) {
     const db = await this.open();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.storeName], 'readwrite');
+      const transaction = db.transaction([this.storeName], "readwrite");
       const store = transaction.objectStore(this.storeName);
 
       const getRequest = store.get(issue.url);
@@ -55,9 +55,9 @@ export class IssuesDB {
   async clearTabAssociation(tabId, exceptUrl = null) {
     const db = await this.open();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.storeName], 'readwrite');
+      const transaction = db.transaction([this.storeName], "readwrite");
       const store = transaction.objectStore(this.storeName);
-      const index = store.index('tabId');
+      const index = store.index("tabId");
       const request = index.openCursor(IDBKeyRange.only(tabId));
       let changed = false;
 
@@ -84,12 +84,14 @@ export class IssuesDB {
   async getAllIssues() {
     const db = await this.open();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.storeName], 'readonly');
+      const transaction = db.transaction([this.storeName], "readonly");
       const store = transaction.objectStore(this.storeName);
       const request = store.getAll();
 
       request.onsuccess = () => {
-        const issues = request.result.sort((a, b) => b.lastAccessed - a.lastAccessed);
+        const issues = request.result.sort(
+          (a, b) => b.lastAccessed - a.lastAccessed,
+        );
         resolve(issues);
       };
       request.onerror = () => reject(request.error);
@@ -99,7 +101,7 @@ export class IssuesDB {
   async deleteIssue(url) {
     const db = await this.open();
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.storeName], 'readwrite');
+      const transaction = db.transaction([this.storeName], "readwrite");
       const store = transaction.objectStore(this.storeName);
       const request = store.delete(url);
 
@@ -110,12 +112,17 @@ export class IssuesDB {
 
   async getSettings() {
     return new Promise((resolve) => {
-      chrome.storage.local.get(['settings'], (result) => {
+      chrome.storage.local.get(["settings"], (result) => {
         if (result.settings) {
           resolve(result.settings);
         } else {
           const defaultSettings = [
-            { id: Date.now().toString(), name: 'Jira Cloud', url: 'atlassian.net', visible: true }
+            {
+              id: Date.now().toString(),
+              name: "Jira Cloud",
+              url: "atlassian.net",
+              visible: true,
+            },
           ];
           chrome.storage.local.set({ settings: defaultSettings });
           resolve(defaultSettings);
@@ -134,7 +141,7 @@ export class IssuesDB {
 
   async getProjectSettings() {
     return new Promise((resolve) => {
-      chrome.storage.local.get(['projectSettings'], (result) => {
+      chrome.storage.local.get(["projectSettings"], (result) => {
         if (result.projectSettings) {
           resolve(result.projectSettings);
         } else {
@@ -154,7 +161,7 @@ export class IssuesDB {
 
   async getOtherCollapsed() {
     return new Promise((resolve) => {
-      chrome.storage.local.get(['otherCollapsed'], (result) => {
+      chrome.storage.local.get(["otherCollapsed"], (result) => {
         resolve(!!result.otherCollapsed);
       });
     });
