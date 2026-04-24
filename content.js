@@ -1,9 +1,16 @@
 (function() {
   /**
+   * Data Center版のコンテキストパスやCloud新UIに対応するため、
+   * 広範なURLパターンで実行されるが、冒頭で課題キーの有無をチェックし
+   * 該当しないページでは即座に終了することで負荷を最小限に抑える。
+   */
+
+  /**
    * 現在のURLから課題キー（例: KAN-1）を抽出する
    */
   const getIssueKey = () => {
-    const match = window.location.pathname.match(/\/browse\/([A-Z0-9]+-[0-9]+)/);
+    // /browse/KEY or /issues/KEY に対応 (Data CenterやCloudの新UIに対応)
+    const match = window.location.pathname.match(/\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/);
     return match ? match[1] : null;
   };
 
