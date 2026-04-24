@@ -1,4 +1,0 @@
-127.0.0.1 - - [24/Apr/2026 13:47:21] "GET /sidepanel.html HTTP/1.1" 200 -
-127.0.0.1 - - [24/Apr/2026 13:47:21] "GET /sidepanel.css HTTP/1.1" 200 -
-127.0.0.1 - - [24/Apr/2026 13:47:21] "GET /sidepanel.js HTTP/1.1" 200 -
-127.0.0.1 - - [24/Apr/2026 13:47:22] "GET /db.js HTTP/1.1" 200 -
