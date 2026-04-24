@@ -82,7 +82,22 @@ async function renderList() {
     const hostIssues = issues.filter(issue => {
       try {
         const url = new URL(issue.url);
-        return url.hostname === host.url || url.hostname.endsWith('.' + host.url);
+        const hostUrl = host.url.toLowerCase();
+        const issueHostname = url.hostname.toLowerCase();
+        const issuePathname = url.pathname.toLowerCase();
+
+        // ホスト設定にパスが含まれている場合 (例: foo.bar.com/jira)
+        if (hostUrl.includes('/')) {
+          const [hostPart, ...pathParts] = hostUrl.split('/');
+          const pathPart = '/' + pathParts.join('/');
+          // パスセグメントとして一致することを確認 (例: /jira が /jira-test/ に前方一致しないようにする)
+          const isCorrectPath = issuePathname === pathPart || issuePathname.startsWith(pathPart + '/');
+          return (issueHostname === hostPart || issueHostname.endsWith('.' + hostPart)) &&
+                 isCorrectPath;
+        }
+
+        // ホスト名のみの場合
+        return issueHostname === hostUrl || issueHostname.endsWith('.' + hostUrl);
       } catch (e) {
         return false;
       }
@@ -349,7 +364,11 @@ confirmAddHostBtn.addEventListener('click', async () => {
   if (name && url) {
     try {
       if (url.includes('://')) {
-        url = new URL(url).hostname;
+        const parsedUrl = new URL(url);
+        // /browse/ や /issues/ より前のパスを保持する
+        const pathMatch = parsedUrl.pathname.match(/^(.*?)\/(?:browse|issues)/);
+        const contextPath = pathMatch ? pathMatch[1] : '';
+        url = parsedUrl.hostname + contextPath;
       }
     } catch (e) {
       // パース失敗時はトリミングした入力をそのまま使用

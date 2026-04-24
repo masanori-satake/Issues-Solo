@@ -31,7 +31,7 @@ chrome.tabs.onRemoved.addListener(async (tabId) => {
 chrome.runtime.onInstalled.addListener(async () => {
   // すべての JIRA インスタンスを対象にクエリ
   const tabs = await chrome.tabs.query({
-    url: ["https://*.atlassian.net/browse/*", "https://*/browse/*"]
+    url: ["https://*.atlassian.net/*", "https://*/*"]
   });
 
   // インストール時に既存のタブに content.js を注入する
