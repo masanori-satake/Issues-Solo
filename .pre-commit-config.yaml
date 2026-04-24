@@ -19,6 +19,7 @@ repos:
     rev: 0.7.21
     hooks:
       - id: mdformat
+        exclude: SECURITY\.md
         additional_dependencies:
           - mdformat-gfm
           - mdformat-tables
