@@ -161,11 +161,11 @@ header {
 }
 
 .host-group-header {
-  background-color: #f0f2f5;
+  background-color: #0061A4; /* Material 3 Blue - Jira-like */
   padding: 6px 16px;
   font-size: 11px;
   font-weight: bold;
-  color: var(--secondary-text);
+  color: #FFFFFF;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border-bottom: 1px solid var(--border-color);
@@ -180,7 +180,23 @@ header {
 }
 
 .host-group-header.clickable:hover {
-  background-color: #e2e4e9;
+  background-color: #004A7D;
+}
+
+.project-group-header {
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: bold;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.project-group-header:hover {
+  filter: brightness(0.95);
 }
 
 .collapse-glyph {
@@ -324,11 +340,86 @@ header {
 }
 
 /* Host Actions */
-.host-actions {
+.host-actions, .project-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 0;
+}
+
+.project-list-container {
+  height: calc(48px * 3.5); /* 3.5 items height (assuming 48px per item) */
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow-y: scroll; /* Always show scrollbar */
+}
+
+#project-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.project-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  height: 48px;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--border-color);
+  gap: 8px;
+  background-color: #fff;
+}
+
+.project-item:last-child {
+  border-bottom: none;
+}
+
+.project-item.dragging {
+  opacity: 0.5;
+  border: 1px dashed var(--border-color);
+}
+
+.project-key-label {
+  flex-grow: 1;
+  font-weight: bold;
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.color-picker {
+  display: flex;
+  gap: 4px;
+}
+
+.color-option {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.color-option.selected {
+  border-color: #000;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  color: #de350b;
+  display: flex;
+  align-items: center;
+}
+
+.delete-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
 }
 
 .fab-btn {
