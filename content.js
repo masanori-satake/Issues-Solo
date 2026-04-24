@@ -85,16 +85,16 @@
 
         // 4. テキスト内容からキーワードを抽出
         let text = el.innerText || '';
-        // 不要なラベルを除去
+        // 不要なラベルを除去 (大文字小文字を区別せず、全て置換)
         for (const label of EXCLUDED_LABELS) {
-          text = text.replace(label, '');
+          text = text.replace(new RegExp(label, 'gi'), '');
         }
         text = text.trim();
 
         if (text) {
-          // キーワードがそのまま含まれているか確認
+          // キーワードがそのまま含まれているか確認 (大文字小文字を区別しない)
           for (const kw of PRIORITY_KEYWORDS) {
-            if (text.includes(kw)) return kw;
+            if (new RegExp(kw, 'i').test(text)) return kw;
           }
           // 特殊ケース：改行などで区切られている場合、最後の行が値である可能性が高い
           const lines = text.split('\n').map(l => l.trim()).filter(l => l);
@@ -136,9 +136,9 @@
       const elements = document.querySelectorAll(selector);
       for (const el of elements) {
         let text = el.innerText || '';
-        // 不要なラベルを除去
+        // 不要なラベルを除去 (大文字小文字を区別せず、全て置換)
         for (const label of EXCLUDED_LABELS) {
-          text = text.replace(label, '');
+          text = text.replace(new RegExp(label, 'gi'), '');
         }
         text = text.trim();
 
