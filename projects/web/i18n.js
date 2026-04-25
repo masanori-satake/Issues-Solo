@@ -63,8 +63,7 @@ const translations = {
     top: "Top",
   },
   ja: {
-    title:
-      "Issues-Solo - JIRA閲覧履歴を記録するローカル完結型Chrome拡張機能",
+    title: "Issues-Solo - JIRA閲覧履歴を記録するローカル完結型Chrome拡張機能",
     usage: "使い方",
     privacy: "プライバシーポリシー",
     tagline: "〜JIRA閲覧履歴を記録するローカル完結型Chrome拡張機能〜",
