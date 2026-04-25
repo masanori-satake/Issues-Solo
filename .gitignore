@@ -14,6 +14,7 @@ playwright/.cache/
 # Production
 releases/
 *.zip
+projects/app/assets/icon*.png
 
 # Misc
 .DS_Store
