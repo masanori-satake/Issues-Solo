@@ -59,6 +59,42 @@ header {
   height: 32px;
 }
 
+.sort-button-group {
+  display: flex;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sort-btn {
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+  cursor: pointer;
+  color: var(--secondary-text);
+  transition: all 0.2s;
+  gap: 2px;
+}
+
+.sort-btn:hover {
+  background-color: rgba(0, 0, 0, 0.08);
+}
+
+.sort-btn.active {
+  background-color: #d1e4ff;
+  color: #001d36;
+}
+
+.sort-btn .type-icon {
+  font-size: 18px;
+}
+
+.sort-btn .dir-icon {
+  font-size: 14px;
+}
+
 .spacer {
   flex-grow: 1;
 }
