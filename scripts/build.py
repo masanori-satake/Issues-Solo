@@ -25,23 +25,20 @@ def build_extension():
 
         # 3. Define files to include
         app_dir = os.path.join("projects", "app")
-        patterns = ["manifest.json", "*.js", "*.html", "*.css", "LICENSE", "*.woff2"]
 
-        files_to_zip = []
-        for pattern in patterns:
-            files_to_zip.extend(glob.glob(os.path.join(app_dir, pattern)))
-
-        # Remove duplicates and sort
-        files_to_zip = sorted(list(set(files_to_zip)))
-
-        # 4. Create the zip file
         print(f"Building Issues-Solo version {version}...")
         with zipfile.ZipFile(zip_filename, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for file_path in files_to_zip:
-                # Store in zip without projects/app prefix
-                arcname = os.path.basename(file_path)
-                print(f"  Adding: {file_path} as {arcname}")
-                zipf.write(file_path, arcname)
+            for root, dirs, files in os.walk(app_dir):
+                for file in files:
+                    # Skip hidden files
+                    if file.startswith('.'):
+                        continue
+
+                    file_path = os.path.join(root, file)
+                    # Store in zip without projects/app prefix
+                    arcname = os.path.relpath(file_path, app_dir)
+                    print(f"  Adding: {file_path} as {arcname}")
+                    zipf.write(file_path, arcname)
 
         print(f"Successfully built {zip_filename}")
         return True

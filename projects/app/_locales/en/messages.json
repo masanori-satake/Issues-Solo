@@ -201,9 +201,12 @@
     "message": "Hidden"
   },
   "other": {
-    "message": "other"
+    "message": "Other"
   },
   "close": {
     "message": "Close"
+  },
+  "creditsText": {
+    "message": "This project uses Material Design 3, an open-source design system by Google."
   }
 }
