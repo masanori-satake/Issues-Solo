@@ -1021,7 +1021,7 @@ async function updateAboutStats() {
 
   const hosts = await db.getSettings();
   const projects = await db.getProjectSettings();
-  const issues = await db.getAllIssues();
+  const issueCount = await db.getIssueCount();
 
   const statHosts = document.getElementById("stat-hosts");
   const statProjects = document.getElementById("stat-projects");
@@ -1029,7 +1029,7 @@ async function updateAboutStats() {
 
   if (statHosts) statHosts.textContent = hosts.length;
   if (statProjects) statProjects.textContent = projects.length;
-  if (statHistory) statHistory.textContent = issues.length;
+  if (statHistory) statHistory.textContent = issueCount;
 }
 
 // DB更新通知の受信 (Issueの追加・削除・タブ状態の変更など)
