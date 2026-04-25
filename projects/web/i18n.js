@@ -28,7 +28,7 @@ const translations = {
     installStep2: 'Click the "Add to Chrome" button.',
     installStep3:
       "Pinning the extension makes it easier to access from the side panel at any time.",
-    copyright: "© 2025 Issues-Solo. All rights reserved.",
+    copyright: "© 2026 Issues-Solo. All rights reserved.",
     privacyTitle: "Privacy Policy - Issues-Solo",
     usageTitle: "Usage - Issues-Solo",
     backToHome: "Back to Home",
@@ -90,7 +90,7 @@ const translations = {
     installStep2: "「Chromeに追加」ボタンをクリックします。",
     installStep3:
       "拡張機能の固定をオンにすると、サイドパネルからいつでもアクセスしやすくなります。",
-    copyright: "© 2025 Issues-Solo. All rights reserved.",
+    copyright: "© 2026 Issues-Solo. All rights reserved.",
     privacyTitle: "プライバシーポリシー - Issues-Solo",
     usageTitle: "使い方 - Issues-Solo",
     backToHome: "ホームに戻る",
