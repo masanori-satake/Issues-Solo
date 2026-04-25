@@ -236,11 +236,14 @@
     return false;
   };
 
+  let lastNotifyTime = 0;
+
   /**
    * 変更をバックグラウンドに通知する
    */
   const notifyChange = (isEditing = null) => {
     const issueKey = getIssueKey();
+    lastNotifyTime = Date.now();
     if (!issueKey) {
       // 課題ページでない場合は、タブの関連付けを解除する
       chrome.runtime.sendMessage({ type: "CLEAR_TAB_ASSOCIATION" });
@@ -366,8 +369,12 @@
 
   // タブの表示状態やウィンドウのフォーカスを監視して、最終表示時刻を更新する
   const handleVisibilityChange = () => {
-    if (document.visibilityState === "visible") {
-      notifyChange();
+    if (document.visibilityState === "visible" && getIssueKey()) {
+      const now = Date.now();
+      // 短時間の重複通知（focusとvisibilitychangeの同時発生など）を抑制
+      if (now - lastNotifyTime > 1000) {
+        notifyChange();
+      }
     }
   };
 
