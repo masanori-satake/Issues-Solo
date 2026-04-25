@@ -205,7 +205,10 @@
     if (!isExtensionContextAlive) return false;
 
     try {
-      if (!chrome?.runtime?.id || typeof chrome.runtime.sendMessage !== "function") {
+      if (
+        !chrome?.runtime?.id ||
+        typeof chrome.runtime.sendMessage !== "function"
+      ) {
         isExtensionContextAlive = false;
         return false;
       }
@@ -281,17 +284,19 @@
       isEditing = detectEditingStateFromDOM();
     }
 
-    if (!safeSendMessage({
-      type: "ISSUE_UPDATED",
-      data: {
-        issueKey,
-        title: getSummary(),
-        priority: getPriority(),
-        status: getStatus(),
-        isEditing,
-        url: window.location.href,
-      },
-    })) {
+    if (
+      !safeSendMessage({
+        type: "ISSUE_UPDATED",
+        data: {
+          issueKey,
+          title: getSummary(),
+          priority: getPriority(),
+          status: getStatus(),
+          isEditing,
+          url: window.location.href,
+        },
+      })
+    ) {
       return;
     }
     isEditingState = isEditing;

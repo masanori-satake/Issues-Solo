@@ -1141,7 +1141,6 @@ confirmAddHostBtn.addEventListener("click", async () => {
       origin: normalizedHost.permissionOrigin,
     })
     .catch(() => {});
-
 });
 
 /**
