@@ -9,15 +9,14 @@ We currently provide security updates for the following versions.
 | < 0.12.0| ❌        |
 
 ## Reporting a Vulnerability
-If you discover a security vulnerability, please report it using the **GitHub Private Vulnerability Reporting** feature.
+If you discover a security vulnerability, please report it by creating a new issue using the **Bug Report** template.
 
 ### How to report:
-1. Navigate to the main page of the repository on GitHub.com.
-2. Click "Security" below the repository name.
-3. Click "Vulnerability reporting" in the left sidebar.
-4. Click "Report a vulnerability".
-5. Provide details such as the version used, reproduction steps, and potential impact. You can use the bug report template as a reference for the required information.
-6. Click "Submit report".
+1. Navigate to the **Issues** tab of the repository on GitHub.com.
+2. Click **New issue**.
+3. Locate **Bug Report / 不具合報告** and click **Get started**.
+4. Fill out the required fields in the template, such as version, reproduction steps, and diagnostic information.
+5. Click **Submit new issue**.
 
 ## Our Security & Privacy Philosophy
 Issues-Solo is designed with user privacy and security as the top priority, following the principles outlined in our [Privacy Policy](https://masanori-satake.github.io/Issues-Solo/privacy.html).
@@ -51,15 +50,14 @@ This software is a personal open-source project and is provided "AS IS" without 
 | < 0.12.0   | ❌       |
 
 ## 脆弱性の報告方法
-セキュリティ上の脆弱性を発見された場合は、**GitHubのプライベート報告機能（Private Vulnerability Reporting）**を使用して報告してください。
+セキュリティ上の脆弱性を発見された場合は、**不具合報告（Bug Report）テンプレート**を使用してIssueを作成し、報告してください。
 
 ### 報告手順:
-1. GitHub.comで、リポジトリのメインページに移動します。
-1. リポジトリ名の下にある「Security」をクリックします。
-1. 左側のサイドバーで「Vulnerability reporting」をクリックします。
-1. 「Report a vulnerability」をクリックします。
-1. 使用バージョン、再現手順、潜在的な影響などの詳細を記入してください。必要な情報の参考に、不具合報告テンプレートを利用することも可能です。
-1. 「Submit report」をクリックします。
+1. GitHub.comで、リポジトリの **Issues** タブに移動します。
+1. **New issue** ボタンをクリックします。
+1. **Bug Report / 不具合報告** の横にある **Get started** をクリックします。
+1. テンプレートに従って、バージョン、再現手順、調査用情報などの必要事項を記入してください。
+1. **Submit new issue** をクリックします。
 
 ## セキュリティとプライバシーの設計指針
 Issues-Solo は、[プライバシーポリシー](https://masanori-satake.github.io/Issues-Solo/privacy.html) に基づき、ユーザーのプライバシーとセキュリティを最優先に設計されています。
