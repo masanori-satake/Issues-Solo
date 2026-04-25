@@ -80,7 +80,7 @@ def check_project_cleanliness():
         "LICENSE",
         "MaterialSymbolsOutlined.woff2",
     }
-    app_allowed_dirs = {"_locales"}
+    app_allowed_dirs = {"_locales", "assets"}
     app_success = check_directory_cleanliness(
         app_dir, app_allowed_files, app_allowed_dirs
     )
