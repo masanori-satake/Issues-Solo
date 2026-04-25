@@ -364,6 +364,16 @@
   // 編集状態の監視
   document.addEventListener("focusin", startEditing);
 
+  // タブの表示状態やウィンドウのフォーカスを監視して、最終表示時刻を更新する
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "visible") {
+      notifyChange();
+    }
+  };
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  window.addEventListener("focus", handleVisibilityChange);
+
   // キー操作による編集終了（EnterやEscape）の検知
   document.addEventListener(
     "keydown",
