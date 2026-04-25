@@ -9,10 +9,9 @@ on:
       - 'scripts/**'
       - 'package.json'
       - 'package-lock.json'
-      - 'manifest.json'
-      - '*.js'
-      - '*.html'
-      - '*.css'
+      - 'projects/**'
+      - 'README.md'
+      - 'SECURITY.md'
   workflow_dispatch:
 
 env:
@@ -52,11 +51,9 @@ jobs:
           scripts/**
           package.json
           package-lock.json
-          manifest.json
+          projects/app/**
+          projects/web/**
           README.md
-          *.js
-          *.html
-          *.css
 
     - name: 1. ルートディレクトリのクリーンネス確認 (Root Directory Cleanliness)
       run: python3 scripts/check_root_files.py
