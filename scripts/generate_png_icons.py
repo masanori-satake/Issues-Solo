@@ -2,48 +2,37 @@ import os
 import sys
 import re
 
-
 def generate_icons(output_dir=None, bg_color=None):
     # Base path for the source SVG
-    svg_path = os.path.join(os.getcwd(), "projects/app/assets/icon.svg")
+    svg_path = os.path.join(os.getcwd(), 'projects/app/assets/icon.svg')
 
     # Default output directory
     if output_dir is None:
-        output_dir = os.path.join(os.getcwd(), "projects/app/assets")
+        output_dir = os.path.join(os.getcwd(), 'projects/app/assets')
 
     if not os.path.exists(svg_path):
         print(f"Error: {svg_path} not found.")
         return False
 
-    with open(svg_path, "r", encoding="utf-8") as f:
+    with open(svg_path, 'r', encoding='utf-8') as f:
         svg_content = f.read()
 
     if bg_color:
         # Improved replacement logic using regex to identify the background rect (512x512)
-        pattern = (
-            r'(<rect\s+[^>]*width="512"\s+[^>]*height="512"\s+[^>]*fill=")([^"]+)(")'
-        )
+        pattern = r'(<rect\s+[^>]*width="512"\s+[^>]*height="512"\s+[^>]*fill=")([^"]+)(")'
         if re.search(pattern, svg_content):
-            svg_content = re.sub(pattern, rf"\1{bg_color}\3", svg_content)
+            svg_content = re.sub(pattern, rf'\1{bg_color}\3', svg_content)
             print(f"Background color dynamically changed to {bg_color}")
         else:
             # Fallback if the strict pattern doesn't match
-            svg_content = re.sub(
-                r'(<rect\s+[^>]*fill=")([^"]+)(")',
-                rf"\1{bg_color}\3",
-                svg_content,
-                count=1,
-            )
+            svg_content = re.sub(r'(<rect\s+[^>]*fill=")([^"]+)(")', rf'\1{bg_color}\3', svg_content, count=1)
             print(f"Background color changed to {bg_color} (using fallback regex)")
 
     try:
         from playwright.sync_api import sync_playwright
-
         print("Playwright found. Generating icons...")
     except ImportError:
-        print(
-            "Error: No module named 'playwright'. Please install it to generate extension icons."
-        )
+        print("Error: No module named 'playwright'. Please install it to generate extension icons.")
         return False
 
     if not os.path.exists(output_dir):
@@ -57,7 +46,8 @@ def generate_icons(output_dir=None, bg_color=None):
             return False
 
         context = browser.new_context(
-            viewport={"width": 512, "height": 512}, device_scale_factor=1
+            viewport={'width': 512, 'height': 512},
+            device_scale_factor=1
         )
         page = context.new_page()
 
@@ -73,18 +63,17 @@ def generate_icons(output_dir=None, bg_color=None):
             output_path = os.path.join(output_dir, f"icon{size}.png")
             print(f"Generating {size}x{size} icon: {output_path}")
 
-            page.set_viewport_size({"width": size, "height": size})
+            page.set_viewport_size({'width': size, 'height': size})
             page.screenshot(
                 path=output_path,
                 omit_background=True,
-                clip={"x": 0, "y": 0, "width": size, "height": size},
+                clip={'x': 0, 'y': 0, 'width': size, 'height': size}
             )
 
         browser.close()
 
     print(f"Icon generation complete in {output_dir}")
     return True
-
 
 if __name__ == "__main__":
     # Support optional command line arguments: [output_dir] [bg_color]
