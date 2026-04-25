@@ -433,9 +433,7 @@ maxHistoryRange.addEventListener("change", async () => {
   if (newCount < previousMaxHistoryCount && currentIssues.length > newCount) {
     showConfirm(
       "保持件数の変更",
-      `最大保持件数を ${newCount} 件に変更すると、制限を超える古い履歴 (${
-        currentIssues.length - newCount
-      } 件) が削除されます。よろしいですか？`,
+      `最大保持件数を ${newCount} 件に変更すると、制限を超える古い履歴 (${currentIssues.length - newCount} 件) が削除されます。よろしいですか？`,
       async () => {
         maxHistoryValue.textContent = newCount;
         await db.setMaxHistoryCount(newCount);
@@ -619,21 +617,10 @@ async function renderProjectSettings() {
 
     const dragHandle = document.createElement("div");
     dragHandle.className = "drag-handle";
-    const dragSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    dragSvg.setAttribute("viewBox", "0 -960 960 960");
-    const dragPath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    dragPath.setAttribute(
-      "d",
-      "M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z",
-    );
-    dragSvg.appendChild(dragPath);
-    dragHandle.appendChild(dragSvg);
+    const dragIcon = document.createElement("span");
+    dragIcon.className = "material-symbols-outlined";
+    dragIcon.textContent = "drag_indicator";
+    dragHandle.appendChild(dragIcon);
 
     const keyLabel = document.createElement("span");
     keyLabel.className = "project-key-label";
@@ -656,21 +643,10 @@ async function renderProjectSettings() {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
-    const deleteSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    deleteSvg.setAttribute("viewBox", "0 -960 960 960");
-    const deletePath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    deletePath.setAttribute(
-      "d",
-      "M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T760-120H280Zm480-600H280v520h480v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z",
-    );
-    deleteSvg.appendChild(deletePath);
-    deleteBtn.appendChild(deleteSvg);
+    const deleteIcon = document.createElement("span");
+    deleteIcon.className = "material-symbols-outlined";
+    deleteIcon.textContent = "delete";
+    deleteBtn.appendChild(deleteIcon);
 
     deleteBtn.addEventListener("click", async () => {
       const newSettings = settings.filter((_, i) => i !== index);
@@ -765,21 +741,10 @@ async function renderHostSettings() {
 
     const dragHandle = document.createElement("div");
     dragHandle.className = "drag-handle";
-    const dragSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    dragSvg.setAttribute("viewBox", "0 -960 960 960");
-    const dragPath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    dragPath.setAttribute(
-      "d",
-      "M360-160q-33 0-56.5-23.5T280-240q0-33 23.5-56.5T360-320q33 0 56.5 23.5T440-240q0 33-23.5 56.5T360-160Zm240 0q-33 0-56.5-23.5T520-240q0-33 23.5-56.5T600-320q33 0 56.5 23.5T680-240q0 33-23.5 56.5T600-160ZM360-400q-33 0-56.5-23.5T280-480q0-33 23.5-56.5T360-560q33 0 56.5 23.5T440-480q0 33-23.5 56.5T360-400Zm240 0q-33 0-56.5-23.5T520-480q0-33 23.5-56.5T600-560q33 0 56.5 23.5T680-480q0 33-23.5 56.5T600-400ZM360-640q-33 0-56.5-23.5T280-720q0-33 23.5-56.5T360-800q33 0 56.5 23.5T440-720q0 33-23.5 56.5T360-640Zm240 0q-33 0-56.5-23.5T520-720q0-33 23.5-56.5T600-800q33 0 56.5 23.5T680-720q0 33-23.5 56.5T600-640Z",
-    );
-    dragSvg.appendChild(dragPath);
-    dragHandle.appendChild(dragSvg);
+    const dragIcon = document.createElement("span");
+    dragIcon.className = "material-symbols-outlined";
+    dragIcon.textContent = "drag_indicator";
+    dragHandle.appendChild(dragIcon);
 
     const info = document.createElement("div");
     info.className = "host-info";
@@ -798,28 +763,10 @@ async function renderHostSettings() {
     const toggle = document.createElement("div");
     toggle.className = "visibility-toggle";
     toggle.title = host.visible ? "表示中" : "非表示";
-    const toggleSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    toggleSvg.setAttribute("viewBox", "0 -960 960 960");
-    const togglePath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    if (host.visible) {
-      togglePath.setAttribute(
-        "d",
-        "M480-320q75 0 127.5-52.5T660-500q0-75-52.5-127.5T480-680q-75 0-127.5 52.5T300-500q0 75 52.5 127.5T480-320Zm0-72q-45 0-76.5-31.5T372-500q0-45 31.5-76.5T480-608q45 0 76.5 31.5T588-500q0 45-31.5 76.5T480-392Zm0 192q-146 0-266-81.5T40-500q54-137 174-218.5T480-800q146 0 266 81.5T920-500q-54 137-174 218.5T480-200Zm0-300Zm0 220q113 0 207.5-59.5T832-500q-50-101-144.5-160.5T480-720q-113 0-207.5 59.5T128-500q50 101 144.5 160.5T480-280Z",
-      );
-    } else {
-      togglePath.setAttribute(
-        "d",
-        "m644-428-58-58q9-47-27-83t-83-27l-58-58q17-8 37-12t40-4q75 0 127.5 52.5T660-500q0 20-4 40t-12 32ZM162-80l-58-58 84-84q-36-22-67.5-49T61-329q53-111 156-180.5T441-579l-44-44q-20 6-40.5 13T318-592l-62-62q25-15 52.5-27t57.5-20l-34-34q-50 10-97.5 30.5T144-651l-62-62 58-58 642 642-58 58-88-88q-35 23-74 41.5T482-201q-158 0-280-101.5T40-501q23-49 55-91.5t75-76.5l84 84q-13 15-24.5 32T215-519q48 94 138 152t199 58q19 0 38-2.5t37-7.5l88 88q-36 17-74.5 28T452-201l192 121ZM480-320q-17 0-33-4.5t-31-11.5l112-112q7 15 11.5 31t4.5 33q0 47-33 80t-31 14ZM880-429q-22 47-53.5 89T755-263l-58-58q26-25 48.5-53.5T785-438q-49-94-138.5-152T447-648q-19 0-37.5 2.5T372-638l-62-62q41-16 85-24t89-8q158 0 280 101.5T920-429q-10 22-22.5 43t-17.5 40Z",
-      );
-    }
-    toggleSvg.appendChild(togglePath);
-    toggle.appendChild(toggleSvg);
+    const toggleIcon = document.createElement("span");
+    toggleIcon.className = "material-symbols-outlined";
+    toggleIcon.textContent = host.visible ? "visibility" : "visibility_off";
+    toggle.appendChild(toggleIcon);
 
     toggle.addEventListener("click", async (e) => {
       e.stopPropagation();
@@ -829,21 +776,10 @@ async function renderHostSettings() {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
-    const deleteSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    deleteSvg.setAttribute("viewBox", "0 -960 960 960");
-    const deletePath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    deletePath.setAttribute(
-      "d",
-      "M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T760-120H280Zm480-600H280v520h480v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z",
-    );
-    deleteSvg.appendChild(deletePath);
-    deleteBtn.appendChild(deleteSvg);
+    const deleteIcon = document.createElement("span");
+    deleteIcon.className = "material-symbols-outlined";
+    deleteIcon.textContent = "delete";
+    deleteBtn.appendChild(deleteIcon);
     deleteBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const newSettings = settings.filter((_, i) => i !== index);
