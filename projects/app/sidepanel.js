@@ -192,7 +192,8 @@ async function renderList() {
 
     if (type === "priority") {
       // 降順で重みが小さい(Highest:0)が先
-      const result = getPriorityWeight(b.priority) - getPriorityWeight(a.priority);
+      const result =
+        getPriorityWeight(b.priority) - getPriorityWeight(a.priority);
       return direction === "desc" ? -result : result;
     }
 
