@@ -199,6 +199,26 @@
   };
 
   let isEditingState = false;
+  let isExtensionContextAlive = true;
+
+  const safeSendMessage = (message) => {
+    if (!isExtensionContextAlive) return false;
+
+    try {
+      if (!chrome?.runtime?.id || typeof chrome.runtime.sendMessage !== "function") {
+        isExtensionContextAlive = false;
+        return false;
+      }
+
+      chrome.runtime.sendMessage(message).catch(() => {
+        isExtensionContextAlive = false;
+      });
+      return true;
+    } catch (error) {
+      isExtensionContextAlive = false;
+      return false;
+    }
+  };
 
   /**
    * 要素が保存またはキャンセルボタンかどうかを判定する
@@ -247,11 +267,13 @@
    * 変更をバックグラウンドに通知する
    */
   const notifyChange = (isEditing = null) => {
+    if (!isExtensionContextAlive) return;
+
     const issueKey = getIssueKey();
     lastNotifyTime = Date.now();
     if (!issueKey) {
       // 課題ページでない場合は、タブの関連付けを解除する
-      chrome.runtime.sendMessage({ type: "CLEAR_TAB_ASSOCIATION" });
+      safeSendMessage({ type: "CLEAR_TAB_ASSOCIATION" });
       return;
     }
 
@@ -259,7 +281,7 @@
       isEditing = detectEditingStateFromDOM();
     }
 
-    chrome.runtime.sendMessage({
+    if (!safeSendMessage({
       type: "ISSUE_UPDATED",
       data: {
         issueKey,
@@ -269,7 +291,9 @@
         isEditing,
         url: window.location.href,
       },
-    });
+    })) {
+      return;
+    }
     isEditingState = isEditing;
   };
 
