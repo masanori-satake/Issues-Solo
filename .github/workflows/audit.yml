@@ -52,7 +52,6 @@ jobs:
           package.json
           package-lock.json
           projects/app/**
-          projects/web/**
           README.md
 
     - name: 1. ルートディレクトリのクリーンネス確認 (Root Directory Cleanliness)
