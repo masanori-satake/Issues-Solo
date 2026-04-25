@@ -172,27 +172,27 @@ function compareStatus(a, b, direction) {
  * i18n対応: data-i18n属性を持つ要素のテキストを更新
  */
 function applyTranslations() {
-  document.querySelectorAll("[data-i18n]").forEach((el) => {
-    const key = el.getAttribute("data-i18n");
-    const message = chrome.i18n.getMessage(key);
-    if (message) {
-      el.textContent = message;
-    }
-  });
+  const selectors = [
+    "[data-i18n]",
+    "[data-i18n-title]",
+    "[data-i18n-placeholder]",
+  ];
+  document.querySelectorAll(selectors.join(", ")).forEach((el) => {
+    const textKey = el.dataset.i18n;
+    const titleKey = el.dataset.i18nTitle;
+    const placeholderKey = el.dataset.i18nPlaceholder;
 
-  document.querySelectorAll("[data-i18n-title]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-title");
-    const message = chrome.i18n.getMessage(key);
-    if (message) {
-      el.setAttribute("title", message);
+    if (textKey) {
+      const message = chrome.i18n.getMessage(textKey);
+      if (message) el.textContent = message;
     }
-  });
-
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    const message = chrome.i18n.getMessage(key);
-    if (message) {
-      el.setAttribute("placeholder", message);
+    if (titleKey) {
+      const message = chrome.i18n.getMessage(titleKey);
+      if (message) el.setAttribute("title", message);
+    }
+    if (placeholderKey) {
+      const message = chrome.i18n.getMessage(placeholderKey);
+      if (message) el.setAttribute("placeholder", message);
     }
   });
 }
@@ -389,7 +389,7 @@ async function renderList() {
         otherHeader.appendChild(glyph);
 
         const name = document.createElement("span");
-        name.textContent = "other";
+        name.textContent = chrome.i18n.getMessage("other") || "other";
         otherHeader.appendChild(name);
 
         otherHeader.addEventListener("click", async () => {
@@ -427,9 +427,7 @@ function createIssueItem(issue) {
 
   const editIndicator = document.createElement("div");
   editIndicator.className = `indicator ${issue.isEditing ? "is-editing" : ""}`;
-  editIndicator.title = issue.isEditing
-    ? chrome.i18n.getMessage("editing")
-    : "";
+  editIndicator.title = issue.isEditing ? chrome.i18n.getMessage("editing") : "";
 
   indicators.appendChild(openIndicator);
   indicators.appendChild(editIndicator);

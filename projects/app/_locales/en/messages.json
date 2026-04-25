@@ -199,5 +199,11 @@
   },
   "hidden": {
     "message": "Hidden"
+  },
+  "other": {
+    "message": "other"
+  },
+  "close": {
+    "message": "Close"
   }
 }

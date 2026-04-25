@@ -199,5 +199,11 @@
   },
   "hidden": {
     "message": "非表示"
+  },
+  "other": {
+    "message": "その他"
+  },
+  "close": {
+    "message": "閉じる"
   }
 }
