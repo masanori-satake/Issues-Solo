@@ -77,8 +77,17 @@
           <section>
             <h4 class="section-title">履歴</h4>
             <div class="settings-item">
-              <label for="max-history-range">最大保持件数: <span id="max-history-value">50</span></label>
-              <input type="range" id="max-history-range" min="0" max="2" step="1" value="1">
+              <label for="max-history-range"
+                >最大保持件数: <span id="max-history-value">50</span></label
+              >
+              <input
+                type="range"
+                id="max-history-range"
+                min="0"
+                max="2"
+                step="1"
+                value="1"
+              />
               <div class="range-labels">
                 <span>20</span>
                 <span>50</span>
@@ -86,9 +95,15 @@
               </div>
             </div>
             <div class="settings-actions-row">
-              <button id="export-history-btn" class="text-btn small">エクスポート</button>
-              <button id="import-history-btn" class="text-btn small">インポート</button>
-              <button id="clear-history-btn" class="text-btn small danger">全削除</button>
+              <button id="export-history-btn" class="text-btn small">
+                エクスポート
+              </button>
+              <button id="import-history-btn" class="text-btn small">
+                インポート
+              </button>
+              <button id="clear-history-btn" class="text-btn small danger">
+                全削除
+              </button>
             </div>
           </section>
 
@@ -97,13 +112,23 @@
             <div class="import-mode-selector">
               <label>インポート時の動作:</label>
               <div class="radio-group">
-                <label><input type="radio" name="import-mode" value="add" checked> 追加</label>
-                <label><input type="radio" name="import-mode" value="overwrite"> 上書き</label>
+                <label
+                  ><input type="radio" name="import-mode" value="add" checked />
+                  追加</label
+                >
+                <label
+                  ><input type="radio" name="import-mode" value="overwrite" />
+                  上書き</label
+                >
               </div>
             </div>
             <div class="settings-actions-row">
-              <button id="export-settings-btn" class="text-btn">エクスポート</button>
-              <button id="import-settings-btn" class="text-btn">インポート</button>
+              <button id="export-settings-btn" class="text-btn">
+                エクスポート
+              </button>
+              <button id="import-settings-btn" class="text-btn">
+                インポート
+              </button>
             </div>
           </section>
         </div>
