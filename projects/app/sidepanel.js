@@ -388,6 +388,13 @@ closeSettingsBtn.addEventListener("click", () => {
   settingsPanel.classList.add("hidden");
 });
 
+// パネルの外側をクリックして閉じる
+settingsPanel.addEventListener("click", (e) => {
+  if (e.target === settingsPanel) {
+    settingsPanel.classList.add("hidden");
+  }
+});
+
 function updateMaxHistoryUI(count) {
   maxHistoryValue.textContent = count;
   const index = [20, 50, 100].indexOf(count);
@@ -406,9 +413,7 @@ maxHistoryRange.addEventListener("change", async () => {
   if (newCount < previousMaxHistoryCount && currentIssues.length > newCount) {
     showConfirm(
       "保持件数の変更",
-      `最大保持件数を ${newCount} 件に変更すると、制限を超える古い履歴 (${
-        currentIssues.length - newCount
-      } 件) が削除されます。よろしいですか？`,
+      `最大保持件数を ${newCount} 件に変更すると、制限を超える古い履歴 (${currentIssues.length - newCount} 件) が削除されます。よろしいですか？`,
       async () => {
         maxHistoryValue.textContent = newCount;
         await db.setMaxHistoryCount(newCount);
