@@ -1,3 +1,26 @@
+@font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  font-weight: 400;
+  src: url("MaterialSymbolsOutlined.woff2") format("woff2");
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: "liga";
+  -webkit-font-smoothing: antialiased;
+}
+
 :root {
   --bg-color: #ffffff;
   --text-color: #333333;
@@ -324,6 +347,10 @@ section:last-child {
   margin-bottom: 0;
 }
 
+#jira-site-section {
+  margin-bottom: 12px; /* 縮めて間延びを解消 */
+}
+
 .settings-item {
   margin-bottom: 16px;
 }
@@ -351,10 +378,58 @@ section:last-child {
   color: var(--secondary-text);
 }
 
-.settings-actions-row {
+.data-management {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.management-buttons {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
+}
+
+.management-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px; /* 角丸形状 */
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-color);
+  transition: background-color 0.2s;
+}
+
+.management-btn:hover {
+  background-color: var(--hover-bg);
+}
+
+.management-btn.danger {
+  color: #b3261e;
+  border-color: #f2b8b5;
+  background-color: #fffbfe;
+}
+
+.management-btn.danger:hover {
+  background-color: #f9dedc;
+}
+
+.management-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.danger-zone {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .text-btn.small {
@@ -363,7 +438,7 @@ section:last-child {
 }
 
 .import-mode-selector {
-  margin-bottom: 12px;
+  margin-top: 4px;
 }
 
 .import-mode-selector label {

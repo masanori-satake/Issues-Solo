@@ -10,11 +10,7 @@
       <div class="header-content">
         <div class="spacer"></div>
         <button id="settings-btn" title="設定" class="icon-btn">
-          <svg viewBox="0 0 24 24">
-            <path
-              d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
-            />
-          </svg>
+          <span class="material-symbols-outlined">settings</span>
         </button>
       </div>
     </header>
@@ -29,52 +25,34 @@
         <div class="settings-header">
           <div class="settings-title">設定</div>
           <button id="close-settings" class="icon-btn">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-              />
-            </svg>
+            <span class="material-symbols-outlined">close</span>
           </button>
         </div>
         <div class="tabs">
           <button class="tab-btn active" data-tab="general" title="一般">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"
-              />
-            </svg>
+            <span class="material-symbols-outlined">settings</span>
           </button>
           <button class="tab-btn" data-tab="projects" title="プロジェクトキー">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M12 2l-5.5 9h11L12 2zm0 3.84L13.93 9h-3.87L12 5.84zM17.5 13c-2.49 0-4.5 2.01-4.5 4.5s2.01 4.5 4.5 4.5 4.5-2.01 4.5-4.5-2.01-4.5-4.5-4.5zm0 7c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5zM3 21.5h8v-8H3v8zm2-6h4v4H5v-4z"
-              />
-            </svg>
+            <span class="material-symbols-outlined">category</span>
           </button>
           <button class="tab-btn" data-tab="about" title="About">
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"
-              />
-            </svg>
+            <span class="material-symbols-outlined">info</span>
           </button>
         </div>
         <div class="tab-content" id="general-tab">
-          <section>
+          <section id="jira-site-section">
             <h4 class="section-title">Jira サイト</h4>
             <div class="host-list-container">
               <ul id="host-list"></ul>
             </div>
             <div class="host-actions">
               <button id="add-host-btn" class="fab-btn" title="追加">
-                <svg viewBox="0 0 24 24">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                </svg>
+                <span class="material-symbols-outlined">add</span>
               </button>
             </div>
           </section>
 
-          <section>
+          <section id="history-section">
             <h4 class="section-title">履歴</h4>
             <div class="settings-item">
               <label for="max-history-range"
@@ -94,41 +72,81 @@
                 <span>100</span>
               </div>
             </div>
-            <div class="settings-actions-row">
-              <button id="export-history-btn" class="text-btn small">
-                エクスポート
-              </button>
-              <button id="import-history-btn" class="text-btn small">
-                インポート
-              </button>
-              <button id="clear-history-btn" class="text-btn small danger">
+            <div class="data-management">
+              <div class="management-buttons">
+                <button id="export-history-btn" class="management-btn">
+                  <span class="material-symbols-outlined">content_copy</span>
+                  コピー (Export)
+                </button>
+                <button id="import-history-btn" class="management-btn">
+                  <span class="material-symbols-outlined">content_paste</span>
+                  貼り付け (Import)
+                </button>
+              </div>
+              <div class="import-mode-selector">
+                <label>インポート設定:</label>
+                <div class="radio-group">
+                  <label
+                    ><input
+                      type="radio"
+                      name="history-import-mode"
+                      value="add"
+                      checked
+                    />
+                    追記</label
+                  >
+                  <label
+                    ><input
+                      type="radio"
+                      name="history-import-mode"
+                      value="overwrite"
+                    />
+                    上書き</label
+                  >
+                </div>
+              </div>
+              <button id="clear-history-btn" class="management-btn danger">
+                <span class="material-symbols-outlined">delete_forever</span>
                 全削除
               </button>
             </div>
           </section>
 
-          <section>
-            <h4 class="section-title">データ</h4>
-            <div class="import-mode-selector">
-              <label>インポート時の動作:</label>
-              <div class="radio-group">
-                <label
-                  ><input type="radio" name="import-mode" value="add" checked />
-                  追加</label
-                >
-                <label
-                  ><input type="radio" name="import-mode" value="overwrite" />
-                  上書き</label
-                >
+          <section id="data-section">
+            <h4 class="section-title">設定</h4>
+            <div class="data-management">
+              <div class="management-buttons">
+                <button id="export-settings-btn" class="management-btn">
+                  <span class="material-symbols-outlined">content_copy</span>
+                  コピー (Export)
+                </button>
+                <button id="import-settings-btn" class="management-btn">
+                  <span class="material-symbols-outlined">content_paste</span>
+                  貼り付け (Import)
+                </button>
               </div>
-            </div>
-            <div class="settings-actions-row">
-              <button id="export-settings-btn" class="text-btn">
-                エクスポート
-              </button>
-              <button id="import-settings-btn" class="text-btn">
-                インポート
-              </button>
+              <div class="import-mode-selector">
+                <label>インポート設定:</label>
+                <div class="radio-group">
+                  <label
+                    ><input
+                      type="radio"
+                      name="settings-import-mode"
+                      value="add"
+                      checked
+                    />
+                    追記</label
+                  >
+                  <label
+                    ><input
+                      type="radio"
+                      name="settings-import-mode"
+                      value="overwrite"
+                    />
+                    上書き</label
+                  >
+                </div>
+              </div>
             </div>
           </section>
         </div>
@@ -140,9 +158,7 @@
             </div>
             <div class="project-actions">
               <button id="add-project-btn" class="fab-btn" title="追加">
-                <svg viewBox="0 0 24 24">
-                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-                </svg>
+                <span class="material-symbols-outlined">add</span>
               </button>
             </div>
           </section>

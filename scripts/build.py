@@ -25,7 +25,7 @@ def build_extension():
 
         # 3. Define files to include
         app_dir = os.path.join("projects", "app")
-        patterns = ["manifest.json", "*.js", "*.html", "*.css", "LICENSE"]
+        patterns = ["manifest.json", "*.js", "*.html", "*.css", "LICENSE", "*.woff2"]
 
         files_to_zip = []
         for pattern in patterns:

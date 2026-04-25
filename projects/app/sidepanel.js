@@ -27,6 +27,12 @@ const importHistoryBtn = document.getElementById("import-history-btn");
 const clearHistoryBtn = document.getElementById("clear-history-btn");
 const exportSettingsBtn = document.getElementById("export-settings-btn");
 const importSettingsBtn = document.getElementById("import-settings-btn");
+const historyImportModes = document.querySelectorAll(
+  'input[name="history-import-mode"]',
+);
+const settingsImportModes = document.querySelectorAll(
+  'input[name="settings-import-mode"]',
+);
 const confirmDialog = document.getElementById("confirm-dialog");
 const confirmTitle = document.getElementById("confirm-title");
 const confirmMessage = document.getElementById("confirm-message");
@@ -153,15 +159,10 @@ async function renderList() {
       glyph.className = "collapse-glyph";
       const isCollapsed = !!host.isCollapsed;
 
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("viewBox", "0 0 24 24");
-      const path = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path",
-      );
-      path.setAttribute("d", isCollapsed ? "M9 6v12l9-6z" : "M6 9h12l-6 9z");
-      svg.appendChild(path);
-      glyph.appendChild(svg);
+      const icon = document.createElement("span");
+      icon.className = "material-symbols-outlined";
+      icon.textContent = isCollapsed ? "arrow_right" : "arrow_drop_down";
+      glyph.appendChild(icon);
 
       header.appendChild(glyph);
 
@@ -202,21 +203,10 @@ async function renderList() {
           glyph.className = "collapse-glyph";
           const isCollapsed = !!proj.isCollapsed;
 
-          const svg = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "svg",
-          );
-          svg.setAttribute("viewBox", "0 0 24 24");
-          const path = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path",
-          );
-          path.setAttribute(
-            "d",
-            isCollapsed ? "M9 6v12l9-6z" : "M6 9h12l-6 9z",
-          );
-          svg.appendChild(path);
-          glyph.appendChild(svg);
+          const icon = document.createElement("span");
+          icon.className = "material-symbols-outlined";
+          icon.textContent = isCollapsed ? "arrow_right" : "arrow_drop_down";
+          glyph.appendChild(icon);
 
           projHeader.appendChild(glyph);
 
@@ -250,21 +240,10 @@ async function renderList() {
         const glyph = document.createElement("span");
         glyph.className = "collapse-glyph";
 
-        const svg = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "svg",
-        );
-        svg.setAttribute("viewBox", "0 0 24 24");
-        const path = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path",
-        );
-        path.setAttribute(
-          "d",
-          otherCollapsed ? "M9 6v12l9-6z" : "M6 9h12l-6 9z",
-        );
-        svg.appendChild(path);
-        glyph.appendChild(svg);
+        const icon = document.createElement("span");
+        icon.className = "material-symbols-outlined";
+        icon.textContent = otherCollapsed ? "arrow_right" : "arrow_drop_down";
+        glyph.appendChild(icon);
 
         otherHeader.appendChild(glyph);
 
@@ -391,11 +370,29 @@ settingsBtn.addEventListener("click", async () => {
   renderHostSettings();
   renderProjectSettings();
   const maxCount = await db.getMaxHistoryCount();
+  previousMaxHistoryCount = maxCount; // 初期値を正確に保持
   updateMaxHistoryUI(maxCount);
+
+  // インポートモードの初期化
+  const hMode = await db.getHistoryImportMode();
+  document.querySelector(
+    `input[name="history-import-mode"][value="${hMode}"]`,
+  ).checked = true;
+  const sMode = await db.getSettingsImportMode();
+  document.querySelector(
+    `input[name="settings-import-mode"][value="${sMode}"]`,
+  ).checked = true;
 });
 
 closeSettingsBtn.addEventListener("click", () => {
   settingsPanel.classList.add("hidden");
+});
+
+// パネルの外側をクリックして閉じる
+settingsPanel.addEventListener("click", (e) => {
+  if (e.target === settingsPanel) {
+    settingsPanel.classList.add("hidden");
+  }
 });
 
 function updateMaxHistoryUI(count) {
@@ -406,17 +403,42 @@ function updateMaxHistoryUI(count) {
   }
 }
 
-maxHistoryRange.addEventListener("input", async () => {
+let previousMaxHistoryCount = 50;
+
+maxHistoryRange.addEventListener("change", async () => {
   const counts = [20, 50, 100];
-  const count = counts[maxHistoryRange.value];
-  maxHistoryValue.textContent = count;
-  await db.setMaxHistoryCount(count);
+  const newCount = counts[maxHistoryRange.value];
+  const currentIssues = await db.getAllIssues();
+
+  if (newCount < previousMaxHistoryCount && currentIssues.length > newCount) {
+    showConfirm(
+      "保持件数の変更",
+      `最大保持件数を ${newCount} 件に変更すると、制限を超える古い履歴 (${
+        currentIssues.length - newCount
+      } 件) が削除されます。よろしいですか？`,
+      async () => {
+        maxHistoryValue.textContent = newCount;
+        await db.setMaxHistoryCount(newCount);
+        await db.pruneIssues(newCount);
+        previousMaxHistoryCount = newCount;
+        renderList();
+      },
+      () => {
+        // キャンセル時は元の値に戻す
+        updateMaxHistoryUI(previousMaxHistoryCount);
+      },
+    );
+  } else {
+    maxHistoryValue.textContent = newCount;
+    await db.setMaxHistoryCount(newCount);
+    previousMaxHistoryCount = newCount;
+  }
 });
 
 /**
  * カスタム確認ダイアログ
  */
-function showConfirm(title, message, onOk) {
+function showConfirm(title, message, onOk, onCancel) {
   confirmTitle.textContent = title;
   confirmMessage.textContent = message;
   confirmDialog.classList.remove("hidden");
@@ -424,7 +446,7 @@ function showConfirm(title, message, onOk) {
   const cleanup = () => {
     confirmDialog.classList.add("hidden");
     confirmOkBtn.removeEventListener("click", handleOk);
-    confirmCancelBtn.removeEventListener("click", cleanup);
+    confirmCancelBtn.removeEventListener("click", handleCancel);
   };
 
   const handleOk = () => {
@@ -432,8 +454,13 @@ function showConfirm(title, message, onOk) {
     cleanup();
   };
 
+  const handleCancel = () => {
+    if (onCancel) onCancel();
+    cleanup();
+  };
+
   confirmOkBtn.addEventListener("click", handleOk);
-  confirmCancelBtn.addEventListener("click", cleanup);
+  confirmCancelBtn.addEventListener("click", handleCancel);
 }
 
 // 履歴の全削除
@@ -471,7 +498,7 @@ importHistoryBtn.addEventListener("click", async () => {
     }
     const text = await navigator.clipboard.readText();
     const mode = document.querySelector(
-      'input[name="import-mode"]:checked',
+      'input[name="history-import-mode"]:checked',
     ).value;
     await db.importIssues(text, mode);
     renderList();
@@ -482,6 +509,12 @@ importHistoryBtn.addEventListener("click", async () => {
       "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。",
     );
   }
+});
+
+historyImportModes.forEach((radio) => {
+  radio.addEventListener("change", async () => {
+    await db.setHistoryImportMode(radio.value);
+  });
 });
 
 // 設定のエクスポート (JSON)
@@ -517,7 +550,7 @@ importSettingsBtn.addEventListener("click", async () => {
     }
     const text = await navigator.clipboard.readText();
     const mode = document.querySelector(
-      'input[name="import-mode"]:checked',
+      'input[name="settings-import-mode"]:checked',
     ).value;
     await db.importSettings(text, mode);
     renderList();
@@ -532,6 +565,12 @@ importSettingsBtn.addEventListener("click", async () => {
       "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。",
     );
   }
+});
+
+settingsImportModes.forEach((radio) => {
+  radio.addEventListener("change", async () => {
+    await db.setSettingsImportMode(radio.value);
+  });
 });
 
 tabButtons.forEach((btn) => {
@@ -560,21 +599,10 @@ async function renderProjectSettings() {
 
     const dragHandle = document.createElement("div");
     dragHandle.className = "drag-handle";
-    const dragSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    dragSvg.setAttribute("viewBox", "0 0 24 24");
-    const dragPath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    dragPath.setAttribute(
-      "d",
-      "M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z",
-    );
-    dragSvg.appendChild(dragPath);
-    dragHandle.appendChild(dragSvg);
+    const dragIcon = document.createElement("span");
+    dragIcon.className = "material-symbols-outlined";
+    dragIcon.textContent = "drag_indicator";
+    dragHandle.appendChild(dragIcon);
 
     const keyLabel = document.createElement("span");
     keyLabel.className = "project-key-label";
@@ -597,21 +625,10 @@ async function renderProjectSettings() {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
-    const deleteSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    deleteSvg.setAttribute("viewBox", "0 0 24 24");
-    const deletePath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    deletePath.setAttribute(
-      "d",
-      "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z",
-    );
-    deleteSvg.appendChild(deletePath);
-    deleteBtn.appendChild(deleteSvg);
+    const deleteIcon = document.createElement("span");
+    deleteIcon.className = "material-symbols-outlined";
+    deleteIcon.textContent = "delete";
+    deleteBtn.appendChild(deleteIcon);
 
     deleteBtn.addEventListener("click", async () => {
       const newSettings = settings.filter((_, i) => i !== index);
@@ -706,21 +723,10 @@ async function renderHostSettings() {
 
     const dragHandle = document.createElement("div");
     dragHandle.className = "drag-handle";
-    const dragSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    dragSvg.setAttribute("viewBox", "0 0 24 24");
-    const dragPath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    dragPath.setAttribute(
-      "d",
-      "M11 18c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm-2-8c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0-6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm6 4c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z",
-    );
-    dragSvg.appendChild(dragPath);
-    dragHandle.appendChild(dragSvg);
+    const dragIcon = document.createElement("span");
+    dragIcon.className = "material-symbols-outlined";
+    dragIcon.textContent = "drag_indicator";
+    dragHandle.appendChild(dragIcon);
 
     const info = document.createElement("div");
     info.className = "host-info";
@@ -739,28 +745,10 @@ async function renderHostSettings() {
     const toggle = document.createElement("div");
     toggle.className = "visibility-toggle";
     toggle.title = host.visible ? "表示中" : "非表示";
-    const toggleSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    toggleSvg.setAttribute("viewBox", "0 0 24 24");
-    const togglePath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    if (host.visible) {
-      togglePath.setAttribute(
-        "d",
-        "M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z",
-      );
-    } else {
-      togglePath.setAttribute(
-        "d",
-        "M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.82l2.92 2.92c1.51-1.39 2.59-3.21 3.44-5.24-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z",
-      );
-    }
-    toggleSvg.appendChild(togglePath);
-    toggle.appendChild(toggleSvg);
+    const toggleIcon = document.createElement("span");
+    toggleIcon.className = "material-symbols-outlined";
+    toggleIcon.textContent = host.visible ? "visibility" : "visibility_off";
+    toggle.appendChild(toggleIcon);
 
     toggle.addEventListener("click", async (e) => {
       e.stopPropagation();
@@ -770,21 +758,10 @@ async function renderHostSettings() {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
-    const deleteSvg = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "svg",
-    );
-    deleteSvg.setAttribute("viewBox", "0 0 24 24");
-    const deletePath = document.createElementNS(
-      "http://www.w3.org/2000/svg",
-      "path",
-    );
-    deletePath.setAttribute(
-      "d",
-      "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z",
-    );
-    deleteSvg.appendChild(deletePath);
-    deleteBtn.appendChild(deleteSvg);
+    const deleteIcon = document.createElement("span");
+    deleteIcon.className = "material-symbols-outlined";
+    deleteIcon.textContent = "delete";
+    deleteBtn.appendChild(deleteIcon);
     deleteBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const newSettings = settings.filter((_, i) => i !== index);

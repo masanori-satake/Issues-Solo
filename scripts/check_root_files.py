@@ -78,6 +78,7 @@ def check_project_cleanliness():
         "sidepanel.js",
         "sidepanel.css",
         "LICENSE",
+        "MaterialSymbolsOutlined.woff2",
     }
     app_allowed_dirs = set()
     app_success = check_directory_cleanliness(
