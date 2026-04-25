@@ -60,28 +60,67 @@
           </button>
         </div>
         <div class="tab-content" id="general-tab">
-          <div class="host-list-container">
-            <ul id="host-list"></ul>
-          </div>
-          <div class="host-actions">
-            <button id="add-host-btn" class="fab-btn" title="追加">
-              <svg viewBox="0 0 24 24">
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-              </svg>
-            </button>
-          </div>
+          <section>
+            <h4 class="section-title">Jira サイト</h4>
+            <div class="host-list-container">
+              <ul id="host-list"></ul>
+            </div>
+            <div class="host-actions">
+              <button id="add-host-btn" class="fab-btn" title="追加">
+                <svg viewBox="0 0 24 24">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+              </button>
+            </div>
+          </section>
+
+          <section>
+            <h4 class="section-title">履歴</h4>
+            <div class="settings-item">
+              <label for="max-history-range">最大保持件数: <span id="max-history-value">50</span></label>
+              <input type="range" id="max-history-range" min="0" max="2" step="1" value="1">
+              <div class="range-labels">
+                <span>20</span>
+                <span>50</span>
+                <span>100</span>
+              </div>
+            </div>
+            <div class="settings-actions-row">
+              <button id="export-history-btn" class="text-btn small">エクスポート</button>
+              <button id="import-history-btn" class="text-btn small">インポート</button>
+              <button id="clear-history-btn" class="text-btn small danger">全削除</button>
+            </div>
+          </section>
+
+          <section>
+            <h4 class="section-title">データ</h4>
+            <div class="import-mode-selector">
+              <label>インポート時の動作:</label>
+              <div class="radio-group">
+                <label><input type="radio" name="import-mode" value="add" checked> 追加</label>
+                <label><input type="radio" name="import-mode" value="overwrite"> 上書き</label>
+              </div>
+            </div>
+            <div class="settings-actions-row">
+              <button id="export-settings-btn" class="text-btn">エクスポート</button>
+              <button id="import-settings-btn" class="text-btn">インポート</button>
+            </div>
+          </section>
         </div>
         <div class="tab-content hidden" id="projects-tab">
-          <div class="project-list-container">
-            <ul id="project-list"></ul>
-          </div>
-          <div class="project-actions">
-            <button id="add-project-btn" class="fab-btn" title="追加">
-              <svg viewBox="0 0 24 24">
-                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-              </svg>
-            </button>
-          </div>
+          <section>
+            <h4 class="section-title">プロジェクト</h4>
+            <div class="project-list-container">
+              <ul id="project-list"></ul>
+            </div>
+            <div class="project-actions">
+              <button id="add-project-btn" class="fab-btn" title="追加">
+                <svg viewBox="0 0 24 24">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+              </button>
+            </div>
+          </section>
         </div>
         <div class="tab-content hidden" id="about-tab">
           <div class="about-container">
@@ -93,6 +132,17 @@
               この拡張機能は、プライバシーを最優先に設計されています。すべてのデータはあなたのブラウザ内にのみ保存され、外部サーバーに送信されることはありません。
             </p>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirm-dialog" class="overlay hidden">
+      <div class="dialog">
+        <h3 id="confirm-title">確認</h3>
+        <p id="confirm-message"></p>
+        <div class="dialog-actions">
+          <button id="confirm-cancel" class="text-btn">キャンセル</button>
+          <button id="confirm-ok" class="text-btn danger">OK</button>
         </div>
       </div>
     </div>
