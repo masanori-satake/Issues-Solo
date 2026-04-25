@@ -1,7 +1,6 @@
 import json
 import zipfile
 import os
-import glob
 
 
 def build_extension():
@@ -31,7 +30,7 @@ def build_extension():
             for root, dirs, files in os.walk(app_dir):
                 for file in files:
                     # Skip hidden files
-                    if file.startswith('.'):
+                    if file.startswith("."):
                         continue
 
                     file_path = os.path.join(root, file)
