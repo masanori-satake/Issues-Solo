@@ -159,15 +159,10 @@ async function renderList() {
       glyph.className = "collapse-glyph";
       const isCollapsed = !!host.isCollapsed;
 
-      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-      svg.setAttribute("viewBox", "0 0 24 24");
-      const path = document.createElementNS(
-        "http://www.w3.org/2000/svg",
-        "path",
-      );
-      path.setAttribute("d", isCollapsed ? "M9 6v12l9-6z" : "M6 9h12l-6 9z");
-      svg.appendChild(path);
-      glyph.appendChild(svg);
+      const icon = document.createElement("span");
+      icon.className = "material-symbols-outlined";
+      icon.textContent = isCollapsed ? "arrow_right" : "arrow_drop_down";
+      glyph.appendChild(icon);
 
       header.appendChild(glyph);
 
@@ -208,21 +203,10 @@ async function renderList() {
           glyph.className = "collapse-glyph";
           const isCollapsed = !!proj.isCollapsed;
 
-          const svg = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "svg",
-          );
-          svg.setAttribute("viewBox", "0 0 24 24");
-          const path = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path",
-          );
-          path.setAttribute(
-            "d",
-            isCollapsed ? "M9 6v12l9-6z" : "M6 9h12l-6 9z",
-          );
-          svg.appendChild(path);
-          glyph.appendChild(svg);
+          const icon = document.createElement("span");
+          icon.className = "material-symbols-outlined";
+          icon.textContent = isCollapsed ? "arrow_right" : "arrow_drop_down";
+          glyph.appendChild(icon);
 
           projHeader.appendChild(glyph);
 
@@ -256,21 +240,10 @@ async function renderList() {
         const glyph = document.createElement("span");
         glyph.className = "collapse-glyph";
 
-        const svg = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "svg",
-        );
-        svg.setAttribute("viewBox", "0 0 24 24");
-        const path = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "path",
-        );
-        path.setAttribute(
-          "d",
-          otherCollapsed ? "M9 6v12l9-6z" : "M6 9h12l-6 9z",
-        );
-        svg.appendChild(path);
-        glyph.appendChild(svg);
+        const icon = document.createElement("span");
+        icon.className = "material-symbols-outlined";
+        icon.textContent = otherCollapsed ? "arrow_right" : "arrow_drop_down";
+        glyph.appendChild(icon);
 
         otherHeader.appendChild(glyph);
 
@@ -433,9 +406,7 @@ maxHistoryRange.addEventListener("change", async () => {
   if (newCount < previousMaxHistoryCount && currentIssues.length > newCount) {
     showConfirm(
       "保持件数の変更",
-      `最大保持件数を ${newCount} 件に変更すると、制限を超える古い履歴 (${
-        currentIssues.length - newCount
-      } 件) が削除されます。よろしいですか？`,
+      `最大保持件数を ${newCount} 件に変更すると、制限を超える古い履歴 (${currentIssues.length - newCount} 件) が削除されます。よろしいですか？`,
       async () => {
         maxHistoryValue.textContent = newCount;
         await db.setMaxHistoryCount(newCount);
