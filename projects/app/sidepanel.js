@@ -49,6 +49,66 @@ const sortBtns = {
 let currentSettings = [];
 let currentProjectSettings = [];
 
+const uiLanguage = navigator.language.startsWith("ja") ? "ja" : "en";
+const hostAccessMessages = {
+  en: {
+    invalidHost: "Please enter a valid HTTPS Jira host.",
+    permissionDenied:
+      "Host access permission is required to track issues on this Jira site.",
+  },
+  ja: {
+    invalidHost: "有効な HTTPS の Jira ホストを入力してください。",
+    permissionDenied:
+      "この Jira サイトで課題を追跡するには、ホスト権限の許可が必要です。",
+  },
+};
+
+function hostAccessText(key) {
+  return hostAccessMessages[uiLanguage][key];
+}
+
+function normalizeHostInput(rawValue) {
+  let candidate = rawValue.trim();
+  if (!candidate) {
+    throw new Error("empty-host");
+  }
+
+  if (!/^[a-z]+:\/\//i.test(candidate)) {
+    candidate = `https://${candidate}`;
+  }
+
+  const parsedUrl = new URL(candidate);
+  if (parsedUrl.protocol !== "https:") {
+    throw new Error("https-only");
+  }
+
+  const pathMatch = parsedUrl.pathname.match(
+    /^(.*?)\/(?:browse|issues)(?:\/|$)/,
+  );
+  const contextPath = pathMatch
+    ? pathMatch[1]
+    : parsedUrl.pathname.replace(/\/+$/, "");
+  const normalizedPath = contextPath === "/" ? "" : contextPath;
+
+  return {
+    storedUrl: `${parsedUrl.hostname}${normalizedPath}`,
+    permissionOrigin: `https://${parsedUrl.hostname}/*`,
+  };
+}
+
+function getPermissionOriginFromStoredHost(hostUrl) {
+  try {
+    const parsedUrl = new URL(`https://${hostUrl}`);
+    return `https://${parsedUrl.hostname}/*`;
+  } catch (error) {
+    return null;
+  }
+}
+
+function isBuiltinHostOrigin(origin) {
+  return /^https:\/\/(?:[^/]+\.)?atlassian\.net\/\*$/.test(origin);
+}
+
 const M3_COLORS = [
   "#0061A4", // Blue
   "#006D39", // Green
@@ -957,7 +1017,27 @@ async function renderHostSettings() {
     deleteBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const newSettings = settings.filter((_, i) => i !== index);
+      const removedPermissionOrigin = getPermissionOriginFromStoredHost(
+        host.url,
+      );
       await db.setSettings(newSettings);
+      if (
+        removedPermissionOrigin &&
+        !isBuiltinHostOrigin(removedPermissionOrigin) &&
+        !newSettings.some(
+          (item) =>
+            getPermissionOriginFromStoredHost(item.url) ===
+            removedPermissionOrigin,
+        )
+      ) {
+        try {
+          await chrome.permissions.remove({
+            origins: [removedPermissionOrigin],
+          });
+        } catch (error) {
+          // Ignore permission cleanup failures.
+        }
+      }
     });
 
     li.appendChild(dragHandle);
@@ -1016,8 +1096,56 @@ cancelAddHostBtn.addEventListener("click", () => {
 
 confirmAddHostBtn.addEventListener("click", async () => {
   const name = hostNameInput.value.trim();
-  let url = hostUrlInput.value.trim();
-  if (name && url) {
+  const rawUrl = hostUrlInput.value.trim();
+  if (!name || !rawUrl) {
+    return;
+  }
+
+  let normalizedHost;
+  try {
+    normalizedHost = normalizeHostInput(rawUrl);
+  } catch (error) {
+    alert(hostAccessText("invalidHost"));
+    return;
+  }
+
+  if (!isBuiltinHostOrigin(normalizedHost.permissionOrigin)) {
+    let granted = false;
+    try {
+      granted = await chrome.permissions.request({
+        origins: [normalizedHost.permissionOrigin],
+      });
+    } catch (error) {
+      granted = false;
+    }
+
+    if (!granted) {
+      alert(hostAccessText("permissionDenied"));
+      return;
+    }
+  }
+
+  const nextSettings = await db.getSettings();
+  nextSettings.push({
+    id: Date.now().toString(),
+    name,
+    url: normalizedHost.storedUrl,
+    visible: true,
+  });
+  await db.setSettings(nextSettings);
+  addHostDialog.classList.add("hidden");
+
+  chrome.runtime
+    .sendMessage({
+      type: "HOST_PERMISSION_GRANTED",
+      origin: normalizedHost.permissionOrigin,
+    })
+    .catch(() => {});
+
+  return;
+
+  {
+    let url = rawUrl;
     try {
       if (url.includes("://")) {
         const parsedUrl = new URL(url);

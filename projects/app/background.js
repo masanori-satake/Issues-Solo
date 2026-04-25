@@ -1,24 +1,34 @@
 import { IssuesDB } from "./db.js";
 
 const db = new IssuesDB();
+const BUILTIN_HOST_PATTERNS = ["https://*.atlassian.net/*"];
 
 chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender) => {
   if (message.type === "ISSUE_UPDATED") {
-    handleIssueUpdated(message.data, sender.tab.id);
-  } else if (message.type === "CLEAR_TAB_ASSOCIATION") {
-    handleClearTabAssociation(sender.tab.id);
+    handleIssueUpdated(message.data, sender.tab?.id);
+    return;
+  }
+
+  if (message.type === "CLEAR_TAB_ASSOCIATION") {
+    handleClearTabAssociation(sender.tab?.id);
+    return;
+  }
+
+  if (message.type === "HOST_PERMISSION_GRANTED" && message.origin) {
+    syncGrantedHostTabs([message.origin]);
   }
 });
 
 async function handleIssueUpdated(data, tabId) {
-  // 同じタブで以前開いていた他の課題のステータスを効率的に更新
+  if (!tabId) return;
+
   await db.clearTabAssociation(tabId, data.url);
 
   const issueData = {
     ...data,
-    tabId: tabId,
+    tabId,
     isOpened: true,
   };
   await db.upsertIssue(issueData);
@@ -26,55 +36,72 @@ async function handleIssueUpdated(data, tabId) {
 }
 
 async function handleClearTabAssociation(tabId) {
+  if (!tabId) return;
+
   const changed = await db.clearTabAssociation(tabId);
   if (changed) {
     chrome.runtime.sendMessage({ type: "DB_UPDATED" }).catch(() => {});
   }
 }
 
-chrome.tabs.onRemoved.addListener(async (tabId) => {
-  const changed = await db.clearTabAssociation(tabId);
-  if (changed) {
-    chrome.runtime.sendMessage({ type: "DB_UPDATED" }).catch(() => {});
+function isIssuePageUrl(url) {
+  return /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/.test(url);
+}
+
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function originPatternToRegExp(pattern) {
+  const escaped = escapeRegExp(pattern).replace(/\\\*/g, ".*");
+  return new RegExp(`^${escaped}$`);
+}
+
+function isUrlCoveredByOrigins(url, origins) {
+  return origins.some((origin) => originPatternToRegExp(origin).test(url));
+}
+
+async function getGrantedOptionalOrigins() {
+  const { origins = [] } = await chrome.permissions.getAll();
+  return origins.filter((origin) => !BUILTIN_HOST_PATTERNS.includes(origin));
+}
+
+async function injectContentScript(tabId) {
+  try {
+    await chrome.scripting.executeScript({
+      target: { tabId },
+      files: ["content.js"],
+    });
+  } catch (error) {
+    // Ignore tabs where scripts cannot be injected.
   }
-});
+}
 
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  // URLが変更され、かつ新しいURLがJiraの課題ページでない場合
-  if (changeInfo.url) {
-    const isIssuePage = /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/.test(
-      changeInfo.url,
-    );
-    if (!isIssuePage) {
-      const changed = await db.clearTabAssociation(tabId);
-      if (changed) {
-        chrome.runtime.sendMessage({ type: "DB_UPDATED" }).catch(() => {});
-      }
-    }
+async function syncGrantedHostTabs(origins = null) {
+  const targetOrigins = origins ?? (await getGrantedOptionalOrigins());
+  if (!targetOrigins.length) {
+    return [];
   }
-});
 
-chrome.runtime.onInstalled.addListener(async () => {
-  // すべての JIRA インスタンスを対象にクエリ
-  const tabs = await chrome.tabs.query({
-    url: ["https://*.atlassian.net/*", "https://*/*"],
-  });
-
-  // インストール時に既存のタブに content.js を注入する
+  const tabs = await chrome.tabs.query({ url: targetOrigins });
   for (const tab of tabs) {
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId: tab.id },
-        files: ["content.js"],
-      });
-    } catch (e) {
-      // 権限のないページや特殊なタブでは注入に失敗する場合があるが、
-      // ユーザーへの影響はないため、エラー出力は抑制する
-    }
+    await injectContentScript(tab.id);
+  }
+  return tabs;
+}
+
+async function reconcileOpenTabsState() {
+  const optionalOrigins = await getGrantedOptionalOrigins();
+  const queryPatterns = [...BUILTIN_HOST_PATTERNS, ...optionalOrigins];
+  const tabs = queryPatterns.length
+    ? await chrome.tabs.query({ url: queryPatterns })
+    : [];
+
+  for (const tab of tabs) {
+    await injectContentScript(tab.id);
   }
 
-  const openTabIds = new Set(tabs.map((t) => t.id));
-
+  const openTabIds = new Set(tabs.map((tab) => tab.id));
   const issues = await db.getAllIssues();
   for (const issue of issues) {
     if (issue.isOpened && !openTabIds.has(issue.tabId)) {
@@ -86,4 +113,54 @@ chrome.runtime.onInstalled.addListener(async () => {
       });
     }
   }
+}
+
+chrome.tabs.onRemoved.addListener(async (tabId) => {
+  const changed = await db.clearTabAssociation(tabId);
+  if (changed) {
+    chrome.runtime.sendMessage({ type: "DB_UPDATED" }).catch(() => {});
+  }
+});
+
+chrome.tabs.onUpdated.addListener(async (tabId, changeInfo) => {
+  if (!changeInfo.url) {
+    return;
+  }
+
+  const { url } = changeInfo;
+
+  if (isUrlCoveredByOrigins(url, BUILTIN_HOST_PATTERNS)) {
+    if (!isIssuePageUrl(url)) {
+      const changed = await db.clearTabAssociation(tabId);
+      if (changed) {
+        chrome.runtime.sendMessage({ type: "DB_UPDATED" }).catch(() => {});
+      }
+    }
+    return;
+  }
+
+  const optionalOrigins = await getGrantedOptionalOrigins();
+  if (isUrlCoveredByOrigins(url, optionalOrigins)) {
+    await injectContentScript(tabId);
+    if (!isIssuePageUrl(url)) {
+      const changed = await db.clearTabAssociation(tabId);
+      if (changed) {
+        chrome.runtime.sendMessage({ type: "DB_UPDATED" }).catch(() => {});
+      }
+    }
+    return;
+  }
+
+  const changed = await db.clearTabAssociation(tabId);
+  if (changed) {
+    chrome.runtime.sendMessage({ type: "DB_UPDATED" }).catch(() => {});
+  }
+});
+
+chrome.runtime.onInstalled.addListener(async () => {
+  await reconcileOpenTabsState();
+});
+
+chrome.runtime.onStartup.addListener(async () => {
+  await reconcileOpenTabsState();
 });
