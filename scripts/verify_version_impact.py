@@ -21,7 +21,7 @@ def get_base_version():
             ["git", "show", "origin/main:package.json"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         data = json.loads(result.stdout)
         return data.get("version")
@@ -32,7 +32,7 @@ def get_base_version():
                 ["git", "show", "main:package.json"],
                 capture_output=True,
                 text=True,
-                check=True
+                check=True,
             )
             data = json.loads(result.stdout)
             return data.get("version")
@@ -61,7 +61,7 @@ def get_changed_files():
             ["git", "diff", "--name-only", "origin/main...HEAD"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         files = result.stdout.splitlines()
         if files:
@@ -74,7 +74,7 @@ def get_changed_files():
             ["git", "diff", "--name-only", "main...HEAD"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         files = result.stdout.splitlines()
         if files:
@@ -88,7 +88,7 @@ def get_changed_files():
             ["git", "diff", "--name-only", "main"],
             capture_output=True,
             text=True,
-            check=True
+            check=True,
         )
         return result.stdout.splitlines()
     except Exception as e:
@@ -112,7 +112,9 @@ def verify_version_impact():
     base_v = get_base_version()
 
     if not base_v:
-        print("Base version not found. Skipping increment check (assuming first release or non-git environment).")
+        print(
+            "Base version not found. Skipping increment check (assuming first release or non-git environment)."
+        )
         return True
 
     print(f"Base version (main): {base_v}")
@@ -122,8 +124,12 @@ def verify_version_impact():
         print("Success: Version has been incremented.")
         return True
     else:
-        print("Error: Changes detected in projects/app/ but version was not incremented.")
-        print("Please update version in package.json, projects/app/manifest.json, and README.md.")
+        print(
+            "Error: Changes detected in projects/app/ but version was not incremented."
+        )
+        print(
+            "Please update version in package.json, projects/app/manifest.json, and README.md."
+        )
         return False
 
 
