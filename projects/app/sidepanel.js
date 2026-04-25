@@ -525,6 +525,7 @@ settingsBtn.addEventListener("click", async () => {
   settingsPanel.classList.remove("hidden");
   renderHostSettings();
   renderProjectSettings();
+  updateAboutStats();
   const maxCount = await db.getMaxHistoryCount();
   previousMaxHistoryCount = maxCount; // 初期値を正確に保持
   updateMaxHistoryUI(maxCount);
@@ -736,6 +737,9 @@ tabButtons.forEach((btn) => {
     tabContents.forEach((c) =>
       c.classList.toggle("hidden", c.id !== `${tabName}-tab`),
     );
+    if (tabName === "about") {
+      updateAboutStats();
+    }
   });
 });
 
@@ -1006,10 +1010,26 @@ confirmAddHostBtn.addEventListener("click", async () => {
   }
 });
 
-// バージョン情報の表示
-const versionSpan = document.getElementById("extension-version");
-if (versionSpan) {
-  versionSpan.textContent = chrome.runtime.getManifest().version;
+/**
+ * バージョン情報と統計情報の表示
+ */
+async function updateAboutStats() {
+  const versionSpan = document.getElementById("extension-version");
+  if (versionSpan) {
+    versionSpan.textContent = "v" + chrome.runtime.getManifest().version;
+  }
+
+  const hosts = await db.getSettings();
+  const projects = await db.getProjectSettings();
+  const issues = await db.getAllIssues();
+
+  const statHosts = document.getElementById("stat-hosts");
+  const statProjects = document.getElementById("stat-projects");
+  const statHistory = document.getElementById("stat-history");
+
+  if (statHosts) statHosts.textContent = hosts.length;
+  if (statProjects) statProjects.textContent = projects.length;
+  if (statHistory) statHistory.textContent = issues.length;
 }
 
 // DB更新通知の受信 (Issueの追加・削除・タブ状態の変更など)

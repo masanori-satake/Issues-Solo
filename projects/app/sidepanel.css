@@ -767,15 +767,56 @@ section:last-child {
 }
 
 .about-container {
-  line-height: 1.6;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.about-container h3 {
-  margin-top: 0;
+.about-section {
+  display: flex;
+  flex-direction: column;
 }
 
-.about-container ul {
-  padding-left: 20px;
+.about-label {
+  font-size: 11px;
+  color: var(--secondary-text);
+  margin-bottom: 2px;
+}
+
+.about-value {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.stats-row {
+  flex-direction: row;
+  gap: 24px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-text {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: var(--text-color);
+}
+
+.about-text.small {
+  font-size: 11px;
+  color: var(--secondary-text);
+}
+
+.about-text.italic {
+  font-style: italic;
+}
+
+.about-section.credits,
+.about-section.disclaimer {
+  margin-top: 4px;
 }
 
 .no-history {
