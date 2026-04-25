@@ -1,4 +1,9 @@
 (function () {
+  if (window.__ISSUES_SOLO_CONTENT_SCRIPT_LOADED__) {
+    return;
+  }
+  window.__ISSUES_SOLO_CONTENT_SCRIPT_LOADED__ = true;
+
   /**
    * Data Center版のコンテキストパスやCloud新UIに対応するため、
    * 広範なURLパターンで実行されるが、冒頭で課題キーの有無をチェックし
