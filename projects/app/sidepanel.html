@@ -12,7 +12,7 @@
           <button
             id="sort-lastAccessed"
             class="sort-btn"
-            title="最終表示時刻順"
+            data-i18n-title="sortLastAccessed"
           >
             <span class="material-symbols-outlined type-icon">schedule</span>
             <span class="material-symbols-outlined dir-icon"
@@ -22,14 +22,18 @@
           <button
             id="sort-issueKey"
             class="sort-btn"
-            title="Issue IDのアルファベット順"
+            data-i18n-title="sortIssueKey"
           >
             <span class="material-symbols-outlined type-icon">tag</span>
             <span class="material-symbols-outlined dir-icon"
               >arrow_downward</span
             >
           </button>
-          <button id="sort-priority" class="sort-btn" title="優先度順">
+          <button
+            id="sort-priority"
+            class="sort-btn"
+            data-i18n-title="sortPriority"
+          >
             <span class="material-symbols-outlined type-icon"
               >signal_cellular_alt</span
             >
@@ -37,7 +41,11 @@
               >arrow_downward</span
             >
           </button>
-          <button id="sort-status" class="sort-btn" title="Status順">
+          <button
+            id="sort-status"
+            class="sort-btn"
+            data-i18n-title="sortStatus"
+          >
             <span class="material-symbols-outlined type-icon">fact_check</span>
             <span class="material-symbols-outlined dir-icon"
               >arrow_downward</span
@@ -45,7 +53,7 @@
           </button>
         </div>
         <div class="spacer"></div>
-        <button id="settings-btn" title="設定" class="icon-btn">
+        <button id="settings-btn" data-i18n-title="settings" class="icon-btn">
           <span class="material-symbols-outlined">settings</span>
         </button>
       </div>
@@ -53,46 +61,57 @@
 
     <main id="issue-list">
       <!-- 履歴がここに動的に生成される -->
-      <div class="loading">履歴を読み込み中...</div>
+      <div class="loading" data-i18n="loading">履歴を読み込み中...</div>
     </main>
 
     <div id="settings-panel" class="overlay hidden">
       <div class="settings-content">
         <div class="settings-header">
-          <div class="settings-title">設定</div>
-          <button id="close-settings" class="icon-btn">
+          <div class="settings-title" data-i18n="settings">設定</div>
+          <button id="close-settings" class="icon-btn" data-i18n-title="close">
             <span class="material-symbols-outlined">close</span>
           </button>
         </div>
         <div class="tabs">
-          <button class="tab-btn active" data-tab="general" title="一般">
+          <button
+            class="tab-btn active"
+            data-tab="general"
+            data-i18n-title="tabGeneral"
+          >
             <span class="material-symbols-outlined">settings</span>
           </button>
-          <button class="tab-btn" data-tab="projects" title="プロジェクトキー">
+          <button
+            class="tab-btn"
+            data-tab="projects"
+            data-i18n-title="tabProjects"
+          >
             <span class="material-symbols-outlined">category</span>
           </button>
-          <button class="tab-btn" data-tab="about" title="About">
+          <button class="tab-btn" data-tab="about" data-i18n-title="tabAbout">
             <span class="material-symbols-outlined">info</span>
           </button>
         </div>
         <div class="tab-content" id="general-tab">
           <section id="jira-site-section">
-            <h4 class="section-title">Jira サイト</h4>
+            <h4 class="section-title" data-i18n="sectionJiraSite">
+              Jira サイト
+            </h4>
             <div class="host-list-container">
               <ul id="host-list"></ul>
             </div>
             <div class="host-actions">
-              <button id="add-host-btn" class="fab-btn" title="追加">
+              <button id="add-host-btn" class="fab-btn" data-i18n-title="add">
                 <span class="material-symbols-outlined">add</span>
               </button>
             </div>
           </section>
 
           <section id="history-section">
-            <h4 class="section-title">履歴</h4>
+            <h4 class="section-title" data-i18n="sectionHistory">履歴</h4>
             <div class="settings-item">
               <label for="max-history-range"
-                >最大保持件数: <span id="max-history-value">50</span></label
+                ><span data-i18n="maxHistoryCount">最大保持件数</span>:
+                <span id="max-history-value">50</span></label
               >
               <input
                 type="range"
@@ -112,15 +131,15 @@
               <div class="management-buttons">
                 <button id="export-history-btn" class="management-btn">
                   <span class="material-symbols-outlined">content_copy</span>
-                  コピー (Export)
+                  <span data-i18n="copyExport">コピー (Export)</span>
                 </button>
                 <button id="import-history-btn" class="management-btn">
                   <span class="material-symbols-outlined">content_paste</span>
-                  貼り付け (Import)
+                  <span data-i18n="pasteImport">貼り付け (Import)</span>
                 </button>
               </div>
               <div class="import-mode-selector">
-                <label>インポート設定:</label>
+                <label data-i18n="importSettings">インポート設定:</label>
                 <div class="radio-group">
                   <label
                     ><input
@@ -129,7 +148,7 @@
                       value="add"
                       checked
                     />
-                    追記</label
+                    <span data-i18n="importModeAdd">追記</span></label
                   >
                   <label
                     ><input
@@ -137,32 +156,32 @@
                       name="history-import-mode"
                       value="overwrite"
                     />
-                    上書き</label
+                    <span data-i18n="importModeOverwrite">上書き</span></label
                   >
                 </div>
               </div>
               <button id="clear-history-btn" class="management-btn danger">
                 <span class="material-symbols-outlined">delete_forever</span>
-                全削除
+                <span data-i18n="deleteAll">全削除</span>
               </button>
             </div>
           </section>
 
           <section id="data-section">
-            <h4 class="section-title">設定</h4>
+            <h4 class="section-title" data-i18n="sectionSettings">設定</h4>
             <div class="data-management">
               <div class="management-buttons">
                 <button id="export-settings-btn" class="management-btn">
                   <span class="material-symbols-outlined">content_copy</span>
-                  コピー (Export)
+                  <span data-i18n="copyExport">コピー (Export)</span>
                 </button>
                 <button id="import-settings-btn" class="management-btn">
                   <span class="material-symbols-outlined">content_paste</span>
-                  貼り付け (Import)
+                  <span data-i18n="pasteImport">貼り付け (Import)</span>
                 </button>
               </div>
               <div class="import-mode-selector">
-                <label>インポート設定:</label>
+                <label data-i18n="importSettings">インポート設定:</label>
                 <div class="radio-group">
                   <label
                     ><input
@@ -171,7 +190,7 @@
                       value="add"
                       checked
                     />
-                    追記</label
+                    <span data-i18n="importModeAdd">追記</span></label
                   >
                   <label
                     ><input
@@ -179,7 +198,7 @@
                       name="settings-import-mode"
                       value="overwrite"
                     />
-                    上書き</label
+                    <span data-i18n="importModeOverwrite">上書き</span></label
                   >
                 </div>
               </div>
@@ -188,12 +207,18 @@
         </div>
         <div class="tab-content hidden" id="projects-tab">
           <section>
-            <h4 class="section-title">プロジェクト</h4>
+            <h4 class="section-title" data-i18n="sectionProject">
+              プロジェクト
+            </h4>
             <div class="project-list-container">
               <ul id="project-list"></ul>
             </div>
             <div class="project-actions">
-              <button id="add-project-btn" class="fab-btn" title="追加">
+              <button
+                id="add-project-btn"
+                class="fab-btn"
+                data-i18n-title="add"
+              >
                 <span class="material-symbols-outlined">add</span>
               </button>
             </div>
@@ -202,33 +227,37 @@
         <div class="tab-content hidden" id="about-tab">
           <div class="about-container">
             <section class="about-section">
-              <div class="about-label">バージョン</div>
+              <div class="about-label" data-i18n="version">バージョン</div>
               <div class="about-value" id="extension-version">v0.0.0</div>
             </section>
 
             <section class="about-section stats-row">
               <div class="stat-item">
-                <span class="about-label">ホスト数</span>
+                <span class="about-label" data-i18n="statHosts">ホスト数</span>
                 <span class="about-value" id="stat-hosts">0</span>
               </div>
               <div class="stat-item">
-                <span class="about-label">プロジェクト数</span>
+                <span class="about-label" data-i18n="statProjects"
+                  >プロジェクト数</span
+                >
                 <span class="about-value" id="stat-projects">0</span>
               </div>
               <div class="stat-item">
-                <span class="about-label">履歴件数</span>
+                <span class="about-label" data-i18n="statHistory"
+                  >履歴件数</span
+                >
                 <span class="about-value" id="stat-history">0</span>
               </div>
             </section>
 
             <section class="about-section">
-              <div class="about-label">開発者</div>
+              <div class="about-label" data-i18n="developer">開発者</div>
               <div class="about-value">Masanori SATAKE</div>
             </section>
 
             <section class="about-section">
               <div class="about-label">Issues-Solo</div>
-              <p class="about-text">
+              <p class="about-text" data-i18n="aboutDescription">
                 Issues-Solo
                 は、プライバシー重視のJira履歴ツールです。データはブラウザ内の
                 IndexedDB に保存され、外部送信は一切行われません。GitHub Actions
@@ -246,8 +275,10 @@
 
             <section class="about-section disclaimer">
               <p class="about-text small italic">
-                【免責事項】
-                本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。
+                <span data-i18n="disclaimerTitle">【免責事項】</span>
+                <span data-i18n="disclaimerText">
+                  本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。
+                </span>
               </p>
             </section>
           </div>
@@ -257,43 +288,72 @@
 
     <div id="confirm-dialog" class="overlay hidden">
       <div class="dialog">
-        <h3 id="confirm-title">確認</h3>
+        <h3 id="confirm-title" data-i18n="confirm">確認</h3>
         <p id="confirm-message"></p>
         <div class="dialog-actions">
-          <button id="confirm-cancel" class="text-btn">キャンセル</button>
-          <button id="confirm-ok" class="text-btn danger">OK</button>
+          <button id="confirm-cancel" class="text-btn" data-i18n="cancel">
+            キャンセル
+          </button>
+          <button id="confirm-ok" class="text-btn danger" data-i18n="ok">
+            OK
+          </button>
         </div>
       </div>
     </div>
 
     <div id="add-project-dialog" class="overlay hidden">
       <div class="dialog">
-        <h3>プロジェクトキーの追加</h3>
+        <h3 data-i18n="addProjectTitle">プロジェクトキーの追加</h3>
         <div class="input-field">
-          <label for="project-key-input">プロジェクトキー</label>
-          <input type="text" id="project-key-input" placeholder="例: PROJ" />
+          <label for="project-key-input" data-i18n="projectKey"
+            >プロジェクトキー</label
+          >
+          <input
+            type="text"
+            id="project-key-input"
+            data-i18n-placeholder="projectKeyPlaceholder"
+            placeholder="例: PROJ"
+          />
         </div>
         <div class="dialog-actions">
-          <button id="cancel-add-project" class="text-btn">キャンセル</button>
-          <button id="confirm-add-project" class="text-btn">OK</button>
+          <button id="cancel-add-project" class="text-btn" data-i18n="cancel">
+            キャンセル
+          </button>
+          <button id="confirm-add-project" class="text-btn" data-i18n="ok">
+            OK
+          </button>
         </div>
       </div>
     </div>
 
     <div id="add-host-dialog" class="overlay hidden">
       <div class="dialog">
-        <h3>Jiraホストの追加</h3>
+        <h3 data-i18n="addHostTitle">Jiraホストの追加</h3>
         <div class="input-field">
-          <label for="host-name">表示名</label>
-          <input type="text" id="host-name" placeholder="例: 社内Jira" />
+          <label for="host-name" data-i18n="hostName">表示名</label>
+          <input
+            type="text"
+            id="host-name"
+            data-i18n-placeholder="hostNamePlaceholder"
+            placeholder="例: 社内Jira"
+          />
         </div>
         <div class="input-field">
-          <label for="host-url">URL / ドメイン</label>
-          <input type="text" id="host-url" placeholder="例: jira.example.com" />
+          <label for="host-url" data-i18n="hostUrl">URL / ドメイン</label>
+          <input
+            type="text"
+            id="host-url"
+            data-i18n-placeholder="hostUrlPlaceholder"
+            placeholder="例: jira.example.com"
+          />
         </div>
         <div class="dialog-actions">
-          <button id="cancel-add-host" class="text-btn">キャンセル</button>
-          <button id="confirm-add-host" class="text-btn">追加</button>
+          <button id="cancel-add-host" class="text-btn" data-i18n="cancel">
+            キャンセル
+          </button>
+          <button id="confirm-add-host" class="text-btn" data-i18n="add">
+            追加
+          </button>
         </div>
       </div>
     </div>

@@ -1,0 +1,209 @@
+{
+  "extName": {
+    "message": "Issues-Solo"
+  },
+  "extDescription": {
+    "message": "Local-only Chrome extension to manage JIRA browsing history and editing status."
+  },
+  "actionTitle": {
+    "message": "Open Issues-Solo"
+  },
+  "sortLastAccessed": {
+    "message": "Sort by last accessed time"
+  },
+  "sortIssueKey": {
+    "message": "Sort by Issue ID (alphabetical)"
+  },
+  "sortPriority": {
+    "message": "Sort by priority"
+  },
+  "sortStatus": {
+    "message": "Sort by status"
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "loading": {
+    "message": "Loading history..."
+  },
+  "tabGeneral": {
+    "message": "General"
+  },
+  "tabProjects": {
+    "message": "Project Keys"
+  },
+  "tabAbout": {
+    "message": "About"
+  },
+  "sectionJiraSite": {
+    "message": "Jira Sites"
+  },
+  "sectionHistory": {
+    "message": "History"
+  },
+  "sectionSettings": {
+    "message": "Settings Data"
+  },
+  "sectionProject": {
+    "message": "Projects"
+  },
+  "add": {
+    "message": "Add"
+  },
+  "maxHistoryCount": {
+    "message": "Max history count"
+  },
+  "copyExport": {
+    "message": "Copy (Export)"
+  },
+  "pasteImport": {
+    "message": "Paste (Import)"
+  },
+  "importSettings": {
+    "message": "Import Settings"
+  },
+  "importModeAdd": {
+    "message": "Add (Merge)"
+  },
+  "importModeOverwrite": {
+    "message": "Overwrite"
+  },
+  "deleteAll": {
+    "message": "Delete All"
+  },
+  "version": {
+    "message": "Version"
+  },
+  "statHosts": {
+    "message": "Hosts"
+  },
+  "statProjects": {
+    "message": "Projects"
+  },
+  "statHistory": {
+    "message": "History"
+  },
+  "developer": {
+    "message": "Developer"
+  },
+  "aboutDescription": {
+    "message": "Issues-Solo is a privacy-focused Jira history tool. Data is stored in IndexedDB within your browser and is never sent externally. We maintain high transparency and security through dependency verification with GitHub Actions and continuous auditing with Google OSV-Scanner."
+  },
+  "disclaimerTitle": {
+    "message": "Disclaimer"
+  },
+  "disclaimerText": {
+    "message": "This software is a personal open-source project and is provided \"AS IS\" without warranty of any kind. Use at your own risk, as per the MIT License."
+  },
+  "confirm": {
+    "message": "Confirm"
+  },
+  "cancel": {
+    "message": "Cancel"
+  },
+  "ok": {
+    "message": "OK"
+  },
+  "addProjectTitle": {
+    "message": "Add Project Key"
+  },
+  "projectKey": {
+    "message": "Project Key"
+  },
+  "projectKeyPlaceholder": {
+    "message": "e.g., PROJ"
+  },
+  "addHostTitle": {
+    "message": "Add Jira Host"
+  },
+  "hostName": {
+    "message": "Display Name"
+  },
+  "hostNamePlaceholder": {
+    "message": "e.g., Internal Jira"
+  },
+  "hostUrl": {
+    "message": "URL / Domain"
+  },
+  "hostUrlPlaceholder": {
+    "message": "e.g., jira.example.com"
+  },
+  "noHistory": {
+    "message": "No history found."
+  },
+  "tabOpened": {
+    "message": "Tab is open"
+  },
+  "tabClosed": {
+    "message": "Tab is closed"
+  },
+  "editing": {
+    "message": "Editing"
+  },
+  "statusLabel": {
+    "message": "Status: $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "priorityLabel": {
+    "message": "Priority: $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "changeHistoryLimit": {
+    "message": "Change History Limit"
+  },
+  "changeHistoryLimitConfirm": {
+    "message": "Changing the maximum history limit to $1 will delete $2 old history entries that exceed the limit. Are you sure?",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
+  },
+  "clearHistoryTitle": {
+    "message": "Clear All History"
+  },
+  "clearHistoryConfirm": {
+    "message": "This will delete all currently held history entries. Are you sure?"
+  },
+  "historyExportSuccess": {
+    "message": "History data copied to clipboard (NDJSON format)"
+  },
+  "clipboardError": {
+    "message": "Reading from the clipboard is not supported or permitted in this browser."
+  },
+  "historyImportSuccess": {
+    "message": "History data imported"
+  },
+  "importError": {
+    "message": "Import failed. Please make sure the correct data is on the clipboard."
+  },
+  "settingsExportSuccess": {
+    "message": "Settings data copied to clipboard (JSON format)"
+  },
+  "settingsImportSuccess": {
+    "message": "Settings data imported"
+  },
+  "visible": {
+    "message": "Visible"
+  },
+  "hidden": {
+    "message": "Hidden"
+  },
+  "other": {
+    "message": "other"
+  },
+  "close": {
+    "message": "Close"
+  }
+}

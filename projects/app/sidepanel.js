@@ -169,6 +169,35 @@ function compareStatus(a, b, direction) {
 }
 
 /**
+ * i18n対応: data-i18n属性を持つ要素のテキストを更新
+ */
+function applyTranslations() {
+  const selectors = [
+    "[data-i18n]",
+    "[data-i18n-title]",
+    "[data-i18n-placeholder]",
+  ];
+  document.querySelectorAll(selectors.join(", ")).forEach((el) => {
+    const textKey = el.dataset.i18n;
+    const titleKey = el.dataset.i18nTitle;
+    const placeholderKey = el.dataset.i18nPlaceholder;
+
+    if (textKey) {
+      const message = chrome.i18n.getMessage(textKey);
+      if (message) el.textContent = message;
+    }
+    if (titleKey) {
+      const message = chrome.i18n.getMessage(titleKey);
+      if (message) el.setAttribute("title", message);
+    }
+    if (placeholderKey) {
+      const message = chrome.i18n.getMessage(placeholderKey);
+      if (message) el.setAttribute("placeholder", message);
+    }
+  });
+}
+
+/**
  * 履歴リストのレンダリング
  */
 async function renderList() {
@@ -214,7 +243,7 @@ async function renderList() {
     listElement.textContent = "";
     const noHistory = document.createElement("div");
     noHistory.className = "no-history";
-    noHistory.textContent = "履歴が見つかりません。";
+    noHistory.textContent = chrome.i18n.getMessage("noHistory");
     listElement.appendChild(noHistory);
     return;
   }
@@ -360,7 +389,7 @@ async function renderList() {
         otherHeader.appendChild(glyph);
 
         const name = document.createElement("span");
-        name.textContent = "other";
+        name.textContent = chrome.i18n.getMessage("other") || "other";
         otherHeader.appendChild(name);
 
         otherHeader.addEventListener("click", async () => {
@@ -393,12 +422,14 @@ function createIssueItem(issue) {
   const openIndicator = document.createElement("div");
   openIndicator.className = `indicator ${issue.isOpened ? "is-opened" : ""}`;
   openIndicator.title = issue.isOpened
-    ? "タブが開いています"
-    : "タブは閉じています";
+    ? chrome.i18n.getMessage("tabOpened")
+    : chrome.i18n.getMessage("tabClosed");
 
   const editIndicator = document.createElement("div");
   editIndicator.className = `indicator ${issue.isEditing ? "is-editing" : ""}`;
-  editIndicator.title = issue.isEditing ? "編集中" : "";
+  editIndicator.title = issue.isEditing
+    ? chrome.i18n.getMessage("editing")
+    : "";
 
   indicators.appendChild(openIndicator);
   indicators.appendChild(editIndicator);
@@ -429,7 +460,7 @@ function createIssueItem(issue) {
     sBadge.style.color = sColor;
     sBadge.style.backgroundColor = sColor + "15";
     sBadge.style.border = `1px solid ${sColor}44`;
-    sBadge.title = `ステータス: ${issue.status}`;
+    sBadge.title = chrome.i18n.getMessage("statusLabel", [issue.status]);
     glyphs.appendChild(sBadge);
   }
 
@@ -444,7 +475,7 @@ function createIssueItem(issue) {
     pBadge.style.color = pInfo.color;
     pBadge.style.backgroundColor = pInfo.color + "15"; // 15 is approx 8% opacity
     pBadge.style.border = `1px solid ${pInfo.color}44`; // 44 is approx 25% opacity
-    pBadge.title = `優先度: ${issue.priority}`;
+    pBadge.title = chrome.i18n.getMessage("priorityLabel", [issue.priority]);
     glyphs.appendChild(pBadge);
   }
 
@@ -569,10 +600,11 @@ maxHistoryRange.addEventListener("change", async () => {
 
   if (newCount < previousMaxHistoryCount && currentIssues.length > newCount) {
     showConfirm(
-      "保持件数の変更",
-      `最大保持件数を ${newCount} 件に変更すると、制限を超える古い履歴 (${
-        currentIssues.length - newCount
-      } 件) が削除されます。よろしいですか？`,
+      chrome.i18n.getMessage("changeHistoryLimit"),
+      chrome.i18n.getMessage("changeHistoryLimitConfirm", [
+        newCount.toString(),
+        (currentIssues.length - newCount).toString(),
+      ]),
       async () => {
         maxHistoryValue.textContent = newCount;
         await db.setMaxHistoryCount(newCount);
@@ -623,8 +655,8 @@ function showConfirm(title, message, onOk, onCancel) {
 // 履歴の全削除
 clearHistoryBtn.addEventListener("click", () => {
   showConfirm(
-    "履歴の全削除",
-    "現在保持されているすべての履歴エントリーを削除します。よろしいですか？",
+    chrome.i18n.getMessage("clearHistoryTitle"),
+    chrome.i18n.getMessage("clearHistoryConfirm"),
     async () => {
       await db.clearAllIssues();
       renderList();
@@ -638,7 +670,7 @@ exportHistoryBtn.addEventListener("click", async () => {
   const ndjson = issues.map((i) => JSON.stringify(i)).join("\n");
   try {
     await navigator.clipboard.writeText(ndjson);
-    alert("履歴データをクリップボードにコピーしました (NDJSON形式)");
+    alert(chrome.i18n.getMessage("historyExportSuccess"));
   } catch (err) {
     console.error("Failed to copy history", err);
   }
@@ -648,9 +680,7 @@ exportHistoryBtn.addEventListener("click", async () => {
 importHistoryBtn.addEventListener("click", async () => {
   try {
     if (!navigator.clipboard || !navigator.clipboard.readText) {
-      alert(
-        "このブラウザではクリップボードからの読み取りがサポートされていないか、許可されていません。",
-      );
+      alert(chrome.i18n.getMessage("clipboardError"));
       return;
     }
     const text = await navigator.clipboard.readText();
@@ -659,12 +689,10 @@ importHistoryBtn.addEventListener("click", async () => {
     ).value;
     await db.importIssues(text, mode);
     renderList();
-    alert("履歴データをインポートしました");
+    alert(chrome.i18n.getMessage("historyImportSuccess"));
   } catch (err) {
     console.error("Failed to import history", err);
-    alert(
-      "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。",
-    );
+    alert(chrome.i18n.getMessage("importError"));
   }
 });
 
@@ -690,7 +718,7 @@ exportSettingsBtn.addEventListener("click", async () => {
 
   try {
     await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-    alert("設定データをクリップボードにコピーしました (JSON形式)");
+    alert(chrome.i18n.getMessage("settingsExportSuccess"));
   } catch (err) {
     console.error("Failed to copy settings", err);
   }
@@ -700,9 +728,7 @@ exportSettingsBtn.addEventListener("click", async () => {
 importSettingsBtn.addEventListener("click", async () => {
   try {
     if (!navigator.clipboard || !navigator.clipboard.readText) {
-      alert(
-        "このブラウザではクリップボードからの読み取りがサポートされていないか、許可されていません。",
-      );
+      alert(chrome.i18n.getMessage("clipboardError"));
       return;
     }
     const text = await navigator.clipboard.readText();
@@ -715,12 +741,10 @@ importSettingsBtn.addEventListener("click", async () => {
     renderProjectSettings();
     const maxCount = await db.getMaxHistoryCount();
     updateMaxHistoryUI(maxCount);
-    alert("設定データをインポートしました");
+    alert(chrome.i18n.getMessage("settingsImportSuccess"));
   } catch (err) {
     console.error("Failed to import settings", err);
-    alert(
-      "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。",
-    );
+    alert(chrome.i18n.getMessage("importError"));
   }
 });
 
@@ -904,7 +928,9 @@ async function renderHostSettings() {
 
     const toggle = document.createElement("div");
     toggle.className = "visibility-toggle";
-    toggle.title = host.visible ? "表示中" : "非表示";
+    toggle.title = host.visible
+      ? chrome.i18n.getMessage("visible")
+      : chrome.i18n.getMessage("hidden");
     const toggleIcon = document.createElement("span");
     toggleIcon.className = "material-symbols-outlined";
     toggleIcon.textContent = host.visible ? "visibility" : "visibility_off";
@@ -1051,4 +1077,5 @@ chrome.storage.onChanged.addListener((changes) => {
   }
 });
 
+applyTranslations();
 renderList();
