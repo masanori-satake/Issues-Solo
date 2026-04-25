@@ -39,6 +39,13 @@ const confirmMessage = document.getElementById("confirm-message");
 const confirmOkBtn = document.getElementById("confirm-ok");
 const confirmCancelBtn = document.getElementById("confirm-cancel");
 
+const sortBtns = {
+  lastAccessed: document.getElementById("sort-lastAccessed"),
+  issueKey: document.getElementById("sort-issueKey"),
+  priority: document.getElementById("sort-priority"),
+  status: document.getElementById("sort-status"),
+};
+
 let currentSettings = [];
 let currentProjectSettings = [];
 
@@ -87,11 +94,116 @@ const STATUS_COLOR_MAP = {
   Closed: "#36B37E",
 };
 
+const PRIORITY_ORDER = ["Highest", "High", "Medium", "Low", "Lowest"];
+const PRIORITY_ORDER_JA = ["最高", "高", "中", "低", "最低"];
+
+const STATUS_ORDER_MAP = {
+  // 完了系 (最高)
+  Done: 3,
+  完了: 3,
+  Resolved: 3,
+  解決済: 3,
+  Closed: 3,
+  // 進行中系
+  "In Progress": 2,
+  進行中: 2,
+  "In Review": 2,
+  レビュー中: 2,
+  // 未着手系
+  "To Do": 1,
+  未着手: 1,
+  Open: 1,
+  Reopened: 1,
+};
+
+/**
+ * 自然な順序でのIssue Keyソート (PROJ-2 < PROJ-10)
+ */
+function compareIssueKeys(a, b) {
+  const partsA = a.split("-");
+  const partsB = b.split("-");
+  if (partsA[0] !== partsB[0]) return partsA[0].localeCompare(partsB[0] || "");
+
+  const numA = parseInt(partsA[1], 10);
+  const numB = parseInt(partsB[1], 10);
+
+  if (isNaN(numA) && isNaN(numB)) return 0;
+  if (isNaN(numA)) return 1;
+  if (isNaN(numB)) return -1;
+
+  return numA - numB;
+}
+
+/**
+ * 優先度の重み取得
+ */
+function getPriorityWeight(priority) {
+  let idx = PRIORITY_ORDER.indexOf(priority);
+  if (idx === -1) idx = PRIORITY_ORDER_JA.indexOf(priority);
+  return idx === -1 ? 99 : idx;
+}
+
+/**
+ * ステータスの重み取得
+ */
+function getStatusWeight(status) {
+  return STATUS_ORDER_MAP[status] || 0;
+}
+
+/**
+ * ステータスの比較
+ * 降順: 完了(3) > 進行中(2) > 未着手(1) > その他(0)
+ * 昇順: 未着手(1) < 進行中(2) < 完了(3) < その他(0)
+ */
+function compareStatus(a, b, direction) {
+  const weightA = getStatusWeight(a.status);
+  const weightB = getStatusWeight(b.status);
+
+  if (direction === "desc") {
+    return weightB - weightA;
+  } else {
+    if (weightA === 0 && weightB !== 0) return 1;
+    if (weightA !== 0 && weightB === 0) return -1;
+    return weightA - weightB;
+  }
+}
+
 /**
  * 履歴リストのレンダリング
  */
 async function renderList() {
   const issues = await db.getAllIssues();
+  const sortSettings = await db.getSortSettings();
+  updateSortUI(sortSettings);
+
+  // ソートの適用
+  issues.sort((a, b) => {
+    const { type, direction } = sortSettings;
+
+    if (type === "lastAccessed") {
+      const result = (a.lastAccessed || 0) - (b.lastAccessed || 0);
+      return direction === "desc" ? -result : result;
+    }
+
+    if (type === "issueKey") {
+      const result = compareIssueKeys(a.issueKey, b.issueKey);
+      return direction === "desc" ? -result : result;
+    }
+
+    if (type === "priority") {
+      // 降順で重みが小さい(Highest:0)が先
+      const result =
+        getPriorityWeight(b.priority) - getPriorityWeight(a.priority);
+      return direction === "desc" ? -result : result;
+    }
+
+    if (type === "status") {
+      return compareStatus(a, b, direction);
+    }
+
+    return 0;
+  });
+
   const settings = await db.getSettings();
   const projectSettings = await db.getProjectSettings();
   const otherCollapsed = await db.getOtherCollapsed();
@@ -309,6 +421,18 @@ function createIssueItem(issue) {
   const glyphs = document.createElement("div");
   glyphs.className = "issue-glyphs";
 
+  if (issue.status) {
+    const sColor = STATUS_COLOR_MAP[issue.status] || "#7A869A";
+    const sBadge = document.createElement("span");
+    sBadge.className = "status-badge";
+    sBadge.textContent = issue.status;
+    sBadge.style.color = sColor;
+    sBadge.style.backgroundColor = sColor + "15";
+    sBadge.style.border = `1px solid ${sColor}44`;
+    sBadge.title = `ステータス: ${issue.status}`;
+    glyphs.appendChild(sBadge);
+  }
+
   if (issue.priority) {
     const pInfo = PRIORITY_MAP[issue.priority] || {
       glyph: "•",
@@ -322,18 +446,6 @@ function createIssueItem(issue) {
     pBadge.style.border = `1px solid ${pInfo.color}44`; // 44 is approx 25% opacity
     pBadge.title = `優先度: ${issue.priority}`;
     glyphs.appendChild(pBadge);
-  }
-
-  if (issue.status) {
-    const sColor = STATUS_COLOR_MAP[issue.status] || "#7A869A";
-    const sBadge = document.createElement("span");
-    sBadge.className = "status-badge";
-    sBadge.textContent = issue.status;
-    sBadge.style.color = sColor;
-    sBadge.style.backgroundColor = sColor + "15";
-    sBadge.style.border = `1px solid ${sColor}44`;
-    sBadge.title = `ステータス: ${issue.status}`;
-    glyphs.appendChild(sBadge);
   }
 
   item.appendChild(indicators);
@@ -362,7 +474,51 @@ async function handleIssueClick(issue) {
   } else {
     chrome.tabs.create({ url: issue.url });
   }
+
+  // 最終表示時刻を即座に更新して、ソート順を反映させる
+  const sortSettings = await db.getSortSettings();
+  if (sortSettings.type === "lastAccessed") {
+    // upsertIssueを呼び出すことで、IndexedDBのlastAccessedが更新される。
+    // その後、renderListを呼び出すことでリストが再描画され、順序が更新される。
+    await db.upsertIssue({ ...issue, lastAccessed: Date.now() });
+    renderList();
+  }
 }
+
+/**
+ * ソートUIの更新
+ */
+function updateSortUI(sortSettings) {
+  Object.keys(sortBtns).forEach((type) => {
+    const btn = sortBtns[type];
+    const isActive = sortSettings.type === type;
+    btn.classList.toggle("active", isActive);
+
+    const dirIcon = btn.querySelector(".dir-icon");
+    if (isActive) {
+      dirIcon.textContent =
+        sortSettings.direction === "desc" ? "arrow_downward" : "arrow_upward";
+    } else {
+      dirIcon.textContent = "arrow_downward"; // デフォルト
+    }
+  });
+}
+
+// ソートボタンのイベントリスナー
+Object.keys(sortBtns).forEach((type) => {
+  sortBtns[type].addEventListener("click", async () => {
+    const current = await db.getSortSettings();
+    let newDirection = "desc";
+
+    if (current.type === type) {
+      newDirection = current.direction === "desc" ? "asc" : "desc";
+    }
+
+    const newSettings = { type, direction: newDirection };
+    await db.setSortSettings(newSettings);
+    renderList();
+  });
+});
 
 // 設定画面の制御ロジック
 settingsBtn.addEventListener("click", async () => {

@@ -237,6 +237,24 @@ export class IssuesDB {
     });
   }
 
+  async getSortSettings() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(["sortSettings"], (result) => {
+        resolve(
+          result.sortSettings || { type: "lastAccessed", direction: "desc" },
+        );
+      });
+    });
+  }
+
+  async setSortSettings(sortSettings) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ sortSettings }, () => {
+        resolve();
+      });
+    });
+  }
+
   /**
    * 履歴の件数を制限数に収まるよう削除する
    */

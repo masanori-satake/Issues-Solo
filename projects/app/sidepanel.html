@@ -8,6 +8,42 @@
   <body>
     <header>
       <div class="header-content">
+        <div class="sort-button-group">
+          <button
+            id="sort-lastAccessed"
+            class="sort-btn"
+            title="最終表示時刻順"
+          >
+            <span class="material-symbols-outlined type-icon">schedule</span>
+            <span class="material-symbols-outlined dir-icon"
+              >arrow_downward</span
+            >
+          </button>
+          <button
+            id="sort-issueKey"
+            class="sort-btn"
+            title="Issue IDのアルファベット順"
+          >
+            <span class="material-symbols-outlined type-icon">tag</span>
+            <span class="material-symbols-outlined dir-icon"
+              >arrow_downward</span
+            >
+          </button>
+          <button id="sort-priority" class="sort-btn" title="優先度順">
+            <span class="material-symbols-outlined type-icon"
+              >signal_cellular_alt</span
+            >
+            <span class="material-symbols-outlined dir-icon"
+              >arrow_downward</span
+            >
+          </button>
+          <button id="sort-status" class="sort-btn" title="Status順">
+            <span class="material-symbols-outlined type-icon">fact_check</span>
+            <span class="material-symbols-outlined dir-icon"
+              >arrow_downward</span
+            >
+          </button>
+        </div>
         <div class="spacer"></div>
         <button id="settings-btn" title="設定" class="icon-btn">
           <span class="material-symbols-outlined">settings</span>
