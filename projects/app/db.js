@@ -43,35 +43,28 @@ export class IssuesDB {
       const store = transaction.objectStore(this.storeName);
 
       const getRequest = store.get(issue.url);
-      getRequest.onsuccess = async () => {
+      getRequest.onsuccess = () => {
         const existing = getRequest.result || {};
         const updated = { ...existing, ...issue, lastAccessed: Date.now() };
-        const putRequest = store.put(updated);
+        store.put(updated);
 
-        putRequest.onsuccess = async () => {
-          // 履歴上限チェック
-          const countRequest = store.count();
-          countRequest.onsuccess = async () => {
-            if (countRequest.result > maxCount) {
-              const allIssues = await this.getAllIssues();
-              const toDelete = allIssues.slice(maxCount);
-              const deleteTransaction = db.transaction(
-                [this.storeName],
-                "readwrite",
-              );
-              const deleteStore = deleteTransaction.objectStore(this.storeName);
-              for (const item of toDelete) {
-                deleteStore.delete(item.url);
-              }
-              deleteTransaction.oncomplete = () => resolve();
-            } else {
-              resolve();
+        // 同一トランザクション内で上限チェックを行う
+        const getAllRequest = store.getAll();
+        getAllRequest.onsuccess = () => {
+          const allIssues = getAllRequest.result.sort(
+            (a, b) => b.lastAccessed - a.lastAccessed,
+          );
+          if (allIssues.length > maxCount) {
+            const toDelete = allIssues.slice(maxCount);
+            for (const item of toDelete) {
+              store.delete(item.url);
             }
-          };
+          }
         };
-        putRequest.onerror = () => reject(putRequest.error);
       };
-      getRequest.onerror = () => reject(getRequest.error);
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
     });
   }
 
@@ -240,13 +233,6 @@ export class IssuesDB {
       })
       .filter((i) => i && i.url);
 
-    if (mode === "overwrite") {
-      await this.clearAllIssues();
-    }
-
-    // 重複を考慮しつつインポート（overwriteなら全件、addなら既存を優先するか上書きするか）
-    // ここでは単純に upsertIssue を使う（最新の visitation 情報が保持されるため）
-    // ただし、一括処理の方が効率的なので transaction を手動で制御する
     const db = await this.open();
     const maxCount = await this.getMaxHistoryCount();
 
@@ -254,28 +240,29 @@ export class IssuesDB {
       const transaction = db.transaction([this.storeName], "readwrite");
       const store = transaction.objectStore(this.storeName);
 
+      if (mode === "overwrite") {
+        store.clear();
+      }
+
       for (const issue of issues) {
         store.put(issue);
       }
 
-      transaction.oncomplete = async () => {
-        // インポート後の上限チェック
-        const allIssues = await this.getAllIssues();
+      // インポート後の上限チェックも同一トランザクション内で行う
+      const getAllRequest = store.getAll();
+      getAllRequest.onsuccess = () => {
+        const allIssues = getAllRequest.result.sort(
+          (a, b) => b.lastAccessed - a.lastAccessed,
+        );
         if (allIssues.length > maxCount) {
           const toDelete = allIssues.slice(maxCount);
-          const deleteTransaction = db.transaction(
-            [this.storeName],
-            "readwrite",
-          );
-          const deleteStore = deleteTransaction.objectStore(this.storeName);
           for (const item of toDelete) {
-            deleteStore.delete(item.url);
+            store.delete(item.url);
           }
-          deleteTransaction.oncomplete = () => resolve();
-        } else {
-          resolve();
         }
       };
+
+      transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
     });
   }
@@ -315,9 +302,7 @@ export class IssuesDB {
         const newProjectSettings = [...currentProjectSettings];
         if (data.projectSettings) {
           for (const ps of data.projectSettings) {
-            if (
-              !newProjectSettings.some((existing) => existing.key === ps.key)
-            ) {
+            if (!newProjectSettings.some((existing) => existing.key === ps.key)) {
               newProjectSettings.push(ps);
             }
           }
