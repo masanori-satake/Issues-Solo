@@ -7,6 +7,7 @@
     <style>
       :root {
         --md-sys-color-primary: #0061a4;
+        --md-sys-color-on-primary: #ffffff;
         --md-sys-color-surface: #fdfbff;
         --md-sys-color-on-surface: #1a1c1e;
         --md-sys-color-outline: #73777f;
@@ -45,7 +46,15 @@
         border-color: var(--md-sys-color-primary);
       }
       .logo {
+        display: flex;
+        align-items: center;
         font-weight: bold;
+        font-size: 1.2rem;
+        text-decoration: none;
+        color: var(--md-sys-color-on-surface);
+      }
+      nav a {
+        margin-left: 1.5rem;
         text-decoration: none;
         color: var(--md-sys-color-on-surface);
       }
@@ -73,6 +82,8 @@
     <header>
       <a href="index.html" class="logo">Issues-Solo</a>
       <nav style="display: flex; align-items: center">
+        <a href="index.html" data-i18n="top">トップ</a>
+        <a href="usage.html" data-i18n="usage">使い方</a>
         <div class="lang-switcher">
           <button class="lang-switch" data-lang="en" data-i18n="langEn">
             English
@@ -119,7 +130,7 @@
     </main>
 
     <footer>
-      <p data-i18n="copyright">&copy; 2025 Issues-Solo. All rights reserved.</p>
+      <p data-i18n="copyright">&copy; 2026 Issues-Solo. All rights reserved.</p>
     </footer>
     <script src="i18n.js"></script>
   </body>
