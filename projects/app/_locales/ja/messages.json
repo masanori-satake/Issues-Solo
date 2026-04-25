@@ -1,0 +1,203 @@
+{
+  "extName": {
+    "message": "Issues-Solo"
+  },
+  "extDescription": {
+    "message": "JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能"
+  },
+  "actionTitle": {
+    "message": "Issues-Soloを開く"
+  },
+  "sortLastAccessed": {
+    "message": "最終表示時刻順"
+  },
+  "sortIssueKey": {
+    "message": "Issue IDのアルファベット順"
+  },
+  "sortPriority": {
+    "message": "優先度順"
+  },
+  "sortStatus": {
+    "message": "Status順"
+  },
+  "settings": {
+    "message": "設定"
+  },
+  "loading": {
+    "message": "履歴を読み込み中..."
+  },
+  "tabGeneral": {
+    "message": "一般"
+  },
+  "tabProjects": {
+    "message": "プロジェクトキー"
+  },
+  "tabAbout": {
+    "message": "About"
+  },
+  "sectionJiraSite": {
+    "message": "Jira サイト"
+  },
+  "sectionHistory": {
+    "message": "履歴"
+  },
+  "sectionSettings": {
+    "message": "設定データ"
+  },
+  "sectionProject": {
+    "message": "プロジェクト"
+  },
+  "add": {
+    "message": "追加"
+  },
+  "maxHistoryCount": {
+    "message": "最大保持件数"
+  },
+  "copyExport": {
+    "message": "コピー (Export)"
+  },
+  "pasteImport": {
+    "message": "貼り付け (Import)"
+  },
+  "importSettings": {
+    "message": "インポート設定"
+  },
+  "importModeAdd": {
+    "message": "追記"
+  },
+  "importModeOverwrite": {
+    "message": "上書き"
+  },
+  "deleteAll": {
+    "message": "全削除"
+  },
+  "version": {
+    "message": "バージョン"
+  },
+  "statHosts": {
+    "message": "ホスト数"
+  },
+  "statProjects": {
+    "message": "プロジェクト数"
+  },
+  "statHistory": {
+    "message": "履歴件数"
+  },
+  "developer": {
+    "message": "開発者"
+  },
+  "aboutDescription": {
+    "message": "Issues-Solo は、プライバシー重視のJira履歴ツールです。データはブラウザ内の IndexedDB に保存され、外部送信は一切行われません。GitHub Actions による依存関係の検証と Google OSV-Scanner による継続的な監査により、高い透明性と安全性を維持しています。"
+  },
+  "disclaimerTitle": {
+    "message": "【免責事項】"
+  },
+  "disclaimerText": {
+    "message": "本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。"
+  },
+  "confirm": {
+    "message": "確認"
+  },
+  "cancel": {
+    "message": "キャンセル"
+  },
+  "ok": {
+    "message": "OK"
+  },
+  "addProjectTitle": {
+    "message": "プロジェクトキーの追加"
+  },
+  "projectKey": {
+    "message": "プロジェクトキー"
+  },
+  "projectKeyPlaceholder": {
+    "message": "例: PROJ"
+  },
+  "addHostTitle": {
+    "message": "Jiraホストの追加"
+  },
+  "hostName": {
+    "message": "表示名"
+  },
+  "hostNamePlaceholder": {
+    "message": "例: 社内Jira"
+  },
+  "hostUrl": {
+    "message": "URL / ドメイン"
+  },
+  "hostUrlPlaceholder": {
+    "message": "例: jira.example.com"
+  },
+  "noHistory": {
+    "message": "履歴が見つかりません。"
+  },
+  "tabOpened": {
+    "message": "タブが開いています"
+  },
+  "tabClosed": {
+    "message": "タブは閉じています"
+  },
+  "editing": {
+    "message": "編集中"
+  },
+  "statusLabel": {
+    "message": "ステータス: $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "priorityLabel": {
+    "message": "優先度: $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "changeHistoryLimit": {
+    "message": "保持件数の変更"
+  },
+  "changeHistoryLimitConfirm": {
+    "message": "最大保持件数を $1 件に変更すると、制限を超える古い履歴 ($2 件) が削除されます。よろしいですか？",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      },
+      "2": {
+        "content": "$2"
+      }
+    }
+  },
+  "clearHistoryTitle": {
+    "message": "履歴の全削除"
+  },
+  "clearHistoryConfirm": {
+    "message": "現在保持されているすべての履歴エントリーを削除します。よろしいですか？"
+  },
+  "historyExportSuccess": {
+    "message": "履歴データをクリップボードにコピーしました (NDJSON形式)"
+  },
+  "clipboardError": {
+    "message": "このブラウザではクリップボードからの読み取りがサポートされていないか、許可されていません。"
+  },
+  "historyImportSuccess": {
+    "message": "履歴データをインポートしました"
+  },
+  "importError": {
+    "message": "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。"
+  },
+  "settingsExportSuccess": {
+    "message": "設定データをクリップボードにコピーしました (JSON形式)"
+  },
+  "settingsImportSuccess": {
+    "message": "設定データをインポートしました"
+  },
+  "visible": {
+    "message": "表示中"
+  },
+  "hidden": {
+    "message": "非表示"
+  }
+}

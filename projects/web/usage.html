@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>使い方 - Issues-Solo</title>
+    <title>Issues-Solo</title>
     <style>
       :root {
         --md-sys-color-primary: #0061a4;
@@ -25,6 +25,25 @@
         align-items: center;
         padding: 1rem 2rem;
         border-bottom: 1px solid var(--md-sys-color-outline);
+      }
+      .lang-switcher {
+        display: flex;
+        gap: 0.5rem;
+        margin-left: 1.5rem;
+      }
+      .lang-switch {
+        cursor: pointer;
+        background: none;
+        border: 1px solid var(--md-sys-color-outline);
+        border-radius: 4px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+        color: var(--md-sys-color-on-surface);
+      }
+      .lang-switch.active {
+        background-color: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border-color: var(--md-sys-color-primary);
       }
       .logo {
         display: flex;
@@ -64,46 +83,55 @@
   <body>
     <header>
       <a href="index.html" class="logo">Issues-Solo</a>
-      <nav>
-        <a href="index.html">トップ</a>
-        <a href="privacy.html">プライバシーポリシー</a>
+      <nav style="display: flex; align-items: center">
+        <a href="index.html" data-i18n="top">トップ</a>
+        <a href="privacy.html" data-i18n="privacy">プライバシーポリシー</a>
+        <div class="lang-switcher">
+          <button class="lang-switch" data-lang="en" data-i18n="langEn">
+            English
+          </button>
+          <button class="lang-switch" data-lang="ja" data-i18n="langJa">
+            日本語
+          </button>
+        </div>
       </nav>
     </header>
 
     <main>
-      <h1>Issues-Solo の使い方</h1>
+      <h1 data-i18n="usageGuide">Issues-Solo の使い方</h1>
 
       <section>
-        <h2>1. 履歴の自動記録</h2>
-        <p>
+        <h2 data-i18n="usageHeader1">1. 履歴の自動記録</h2>
+        <p data-i18n="usageText1">
           JIRA（atlassian.net）の課題ページを表示すると、自動的にその課題キーとタイトルが履歴として保存されます。
         </p>
       </section>
 
       <section>
-        <h2>2. サイドパネルを開く</h2>
-        <p>
+        <h2 data-i18n="usageHeader2">2. サイドパネルを開く</h2>
+        <p data-i18n="usageText2">
           ブラウザのツールバーにある拡張機能アイコンをクリック、またはサイドパネルから「Issues-Solo」を選択してパネルを開きます。
         </p>
       </section>
 
       <section>
-        <h2>3. 履歴の確認と移動</h2>
-        <p>
+        <h2 data-i18n="usageHeader3">3. 履歴の確認と移動</h2>
+        <p data-i18n="usageText3">
           サイドパネルに表示された履歴リストをクリックすると、該当するJIRA課題のタブに切り替わるか、新しいタブで開きます。
         </p>
       </section>
 
       <section>
-        <h2>4. 編集状態（書きかけ）の管理</h2>
-        <p>
+        <h2 data-i18n="usageHeader4">4. 編集状態（書きかけ）の管理</h2>
+        <p data-i18n="usageText4">
           JIRAのコメント欄や説明文を編集しているときに「編集中」の状態が検知されます。ブラウザを閉じたり再起動したりしても、その状態は保持され、サイドパネルから確認できます。
         </p>
       </section>
     </main>
 
     <footer>
-      <p>&copy; 2025 Issues-Solo. All rights reserved.</p>
+      <p data-i18n="copyright">&copy; 2025 Issues-Solo. All rights reserved.</p>
     </footer>
+    <script src="i18n.js"></script>
   </body>
 </html>

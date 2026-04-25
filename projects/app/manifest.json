@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "Issues-Solo",
-  "version": "0.11.0",
-  "description": "JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能",
+  "name": "__MSG_extName__",
+  "version": "0.12.0",
+  "default_locale": "en",
+  "description": "__MSG_extDescription__",
   "permissions": [
     "sidePanel",
     "tabs",
@@ -33,6 +34,6 @@
     "default_path": "sidepanel.html"
   },
   "action": {
-    "default_title": "Open Issues-Solo"
+    "default_title": "__MSG_actionTitle__"
   }
 }

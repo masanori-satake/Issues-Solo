@@ -1,6 +1,6 @@
 # Issues-Solo
 
-[![version](https://img.shields.io/badge/version-0.11.0-blue)](manifest.json)
+[![version](https://img.shields.io/badge/version-0.12.0-blue)](manifest.json)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](manifest.json)
 
@@ -58,7 +58,8 @@ This project uses Material Design 3, an open-source design system by Google.
 
 ## 免責事項 (Disclaimer)
 
-本ソフトウェアは、個人によって開発されたオープンソース・プロジェクトであり、無保証 (AS IS) です。
-利用に際して生じたいかなる損害についても、開発者は一切の責任を負いません。 MIT ライセンスの規定に基づき、自己責任でご利用ください。
+【免責事項】
+本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。
 
+[Disclaimer]
 This software is a personal open-source project and is provided "AS IS" without warranty of any kind. Use at your own risk, as per the MIT License.

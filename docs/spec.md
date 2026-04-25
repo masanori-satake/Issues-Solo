@@ -46,3 +46,11 @@ stateDiagram-v2
 
 - サイドパネル内のスタイリングは標準CSSで行い、フレームワーク由来の脆弱性リスクをゼロにする。
 - ステータス（編集中の鉛筆マーク、実在タブの点灯）をアイコンフォントを使わず、SVGまたはCSS drawingで表現する。
+
+## 免責事項 (Disclaimer)
+
+【免責事項】
+本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。
+
+[Disclaimer]
+This software is a personal open-source project and is provided "AS IS" without warranty of any kind. Use at your own risk, as per the MIT License.
