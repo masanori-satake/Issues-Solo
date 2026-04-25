@@ -13,10 +13,10 @@ If you discover a security vulnerability, please report it by creating a new iss
 
 ### How to report:
 1. Navigate to the **Issues** tab of the repository on GitHub.com.
-2. Click **New issue**.
-3. Locate **Bug Report / 不具合報告** and click **Get started**.
-4. Fill out the required fields in the template, such as version, reproduction steps, and diagnostic information.
-5. Click **Submit new issue**.
+1. Click **New issue**.
+1. Locate **Bug Report / 不具合報告** and click **Get started**.
+1. Fill out the required fields in the template, such as version, reproduction steps, and diagnostic information.
+1. Click **Submit new issue**.
 
 ## Our Security & Privacy Philosophy
 Issues-Solo is designed with user privacy and security as the top priority, following the principles outlined in our [Privacy Policy](https://masanori-satake.github.io/Issues-Solo/privacy.html).
@@ -56,7 +56,7 @@ This software is a personal open-source project and is provided "AS IS" without 
 1. GitHub.comで、リポジトリの **Issues** タブに移動します。
 1. **New issue** ボタンをクリックします。
 1. **Bug Report / 不具合報告** の横にある **Get started** をクリックします。
-1. テンプレートに従って、バージョン、再現手順、調査用情報などの必要事項を記入してください。
+1. テンプレートに従って、バージョン、再現手順、調査用情報などの必要事項を記入します。
 1. **Submit new issue** をクリックします。
 
 ## セキュリティとプライバシーの設計指針
