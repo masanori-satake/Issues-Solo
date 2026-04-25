@@ -205,5 +205,8 @@
   },
   "close": {
     "message": "閉じる"
+  },
+  "creditsText": {
+    "message": "このプロジェクトでは、Googleによるオープンソースのデザインシステムである Material Design 3 を使用しています。"
   }
 }

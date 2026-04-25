@@ -172,6 +172,12 @@ function compareStatus(a, b, direction) {
  * i18n対応: data-i18n属性を持つ要素のテキストを更新
  */
 function applyTranslations() {
+  // ブラウザの言語設定に合わせてhtmlのlang属性を更新
+  const uiLang = chrome.i18n.getUILanguage();
+  if (uiLang) {
+    document.documentElement.lang = uiLang.split("-")[0];
+  }
+
   const selectors = [
     "[data-i18n]",
     "[data-i18n-title]",
