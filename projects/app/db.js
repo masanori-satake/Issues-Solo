@@ -302,7 +302,9 @@ export class IssuesDB {
         const newProjectSettings = [...currentProjectSettings];
         if (data.projectSettings) {
           for (const ps of data.projectSettings) {
-            if (!newProjectSettings.some((existing) => existing.key === ps.key)) {
+            if (
+              !newProjectSettings.some((existing) => existing.key === ps.key)
+            ) {
               newProjectSettings.push(ps);
             }
           }

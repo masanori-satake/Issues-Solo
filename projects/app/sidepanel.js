@@ -464,17 +464,23 @@ exportHistoryBtn.addEventListener("click", async () => {
 importHistoryBtn.addEventListener("click", async () => {
   try {
     if (!navigator.clipboard || !navigator.clipboard.readText) {
-      alert("このブラウザではクリップボードからの読み取りがサポートされていないか、許可されていません。");
+      alert(
+        "このブラウザではクリップボードからの読み取りがサポートされていないか、許可されていません。",
+      );
       return;
     }
     const text = await navigator.clipboard.readText();
-    const mode = document.querySelector('input[name="import-mode"]:checked').value;
+    const mode = document.querySelector(
+      'input[name="import-mode"]:checked',
+    ).value;
     await db.importIssues(text, mode);
     renderList();
     alert("履歴データをインポートしました");
   } catch (err) {
     console.error("Failed to import history", err);
-    alert("インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。");
+    alert(
+      "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。",
+    );
   }
 });
 
@@ -504,11 +510,15 @@ exportSettingsBtn.addEventListener("click", async () => {
 importSettingsBtn.addEventListener("click", async () => {
   try {
     if (!navigator.clipboard || !navigator.clipboard.readText) {
-      alert("このブラウザではクリップボードからの読み取りがサポートされていないか、許可されていません。");
+      alert(
+        "このブラウザではクリップボードからの読み取りがサポートされていないか、許可されていません。",
+      );
       return;
     }
     const text = await navigator.clipboard.readText();
-    const mode = document.querySelector('input[name="import-mode"]:checked').value;
+    const mode = document.querySelector(
+      'input[name="import-mode"]:checked',
+    ).value;
     await db.importSettings(text, mode);
     renderList();
     renderHostSettings();
@@ -518,7 +528,9 @@ importSettingsBtn.addEventListener("click", async () => {
     alert("設定データをインポートしました");
   } catch (err) {
     console.error("Failed to import settings", err);
-    alert("インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。");
+    alert(
+      "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。",
+    );
   }
 });
 
