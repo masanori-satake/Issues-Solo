@@ -119,7 +119,7 @@
         text = text.trim();
 
         if (text) {
-          // キーワードがそのまま含まれているか確認 (大文字小文字を区別しない)
+          // キーキーワードがそのまま含まれているか確認 (大文字小文字を区別しない)
           for (const kw of PRIORITY_KEYWORDS) {
             if (new RegExp(kw, "i").test(text)) return kw;
           }
@@ -200,6 +200,11 @@
 
   let isEditingState = false;
   let isExtensionContextAlive = true;
+  let observer = null;
+  let debounceTimer = null;
+  let lastNotifyTime = 0;
+  let lastUrl = location.href;
+  let lastInfo = "";
 
   /**
    * 監視を停止し、リソースを解放する
@@ -208,6 +213,7 @@
     // MutationObserverの停止
     if (observer) {
       observer.disconnect();
+      observer = null;
     }
 
     // デバウンスタイマーのクリア
@@ -233,6 +239,9 @@
     stopExtensionMonitoring();
   };
 
+  /**
+   * 安全にメッセージをバックグラウンドに送信する
+   */
   const safeSendMessage = (message) => {
     if (!isExtensionContextAlive) return false;
 
@@ -296,8 +305,6 @@
     return false;
   };
 
-  let lastNotifyTime = 0;
-
   /**
    * 変更をバックグラウンドに通知する
    */
@@ -334,17 +341,12 @@
     isEditingState = isEditing;
   };
 
-  // 初回実行
-  notifyChange();
-
-  let lastUrl = location.href;
-  let lastInfo = "";
-  let debounceTimer = null;
-
   /**
    * 課題情報の変更をチェックし、変化があれば通知する
    */
   const checkInfoChange = () => {
+    if (!isExtensionContextAlive) return;
+
     const isEditing = detectEditingStateFromDOM();
     const info = JSON.stringify({
       s: getSummary(),
@@ -372,22 +374,12 @@
     );
   };
 
-  // DOMの変化を監視してリアルタイムに更新（デバウンス処理と範囲絞り込みで負荷を軽減）
-  const observer = new MutationObserver(() => {
-    const url = location.href;
-    if (url !== lastUrl) {
-      lastUrl = url;
-      // ページ遷移（SPA）時は即座に再判定
-      notifyChange();
-      // SPA遷移後はターゲット要素が変わっている可能性があるため再接続を検討
-      reconnectObserver();
-    } else {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(checkInfoChange, 200);
-    }
-  });
-
+  /**
+   * MutationObserverを再接続する
+   */
   const reconnectObserver = () => {
+    if (!isExtensionContextAlive || !observer) return;
+
     observer.disconnect();
     observer.observe(getObserverTarget(), {
       subtree: true,
@@ -395,8 +387,6 @@
       characterData: true,
     });
   };
-
-  reconnectObserver();
 
   const isEditableElement = (el) => {
     if (!el) return false;
@@ -453,10 +443,9 @@
     }
   };
 
-  // 編集状態の監視
-  document.addEventListener("focusin", startEditing);
-
-  // タブの表示状態やウィンドウのフォーカスを監視して、最終表示時刻を更新する
+  /**
+   * タブの表示状態やウィンドウのフォーカスを監視して、最終表示時刻を更新する
+   */
   const handleVisibilityChange = () => {
     if (document.visibilityState === "visible" && getIssueKey()) {
       const now = Date.now();
@@ -467,12 +456,31 @@
     }
   };
 
+  // 1. 初回実行
+  notifyChange();
+
+  // 2. MutationObserverの初期化と開始
+  observer = new MutationObserver(() => {
+    if (!isExtensionContextAlive) return;
+
+    const url = location.href;
+    if (url !== lastUrl) {
+      lastUrl = url;
+      // ページ遷移（SPA）時は即座に再判定
+      notifyChange();
+      // SPA遷移後はターゲット要素が変わっている可能性があるため再接続を検討
+      reconnectObserver();
+    } else {
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(checkInfoChange, 200);
+    }
+  });
+  reconnectObserver();
+
+  // 3. イベントリスナーの登録
+  document.addEventListener("focusin", startEditing);
   document.addEventListener("visibilitychange", handleVisibilityChange);
   window.addEventListener("focus", handleVisibilityChange);
-
-  // キー操作による編集終了（EnterやEscape）の検知
   document.addEventListener("keydown", handleKeyDown, true);
-
-  // 保存・キャンセルボタンのクリックを検知
   document.addEventListener("click", handleClick, true);
 })();
