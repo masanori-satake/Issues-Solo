@@ -218,6 +218,65 @@ export class IssuesDB {
     });
   }
 
+  async getHistoryImportMode() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(["historyImportMode"], (result) => {
+        resolve(result.historyImportMode || "add");
+      });
+    });
+  }
+
+  async setHistoryImportMode(historyImportMode) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ historyImportMode }, () => {
+        resolve();
+      });
+    });
+  }
+
+  async getSettingsImportMode() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(["settingsImportMode"], (result) => {
+        resolve(result.settingsImportMode || "add");
+      });
+    });
+  }
+
+  async setSettingsImportMode(settingsImportMode) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ settingsImportMode }, () => {
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * 履歴の件数を制限数に収まるよう削除する
+   */
+  async pruneIssues(maxCount) {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.storeName], "readwrite");
+      const store = transaction.objectStore(this.storeName);
+      const getAllRequest = store.getAll();
+
+      getAllRequest.onsuccess = () => {
+        const allIssues = getAllRequest.result.sort(
+          (a, b) => b.lastAccessed - a.lastAccessed,
+        );
+        if (allIssues.length > maxCount) {
+          const toDelete = allIssues.slice(maxCount);
+          for (const item of toDelete) {
+            store.delete(item.url);
+          }
+        }
+      };
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
+
   /**
    * 履歴データのインポート
    */

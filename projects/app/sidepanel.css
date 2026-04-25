@@ -324,6 +324,10 @@ section:last-child {
   margin-bottom: 0;
 }
 
+#jira-site-section {
+  margin-bottom: 12px; /* 縮めて間延びを解消 */
+}
+
 .settings-item {
   margin-bottom: 16px;
 }
@@ -351,10 +355,48 @@ section:last-child {
   color: var(--secondary-text);
 }
 
-.settings-actions-row {
+.data-management {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.management-buttons {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
+}
+
+.management-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px; /* 角丸形状 */
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-color);
+  transition: background-color 0.2s;
+}
+
+.management-btn:hover {
+  background-color: var(--hover-bg);
+}
+
+.management-btn svg {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+}
+
+.danger-zone {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .text-btn.small {
@@ -363,7 +405,7 @@ section:last-child {
 }
 
 .import-mode-selector {
-  margin-bottom: 12px;
+  margin-top: 4px;
 }
 
 .import-mode-selector label {
