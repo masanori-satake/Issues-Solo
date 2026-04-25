@@ -199,6 +199,61 @@
   };
 
   let isEditingState = false;
+  let isExtensionContextAlive = true;
+
+  /**
+   * 監視を停止し、リソースを解放する
+   */
+  const stopExtensionMonitoring = () => {
+    // MutationObserverの停止
+    if (observer) {
+      observer.disconnect();
+    }
+
+    // デバウンスタイマーのクリア
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+      debounceTimer = null;
+    }
+
+    // イベントリスナーの削除
+    document.removeEventListener("focusin", startEditing);
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+    window.removeEventListener("focus", handleVisibilityChange);
+    document.removeEventListener("keydown", handleKeyDown, true);
+    document.removeEventListener("click", handleClick, true);
+  };
+
+  /**
+   * コンテキストの無効化を処理する
+   */
+  const invalidateContext = () => {
+    if (!isExtensionContextAlive) return;
+    isExtensionContextAlive = false;
+    stopExtensionMonitoring();
+  };
+
+  const safeSendMessage = (message) => {
+    if (!isExtensionContextAlive) return false;
+
+    try {
+      if (
+        !chrome?.runtime?.id ||
+        typeof chrome.runtime.sendMessage !== "function"
+      ) {
+        invalidateContext();
+        return false;
+      }
+
+      chrome.runtime.sendMessage(message).catch(() => {
+        invalidateContext();
+      });
+      return true;
+    } catch (error) {
+      invalidateContext();
+      return false;
+    }
+  };
 
   /**
    * 要素が保存またはキャンセルボタンかどうかを判定する
@@ -247,11 +302,13 @@
    * 変更をバックグラウンドに通知する
    */
   const notifyChange = (isEditing = null) => {
+    if (!isExtensionContextAlive) return;
+
     const issueKey = getIssueKey();
     lastNotifyTime = Date.now();
     if (!issueKey) {
       // 課題ページでない場合は、タブの関連付けを解除する
-      chrome.runtime.sendMessage({ type: "CLEAR_TAB_ASSOCIATION" });
+      safeSendMessage({ type: "CLEAR_TAB_ASSOCIATION" });
       return;
     }
 
@@ -259,17 +316,21 @@
       isEditing = detectEditingStateFromDOM();
     }
 
-    chrome.runtime.sendMessage({
-      type: "ISSUE_UPDATED",
-      data: {
-        issueKey,
-        title: getSummary(),
-        priority: getPriority(),
-        status: getStatus(),
-        isEditing,
-        url: window.location.href,
-      },
-    });
+    if (
+      !safeSendMessage({
+        type: "ISSUE_UPDATED",
+        data: {
+          issueKey,
+          title: getSummary(),
+          priority: getPriority(),
+          status: getStatus(),
+          isEditing,
+          url: window.location.href,
+        },
+      })
+    ) {
+      return;
+    }
     isEditingState = isEditing;
   };
 
@@ -369,6 +430,29 @@
     }
   };
 
+  /**
+   * キー操作による編集終了（EnterやEscape）を処理する
+   */
+  const handleKeyDown = (e) => {
+    if (isEditingState) {
+      if (e.key === "Escape") {
+        stopEditing();
+      } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+        stopEditing();
+      }
+    }
+  };
+
+  /**
+   * 保存・キャンセルボタンのクリックを処理する
+   */
+  const handleClick = (e) => {
+    if (!isEditingState) return;
+    if (isSaveOrCancelButton(e.target)) {
+      stopEditing();
+    }
+  };
+
   // 編集状態の監視
   document.addEventListener("focusin", startEditing);
 
@@ -387,29 +471,8 @@
   window.addEventListener("focus", handleVisibilityChange);
 
   // キー操作による編集終了（EnterやEscape）の検知
-  document.addEventListener(
-    "keydown",
-    (e) => {
-      if (isEditingState) {
-        if (e.key === "Escape") {
-          stopEditing();
-        } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-          stopEditing();
-        }
-      }
-    },
-    true,
-  );
+  document.addEventListener("keydown", handleKeyDown, true);
 
   // 保存・キャンセルボタンのクリックを検知
-  document.addEventListener(
-    "click",
-    (e) => {
-      if (!isEditingState) return;
-      if (isSaveOrCancelButton(e.target)) {
-        stopEditing();
-      }
-    },
-    true,
-  );
+  document.addEventListener("click", handleClick, true);
 })();
