@@ -1141,33 +1141,6 @@ confirmAddHostBtn.addEventListener("click", async () => {
       origin: normalizedHost.permissionOrigin,
     })
     .catch(() => {});
-
-  return;
-
-  {
-    let url = rawUrl;
-    try {
-      if (url.includes("://")) {
-        const parsedUrl = new URL(url);
-        // /browse/ や /issues/ より前のパスを保持する
-        const pathMatch = parsedUrl.pathname.match(/^(.*?)\/(?:browse|issues)/);
-        const contextPath = pathMatch ? pathMatch[1] : "";
-        url = parsedUrl.hostname + contextPath;
-      }
-    } catch (e) {
-      // パース失敗時はトリミングした入力をそのまま使用
-    }
-
-    const settings = await db.getSettings();
-    settings.push({
-      id: Date.now().toString(),
-      name,
-      url,
-      visible: true,
-    });
-    await db.setSettings(settings);
-    addHostDialog.classList.add("hidden");
-  }
 });
 
 /**
