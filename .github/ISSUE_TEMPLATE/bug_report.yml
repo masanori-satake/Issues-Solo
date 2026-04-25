@@ -13,8 +13,8 @@ body:
     attributes:
       label: "Target Application / 対象アプリ"
       options:
-        - "Issues-Solo (Main Extension)"
-        - "Landing Page (Official Website)"
+        - "Issues-Solo (Extension / 拡張機能)"
+        - "Official Website / 公式サイト (Landing Page)"
         - "Other / その他"
     validations:
       required: true
@@ -72,8 +72,8 @@ body:
     attributes:
       label: "Language Setting / 使用言語設定"
       options:
-        - "Auto (Browser) / 自動"
-        - "English"
+        - "Auto (Browser) / 自動 (ブラウザ設定)"
+        - "English / 英語"
         - "Japanese / 日本語"
         - "Other / その他"
   - type: textarea

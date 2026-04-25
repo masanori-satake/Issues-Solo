@@ -13,8 +13,8 @@ body:
     attributes:
       label: "Target Application / 対象アプリ"
       options:
-        - "Issues-Solo (Main Extension)"
-        - "Landing Page (Official Website)"
+        - "Issues-Solo (Extension / 拡張機能)"
+        - "Official Website / 公式サイト (Landing Page)"
         - "Project-wide / プロジェクト全体"
     validations:
       required: true
