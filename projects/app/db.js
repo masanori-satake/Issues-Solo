@@ -47,20 +47,7 @@ export class IssuesDB {
         const existing = getRequest.result || {};
         const updated = { ...existing, ...issue, lastAccessed: Date.now() };
         store.put(updated);
-
-        // 同一トランザクション内で上限チェックを行う
-        const getAllRequest = store.getAll();
-        getAllRequest.onsuccess = () => {
-          const allIssues = getAllRequest.result.sort(
-            (a, b) => b.lastAccessed - a.lastAccessed,
-          );
-          if (allIssues.length > maxCount) {
-            const toDelete = allIssues.slice(maxCount);
-            for (const item of toDelete) {
-              store.delete(item.url);
-            }
-          }
-        };
+        this._applyMaxHistoryLimit(store, maxCount);
       };
 
       transaction.oncomplete = () => resolve();
@@ -117,7 +104,7 @@ export class IssuesDB {
 
       request.onsuccess = () => {
         const issues = request.result.sort(
-          (a, b) => b.lastAccessed - a.lastAccessed,
+          (a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0),
         );
         resolve(issues);
       };
@@ -258,23 +245,31 @@ export class IssuesDB {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.storeName], "readwrite");
       const store = transaction.objectStore(this.storeName);
-      const getAllRequest = store.getAll();
+      this._applyMaxHistoryLimit(store, maxCount);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
 
-      getAllRequest.onsuccess = () => {
-        const allIssues = getAllRequest.result.sort(
-          (a, b) => b.lastAccessed - a.lastAccessed,
-        );
-        if (allIssues.length > maxCount) {
+  /**
+   * トランザクション内で履歴上限を適用する（内部用）
+   */
+  _applyMaxHistoryLimit(store, maxCount) {
+    const countRequest = store.count();
+    countRequest.onsuccess = () => {
+      if (countRequest.result > maxCount) {
+        const getAllRequest = store.getAll();
+        getAllRequest.onsuccess = () => {
+          const allIssues = getAllRequest.result.sort(
+            (a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0),
+          );
           const toDelete = allIssues.slice(maxCount);
           for (const item of toDelete) {
             store.delete(item.url);
           }
-        }
-      };
-
-      transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(transaction.error);
-    });
+        };
+      }
+    };
   }
 
   /**
@@ -304,22 +299,14 @@ export class IssuesDB {
       }
 
       for (const issue of issues) {
+        // インポートデータに lastAccessed がない場合に備えて現在時刻を付与
+        if (!issue.lastAccessed) {
+          issue.lastAccessed = Date.now();
+        }
         store.put(issue);
       }
 
-      // インポート後の上限チェックも同一トランザクション内で行う
-      const getAllRequest = store.getAll();
-      getAllRequest.onsuccess = () => {
-        const allIssues = getAllRequest.result.sort(
-          (a, b) => b.lastAccessed - a.lastAccessed,
-        );
-        if (allIssues.length > maxCount) {
-          const toDelete = allIssues.slice(maxCount);
-          for (const item of toDelete) {
-            store.delete(item.url);
-          }
-        }
-      };
+      this._applyMaxHistoryLimit(store, maxCount);
 
       transaction.oncomplete = () => resolve();
       transaction.onerror = () => reject(transaction.error);
