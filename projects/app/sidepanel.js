@@ -427,7 +427,9 @@ function createIssueItem(issue) {
 
   const editIndicator = document.createElement("div");
   editIndicator.className = `indicator ${issue.isEditing ? "is-editing" : ""}`;
-  editIndicator.title = issue.isEditing ? chrome.i18n.getMessage("editing") : "";
+  editIndicator.title = issue.isEditing
+    ? chrome.i18n.getMessage("editing")
+    : "";
 
   indicators.appendChild(openIndicator);
   indicators.appendChild(editIndicator);
