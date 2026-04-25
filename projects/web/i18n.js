@@ -63,11 +63,10 @@ const translations = {
     top: "Top",
   },
   ja: {
-    title:
-      "Issues-Solo - JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能",
+    title: "Issues-Solo - JIRA閲覧履歴を記録するローカル完結型Chrome拡張機能",
     usage: "使い方",
     privacy: "プライバシーポリシー",
-    tagline: "〜JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能〜",
+    tagline: "〜JIRA閲覧履歴を記録するローカル完結型Chrome拡張機能〜",
     cta: "Chrome ウェブストアで追加",
     projectOverview: "プロジェクト概要",
     overviewText:
@@ -75,10 +74,10 @@ const translations = {
     features: "特徴",
     featureJira: "JIRA特化",
     featureJiraText:
-      "atlassian.netドメイン上の課題キーとタイトルを自動抽出し、閲覧履歴としてリスト化します。",
-    featureEditing: "編集状態の保存",
+      "JIRAの課題キーとタイトルを自動抽出し、閲覧履歴としてリスト化します。",
+    featureEditing: "編集中状態も記録",
     featureEditingText:
-      "入力中のコメントや説明文の変更を検知し、保存。ブラウザを閉じても「書きかけ」の状態を復元できます。",
+      "コメントが入力中かを検知し、保存。ブラウザを閉じても「書きかけ」の状態を把握できます。",
     featureLocal: "完全ローカル実行",
     featureLocalText:
       "すべてのデータはブラウザ内の IndexedDB に保存されます。外部サーバーへの送信は一切行われません。",
@@ -100,7 +99,7 @@ const translations = {
     langJa: "日本語",
     privacyHeader1: "1. データの収集と利用",
     privacyText1:
-      "Issues-Solo は、利用者の利便性向上のため、JIRAの課題キー、タイトル、および入力フォームの編集状態を収集します。これらのデータはすべて利用者のブラウザ内（IndexedDB）に保存され、本拡張機能の機能提供のためにのみ利用されます。",
+      "Issues-Solo は、JIRAの課題キー、タイトル、および入力フォームの編集状態を収集します。これらのデータはすべて利用者のブラウザ内（IndexedDB）に保存され、本拡張機能の機能提供のためにのみ利用されます。",
     privacyHeader2: "2. データの送信",
     privacyText2:
       "収集されたデータが外部サーバーに送信されることは一切ありません。本拡張機能は、インターネット経由でのデータ送信を行わない設計（Local-Only）となっています。",
@@ -112,7 +111,7 @@ const translations = {
       "利用者は、拡張機能をアンインストールすることで、ローカルに保存されたすべてのデータを削除することができます。",
     usageHeader1: "1. 履歴の自動記録",
     usageText1:
-      "JIRA（atlassian.net）の課題ページを表示すると、自動的にその課題キーとタイトルが履歴として保存されます。",
+      "JIRAの課題ページを表示すると、自動的にその課題キーとタイトルが履歴として保存されます。",
     usageHeader2: "2. サイドパネルを開く",
     usageText2:
       "ブラウザのツールバーにある拡張機能アイコンをクリック、またはサイドパネルから「Issues-Solo」を選択してパネルを開きます。",
