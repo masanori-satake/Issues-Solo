@@ -20,6 +20,18 @@ const addProjectDialog = document.getElementById("add-project-dialog");
 const cancelAddProjectBtn = document.getElementById("cancel-add-project");
 const confirmAddProjectBtn = document.getElementById("confirm-add-project");
 const projectKeyInput = document.getElementById("project-key-input");
+const maxHistoryRange = document.getElementById("max-history-range");
+const maxHistoryValue = document.getElementById("max-history-value");
+const exportHistoryBtn = document.getElementById("export-history-btn");
+const importHistoryBtn = document.getElementById("import-history-btn");
+const clearHistoryBtn = document.getElementById("clear-history-btn");
+const exportSettingsBtn = document.getElementById("export-settings-btn");
+const importSettingsBtn = document.getElementById("import-settings-btn");
+const confirmDialog = document.getElementById("confirm-dialog");
+const confirmTitle = document.getElementById("confirm-title");
+const confirmMessage = document.getElementById("confirm-message");
+const confirmOkBtn = document.getElementById("confirm-ok");
+const confirmCancelBtn = document.getElementById("confirm-cancel");
 
 let currentSettings = [];
 let currentProjectSettings = [];
@@ -374,14 +386,152 @@ async function handleIssueClick(issue) {
 }
 
 // 設定画面の制御ロジック
-settingsBtn.addEventListener("click", () => {
+settingsBtn.addEventListener("click", async () => {
   settingsPanel.classList.remove("hidden");
   renderHostSettings();
   renderProjectSettings();
+  const maxCount = await db.getMaxHistoryCount();
+  updateMaxHistoryUI(maxCount);
 });
 
 closeSettingsBtn.addEventListener("click", () => {
   settingsPanel.classList.add("hidden");
+});
+
+function updateMaxHistoryUI(count) {
+  maxHistoryValue.textContent = count;
+  const index = [20, 50, 100].indexOf(count);
+  if (index !== -1) {
+    maxHistoryRange.value = index;
+  }
+}
+
+maxHistoryRange.addEventListener("input", async () => {
+  const counts = [20, 50, 100];
+  const count = counts[maxHistoryRange.value];
+  maxHistoryValue.textContent = count;
+  await db.setMaxHistoryCount(count);
+});
+
+/**
+ * カスタム確認ダイアログ
+ */
+function showConfirm(title, message, onOk) {
+  confirmTitle.textContent = title;
+  confirmMessage.textContent = message;
+  confirmDialog.classList.remove("hidden");
+
+  const cleanup = () => {
+    confirmDialog.classList.add("hidden");
+    confirmOkBtn.removeEventListener("click", handleOk);
+    confirmCancelBtn.removeEventListener("click", cleanup);
+  };
+
+  const handleOk = () => {
+    onOk();
+    cleanup();
+  };
+
+  confirmOkBtn.addEventListener("click", handleOk);
+  confirmCancelBtn.addEventListener("click", cleanup);
+}
+
+// 履歴の全削除
+clearHistoryBtn.addEventListener("click", () => {
+  showConfirm(
+    "履歴の全削除",
+    "現在保持されているすべての履歴エントリーを削除します。よろしいですか？",
+    async () => {
+      await db.clearAllIssues();
+      renderList();
+    },
+  );
+});
+
+// 履歴のエクスポート (NDJSON)
+exportHistoryBtn.addEventListener("click", async () => {
+  const issues = await db.getAllIssues();
+  const ndjson = issues.map((i) => JSON.stringify(i)).join("\n");
+  try {
+    await navigator.clipboard.writeText(ndjson);
+    alert("履歴データをクリップボードにコピーしました (NDJSON形式)");
+  } catch (err) {
+    console.error("Failed to copy history", err);
+  }
+});
+
+// 履歴のインポート
+importHistoryBtn.addEventListener("click", async () => {
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      alert(
+        "このブラウザではクリップボードからの読み取りがサポートされていないか、許可されていません。",
+      );
+      return;
+    }
+    const text = await navigator.clipboard.readText();
+    const mode = document.querySelector(
+      'input[name="import-mode"]:checked',
+    ).value;
+    await db.importIssues(text, mode);
+    renderList();
+    alert("履歴データをインポートしました");
+  } catch (err) {
+    console.error("Failed to import history", err);
+    alert(
+      "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。",
+    );
+  }
+});
+
+// 設定のエクスポート (JSON)
+exportSettingsBtn.addEventListener("click", async () => {
+  const settings = await db.getSettings();
+  const projectSettings = await db.getProjectSettings();
+  const otherCollapsed = await db.getOtherCollapsed();
+  const maxHistoryCount = await db.getMaxHistoryCount();
+
+  const data = {
+    settings,
+    projectSettings,
+    otherCollapsed,
+    maxHistoryCount,
+  };
+
+  try {
+    await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+    alert("設定データをクリップボードにコピーしました (JSON形式)");
+  } catch (err) {
+    console.error("Failed to copy settings", err);
+  }
+});
+
+// 設定のインポート
+importSettingsBtn.addEventListener("click", async () => {
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.readText) {
+      alert(
+        "このブラウザではクリップボードからの読み取りがサポートされていないか、許可されていません。",
+      );
+      return;
+    }
+    const text = await navigator.clipboard.readText();
+    const mode = document.querySelector(
+      'input[name="import-mode"]:checked',
+    ).value;
+    await db.importSettings(text, mode);
+    renderList();
+    renderHostSettings();
+    renderProjectSettings();
+    const maxCount = await db.getMaxHistoryCount();
+    updateMaxHistoryUI(maxCount);
+    alert("設定データをインポートしました");
+  } catch (err) {
+    console.error("Failed to import settings", err);
+    alert(
+      "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。",
+    );
+  }
 });
 
 tabButtons.forEach((btn) => {

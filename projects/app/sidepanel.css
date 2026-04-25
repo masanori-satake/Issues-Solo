@@ -307,6 +307,85 @@ header {
   padding: 16px;
 }
 
+.section-title {
+  margin: 0 0 12px 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: #0052cc;
+  border-bottom: 1px solid #eef0f2;
+  padding-bottom: 4px;
+}
+
+section {
+  margin-bottom: 24px;
+}
+
+section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-item {
+  margin-bottom: 16px;
+}
+
+.settings-item label {
+  display: block;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.settings-item input[type="range"] {
+  width: 100%;
+  margin: 0;
+}
+
+.range-labels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  margin-top: -4px;
+}
+
+.range-labels span {
+  font-size: 10px;
+  color: var(--secondary-text);
+}
+
+.settings-actions-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.text-btn.small {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+.import-mode-selector {
+  margin-bottom: 12px;
+}
+
+.import-mode-selector label {
+  font-size: 12px;
+  color: var(--secondary-text);
+}
+
+.radio-group {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  color: var(--text-color);
+}
+
 /* Host List */
 .host-list-container {
   height: calc(48px * 3.5);

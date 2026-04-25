@@ -36,6 +36,8 @@ export class IssuesDB {
 
   async upsertIssue(issue) {
     const db = await this.open();
+    const maxCount = await this.getMaxHistoryCount();
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.storeName], "readwrite");
       const store = transaction.objectStore(this.storeName);
@@ -44,11 +46,36 @@ export class IssuesDB {
       getRequest.onsuccess = () => {
         const existing = getRequest.result || {};
         const updated = { ...existing, ...issue, lastAccessed: Date.now() };
-        const putRequest = store.put(updated);
-        putRequest.onsuccess = () => resolve();
-        putRequest.onerror = () => reject(putRequest.error);
+        store.put(updated);
+
+        // 同一トランザクション内で上限チェックを行う
+        const getAllRequest = store.getAll();
+        getAllRequest.onsuccess = () => {
+          const allIssues = getAllRequest.result.sort(
+            (a, b) => b.lastAccessed - a.lastAccessed,
+          );
+          if (allIssues.length > maxCount) {
+            const toDelete = allIssues.slice(maxCount);
+            for (const item of toDelete) {
+              store.delete(item.url);
+            }
+          }
+        };
       };
-      getRequest.onerror = () => reject(getRequest.error);
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
+
+  async clearAllIssues() {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.storeName], "readwrite");
+      const store = transaction.objectStore(this.storeName);
+      const request = store.clear();
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
     });
   }
 
@@ -173,5 +200,128 @@ export class IssuesDB {
         resolve();
       });
     });
+  }
+
+  async getMaxHistoryCount() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(["maxHistoryCount"], (result) => {
+        resolve(result.maxHistoryCount || 50);
+      });
+    });
+  }
+
+  async setMaxHistoryCount(maxHistoryCount) {
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ maxHistoryCount }, () => {
+        resolve();
+      });
+    });
+  }
+
+  /**
+   * 履歴データのインポート
+   */
+  async importIssues(ndjsonText, mode = "add") {
+    const lines = ndjsonText.trim().split("\n");
+    const issues = lines
+      .map((line) => {
+        try {
+          return JSON.parse(line);
+        } catch (e) {
+          return null;
+        }
+      })
+      .filter((i) => i && i.url);
+
+    const db = await this.open();
+    const maxCount = await this.getMaxHistoryCount();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.storeName], "readwrite");
+      const store = transaction.objectStore(this.storeName);
+
+      if (mode === "overwrite") {
+        store.clear();
+      }
+
+      for (const issue of issues) {
+        store.put(issue);
+      }
+
+      // インポート後の上限チェックも同一トランザクション内で行う
+      const getAllRequest = store.getAll();
+      getAllRequest.onsuccess = () => {
+        const allIssues = getAllRequest.result.sort(
+          (a, b) => b.lastAccessed - a.lastAccessed,
+        );
+        if (allIssues.length > maxCount) {
+          const toDelete = allIssues.slice(maxCount);
+          for (const item of toDelete) {
+            store.delete(item.url);
+          }
+        }
+      };
+
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error);
+    });
+  }
+
+  /**
+   * 設定データのインポート
+   */
+  async importSettings(jsonText, mode = "add") {
+    try {
+      const data = JSON.parse(jsonText);
+      if (mode === "overwrite") {
+        const toSet = {};
+        if (data.settings) toSet.settings = data.settings;
+        if (data.projectSettings) toSet.projectSettings = data.projectSettings;
+        if (data.otherCollapsed !== undefined)
+          toSet.otherCollapsed = data.otherCollapsed;
+        if (data.maxHistoryCount !== undefined)
+          toSet.maxHistoryCount = data.maxHistoryCount;
+
+        return new Promise((resolve) => {
+          chrome.storage.local.set(toSet, () => resolve());
+        });
+      } else {
+        // 追加モード
+        const currentSettings = await this.getSettings();
+        const currentProjectSettings = await this.getProjectSettings();
+
+        const newSettings = [...currentSettings];
+        if (data.settings) {
+          for (const s of data.settings) {
+            if (!newSettings.some((existing) => existing.url === s.url)) {
+              newSettings.push(s);
+            }
+          }
+        }
+
+        const newProjectSettings = [...currentProjectSettings];
+        if (data.projectSettings) {
+          for (const ps of data.projectSettings) {
+            if (
+              !newProjectSettings.some((existing) => existing.key === ps.key)
+            ) {
+              newProjectSettings.push(ps);
+            }
+          }
+        }
+
+        const toSet = {
+          settings: newSettings,
+          projectSettings: newProjectSettings,
+        };
+        // booleanや数値は上書きせざるを得ないが、addモードなら現在の値を優先
+        return new Promise((resolve) => {
+          chrome.storage.local.set(toSet, () => resolve());
+        });
+      }
+    } catch (e) {
+      console.error("Import failed", e);
+      throw e;
+    }
   }
 }
