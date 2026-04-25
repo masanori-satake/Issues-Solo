@@ -34,6 +34,17 @@ export class IssuesDB {
     });
   }
 
+  async getIssueCount() {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.storeName], "readonly");
+      const store = transaction.objectStore(this.storeName);
+      const request = store.count();
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  }
+
   async upsertIssue(issue) {
     const db = await this.open();
     const maxCount = await this.getMaxHistoryCount();

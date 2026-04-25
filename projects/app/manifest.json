@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Issues-Solo",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能",
   "permissions": [
     "sidePanel",
