@@ -82,7 +82,9 @@ function normalizeHostInput(rawValue) {
     throw new Error("https-only");
   }
 
-  const pathMatch = parsedUrl.pathname.match(/^(.*?)\/(?:browse|issues)(?:\/|$)/);
+  const pathMatch = parsedUrl.pathname.match(
+    /^(.*?)\/(?:browse|issues)(?:\/|$)/,
+  );
   const contextPath = pathMatch
     ? pathMatch[1]
     : parsedUrl.pathname.replace(/\/+$/, "");
@@ -1015,18 +1017,23 @@ async function renderHostSettings() {
     deleteBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const newSettings = settings.filter((_, i) => i !== index);
-      const removedPermissionOrigin = getPermissionOriginFromStoredHost(host.url);
+      const removedPermissionOrigin = getPermissionOriginFromStoredHost(
+        host.url,
+      );
       await db.setSettings(newSettings);
       if (
         removedPermissionOrigin &&
         !isBuiltinHostOrigin(removedPermissionOrigin) &&
         !newSettings.some(
           (item) =>
-            getPermissionOriginFromStoredHost(item.url) === removedPermissionOrigin,
+            getPermissionOriginFromStoredHost(item.url) ===
+            removedPermissionOrigin,
         )
       ) {
         try {
-          await chrome.permissions.remove({ origins: [removedPermissionOrigin] });
+          await chrome.permissions.remove({
+            origins: [removedPermissionOrigin],
+          });
         } catch (error) {
           // Ignore permission cleanup failures.
         }
@@ -1138,7 +1145,7 @@ confirmAddHostBtn.addEventListener("click", async () => {
   return;
 
   {
-  let url = rawUrl;
+    let url = rawUrl;
     try {
       if (url.includes("://")) {
         const parsedUrl = new URL(url);
