@@ -250,53 +250,53 @@ class SidePanel {
 
     // プロジェクト追加
     document.getElementById("add-project-btn").addEventListener("click", () => {
-      document.getElementById("add-project-dialog").classList.remove("hidden");
-      document.getElementById("project-key-input").value = "";
-      document.getElementById("project-key-input").focus();
+      this.settings.openProjectDialog();
+    });
+
+    document.getElementById("cancel-project").addEventListener("click", () => {
+      document.getElementById("project-dialog").classList.add("hidden");
     });
 
     document
-      .getElementById("cancel-add-project")
-      .addEventListener("click", () => {
-        document.getElementById("add-project-dialog").classList.add("hidden");
-      });
-
-    document
-      .getElementById("confirm-add-project")
+      .getElementById("confirm-project")
       .addEventListener("click", async () => {
         const key = document
           .getElementById("project-key-input")
           .value.trim()
           .toUpperCase();
         if (key) {
-          const settings = await this.db.getProjectSettings();
-          if (!settings.some((p) => p.key === key)) {
-            settings.push({ key, color: "#0061A4", isCollapsed: false });
-            await this.db.setProjectSettings(settings);
-            await this.settings.renderProjectSettings();
+          const dialog = document.getElementById("project-dialog");
+          const editKey = dialog.dataset.editKey;
+          if (editKey) {
+            await this.settings.updateProject(editKey, key);
+          } else {
+            await this.settings.addProject(key);
           }
-          document.getElementById("add-project-dialog").classList.add("hidden");
+          dialog.classList.add("hidden");
         }
       });
 
     // ホスト追加
     document.getElementById("add-host-btn").addEventListener("click", () => {
-      document.getElementById("add-host-dialog").classList.remove("hidden");
-      document.getElementById("host-name").value = "";
-      document.getElementById("host-url").value = "";
+      this.settings.openHostDialog();
     });
 
-    document.getElementById("cancel-add-host").addEventListener("click", () => {
-      document.getElementById("add-host-dialog").classList.add("hidden");
+    document.getElementById("cancel-host").addEventListener("click", () => {
+      document.getElementById("host-dialog").classList.add("hidden");
     });
 
-    document
-      .getElementById("confirm-add-host")
-      .addEventListener("click", () => {
-        const name = document.getElementById("host-name").value.trim();
-        const url = document.getElementById("host-url").value.trim();
+    document.getElementById("confirm-host").addEventListener("click", () => {
+      const dialog = document.getElementById("host-dialog");
+      const editId = dialog.dataset.editId;
+      const name = document.getElementById("host-name").value.trim();
+      const url = document.getElementById("host-url").value.trim();
+
+      if (editId) {
+        this.settings.updateHost(editId, name, url);
+      } else {
         this.settings.addHost(name, url);
-      });
+      }
+    });
 
     // メッセージ受信
     chrome.runtime.onMessage.addListener((message) => {

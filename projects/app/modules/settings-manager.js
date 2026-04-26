@@ -23,8 +23,8 @@ export class SettingsManager {
       projectList: document.getElementById("project-list"),
       maxHistoryRange: document.getElementById("max-history-range"),
       maxHistoryValue: document.getElementById("max-history-value"),
-      addHostDialog: document.getElementById("add-host-dialog"),
-      addProjectDialog: document.getElementById("add-project-dialog"),
+      hostDialog: document.getElementById("host-dialog"),
+      projectDialog: document.getElementById("project-dialog"),
       confirmDialog: document.getElementById("confirm-dialog"),
     };
   }
@@ -90,6 +90,11 @@ export class SettingsManager {
     urlSpan.textContent = host.url;
     info.appendChild(nameSpan);
     info.appendChild(urlSpan);
+
+    // クリックで編集
+    info.addEventListener("click", () => {
+      this.openHostDialog(host);
+    });
 
     // 表示切り替えトグル
     const toggle = document.createElement("div");
@@ -240,6 +245,9 @@ export class SettingsManager {
     const keyLabel = document.createElement("span");
     keyLabel.className = "project-key-label";
     keyLabel.textContent = proj.key;
+    keyLabel.addEventListener("click", () => {
+      this.openProjectDialog(proj);
+    });
 
     const colorPicker = document.createElement("div");
     colorPicker.className = "color-picker";
@@ -417,6 +425,38 @@ export class SettingsManager {
   }
 
   /**
+   * ホストダイアログを開きます。
+   */
+  openHostDialog(host = null) {
+    const dialog = this.elements.hostDialog;
+    const titleEl = document.getElementById("host-dialog-title");
+    const confirmBtn = document.getElementById("confirm-host");
+    const nameInput = document.getElementById("host-name");
+    const urlInput = document.getElementById("host-url");
+
+    if (host) {
+      dialog.dataset.editId = host.id;
+      titleEl.textContent = chrome.i18n.getMessage("editHostTitle");
+      titleEl.dataset.i18n = "editHostTitle";
+      confirmBtn.textContent = chrome.i18n.getMessage("update");
+      confirmBtn.dataset.i18n = "update";
+      nameInput.value = host.name;
+      urlInput.value = host.url;
+    } else {
+      delete dialog.dataset.editId;
+      titleEl.textContent = chrome.i18n.getMessage("addHostTitle");
+      titleEl.dataset.i18n = "addHostTitle";
+      confirmBtn.textContent = chrome.i18n.getMessage("add");
+      confirmBtn.dataset.i18n = "add";
+      nameInput.value = "";
+      urlInput.value = "";
+    }
+
+    dialog.classList.remove("hidden");
+    nameInput.focus();
+  }
+
+  /**
    * 新しいJiraホストを追加します。
    */
   async addHost(name, rawUrl) {
@@ -451,7 +491,7 @@ export class SettingsManager {
       visible: true,
     });
     await this.db.setSettings(nextSettings);
-    this.elements.addHostDialog.classList.add("hidden");
+    this.elements.hostDialog.classList.add("hidden");
     await this.renderHostSettings();
 
     chrome.runtime
@@ -460,5 +500,147 @@ export class SettingsManager {
         origin: normalized.permissionOrigin,
       })
       .catch(() => {});
+  }
+
+  /**
+   * Jiraホスト設定を更新します。
+   */
+  async updateHost(id, name, rawUrl) {
+    if (!name || !rawUrl) return;
+
+    let normalized;
+    try {
+      normalized = normalizeHostInput(rawUrl);
+    } catch (e) {
+      alert(chrome.i18n.getMessage("invalidHost"));
+      return;
+    }
+
+    const settings = await this.db.getSettings();
+    const index = settings.findIndex((h) => h.id === id);
+    if (index === -1) return;
+
+    const oldHost = settings[index];
+    const urlChanged = oldHost.url !== normalized.storedUrl;
+
+    if (urlChanged) {
+      // 権限の処理
+      const oldOrigin = getPermissionOriginFromStoredHost(oldHost.url);
+      const newOrigin = normalized.permissionOrigin;
+
+      // 古い権限の解放（他で使われていない場合）
+      if (oldOrigin && !isBuiltinHostOrigin(oldOrigin)) {
+        const stillNeeded = settings.some(
+          (h, i) =>
+            i !== index && getPermissionOriginFromStoredHost(h.url) === oldOrigin,
+        );
+        if (!stillNeeded) {
+          try {
+            await chrome.permissions.remove({ origins: [oldOrigin] });
+          } catch (e) {}
+        }
+      }
+
+      // 新しい権限の要求
+      if (!isBuiltinHostOrigin(newOrigin)) {
+        let granted = false;
+        try {
+          granted = await chrome.permissions.request({ origins: [newOrigin] });
+        } catch (e) {}
+        if (!granted) {
+          alert(chrome.i18n.getMessage("permissionDenied"));
+          return;
+        }
+      }
+    }
+
+    settings[index] = {
+      ...oldHost,
+      name,
+      url: normalized.storedUrl,
+    };
+
+    await this.db.setSettings(settings);
+    this.elements.hostDialog.classList.add("hidden");
+    await this.renderHostSettings();
+
+    if (urlChanged) {
+      chrome.runtime
+        .sendMessage({
+          type: "HOST_PERMISSION_GRANTED",
+          origin: normalized.permissionOrigin,
+        })
+        .catch(() => {});
+    }
+  }
+
+  /**
+   * プロジェクトダイアログを開きます。
+   */
+  openProjectDialog(proj = null) {
+    const dialog = this.elements.projectDialog;
+    const titleEl = document.getElementById("project-dialog-title");
+    const confirmBtn = document.getElementById("confirm-project");
+    const keyInput = document.getElementById("project-key-input");
+
+    if (proj) {
+      dialog.dataset.editKey = proj.key;
+      titleEl.textContent = chrome.i18n.getMessage("editProjectTitle");
+      titleEl.dataset.i18n = "editProjectTitle";
+      confirmBtn.textContent = chrome.i18n.getMessage("save");
+      confirmBtn.dataset.i18n = "save";
+      keyInput.value = proj.key;
+    } else {
+      delete dialog.dataset.editKey;
+      titleEl.textContent = chrome.i18n.getMessage("addProjectTitle");
+      titleEl.dataset.i18n = "addProjectTitle";
+      confirmBtn.textContent = chrome.i18n.getMessage("ok");
+      confirmBtn.dataset.i18n = "ok";
+      keyInput.value = "";
+    }
+
+    dialog.classList.remove("hidden");
+    keyInput.focus();
+  }
+
+  /**
+   * 新しいプロジェクトを追加します。
+   */
+  async addProject(key) {
+    const settings = await this.db.getProjectSettings();
+    if (settings.some((p) => p.key === key)) {
+      this.elements.projectDialog.classList.add("hidden");
+      return;
+    }
+
+    settings.push({ key, color: "#0061A4", isCollapsed: false });
+    await this.db.setProjectSettings(settings);
+    this.elements.projectDialog.classList.add("hidden");
+    await this.renderProjectSettings();
+  }
+
+  /**
+   * プロジェクト設定を更新します。
+   */
+  async updateProject(oldKey, newKey) {
+    const settings = await this.db.getProjectSettings();
+    const index = settings.findIndex((p) => p.key === oldKey);
+    if (index === -1) {
+      this.elements.projectDialog.classList.add("hidden");
+      return;
+    }
+
+    if (oldKey !== newKey) {
+      // 重複チェック
+      if (settings.some((p) => p.key === newKey)) {
+        // すでに存在する場合は何もしない（ダイアログは閉じる）
+        this.elements.projectDialog.classList.add("hidden");
+        return;
+      }
+      settings[index].key = newKey;
+      await this.db.setProjectSettings(settings);
+      await this.renderProjectSettings();
+    }
+    this.elements.projectDialog.classList.add("hidden");
   }
 }

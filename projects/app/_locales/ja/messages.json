@@ -104,8 +104,17 @@
   "ok": {
     "message": "OK"
   },
+  "save": {
+    "message": "保存"
+  },
+  "update": {
+    "message": "変更"
+  },
   "addProjectTitle": {
     "message": "プロジェクトキーの追加"
+  },
+  "editProjectTitle": {
+    "message": "プロジェクトキーの編集"
   },
   "projectKey": {
     "message": "プロジェクトキー"
@@ -115,6 +124,9 @@
   },
   "addHostTitle": {
     "message": "Jiraホストの追加"
+  },
+  "editHostTitle": {
+    "message": "Jiraホストの編集"
   },
   "hostName": {
     "message": "表示名"

@@ -104,8 +104,17 @@
   "ok": {
     "message": "OK"
   },
+  "save": {
+    "message": "Save"
+  },
+  "update": {
+    "message": "Update"
+  },
   "addProjectTitle": {
     "message": "Add Project Key"
+  },
+  "editProjectTitle": {
+    "message": "Edit Project Key"
   },
   "projectKey": {
     "message": "Project Key"
@@ -115,6 +124,9 @@
   },
   "addHostTitle": {
     "message": "Add Jira Host"
+  },
+  "editHostTitle": {
+    "message": "Edit Jira Host"
   },
   "hostName": {
     "message": "Display Name"
