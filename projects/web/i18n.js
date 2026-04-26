@@ -4,7 +4,8 @@ const translations = {
       "Issues-Solo - Local-only Chrome extension to manage JIRA browsing history",
     usage: "Usage",
     privacy: "Privacy Policy",
-    tagline: "〜Local-only Chrome extension to manage JIRA browsing history〜",
+    tagline:
+      "〜Local-only Chrome extension to manage JIRA browsing history〜",
     cta: "Add to Chrome Web Store",
     projectOverview: "Project Overview",
     overviewText:
