@@ -334,11 +334,9 @@
           btn.closest("[data-testid*='editor']")?.parentElement ||
           document.body;
 
-        const hasEditable = !!Array.from(
-          container.querySelectorAll(
-            'textarea, input, [contenteditable="true"], [role="textbox"]',
-          ),
-        ).some((el) => isEditableElement(el));
+        const hasEditable = !!container.querySelector(
+          'textarea, input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), [contenteditable="true"], [role="textbox"], [role="combobox"]',
+        );
         if (hasEditable) return true;
       }
     }
