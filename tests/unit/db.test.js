@@ -1,7 +1,12 @@
 import { chrome } from "jest-chrome";
 import { IssuesDB } from "../../projects/app/db.js";
 
-// Polyfill structuredClone if not available (older Node versions or JSDOM)
+/**
+ * IssuesDB クラスのユニットテスト。
+ * IndexedDB と chrome.storage.local の相互作用を検証します。
+ */
+
+// 古い Node.js 環境や JSDOM 用の structuredClone ポリフィル
 if (typeof global.structuredClone !== "function") {
   global.structuredClone = (obj) => JSON.parse(JSON.stringify(obj));
 }
@@ -56,7 +61,7 @@ describe("IssuesDB", () => {
 
     const issues = await db.getAllIssues();
     expect(issues.length).toBe(2);
-    // Should be sorted by lastAccessed desc
+    // 最終表示時刻の降順でソートされていることを確認
     expect(issues[0].issueKey).toBe("PROJ-2");
     expect(issues[1].issueKey).toBe("PROJ-1");
   });
@@ -118,11 +123,11 @@ describe("IssuesDB", () => {
     const i1 = issues.find((i) => i.url === "url1");
     const i2 = issues.find((i) => i.url === "url2");
 
-    // url1 should be unchanged because it was passed as exceptUrl
+    // url1 は除外URLとして指定したため、変更されないことを確認
     expect(i1.tabId).toBe(123);
     expect(i1.isOpened).toBe(true);
 
-    // url2 should be cleared
+    // url2 は同じタブIDを持っていたため、フラグがクリアされることを確認
     expect(i2.tabId).toBeNull();
     expect(i2.isOpened).toBe(false);
     expect(i2.isEditing).toBe(false);
@@ -153,7 +158,7 @@ describe("IssuesDB", () => {
       callback({ maxHistoryCount: 10 });
     });
 
-    // Manually add issues via a single transaction to ensure absolute control
+    // 順序を制御するため、IndexedDBに直接データを投入
     const database = await db.open();
     const tx = database.transaction(["issues"], "readwrite");
     const store = tx.objectStore("issues");
@@ -165,15 +170,14 @@ describe("IssuesDB", () => {
 
     await new Promise((r) => (tx.oncomplete = r));
 
-    // Now prune to 3
+    // 履歴を3件に制限（prune）
     await db.pruneIssues(3);
 
     const issues = await db.getAllIssues();
     expect(issues.length).toBe(3);
 
     const keys = issues.map((i) => i.issueKey);
-    // Sort desc by lastAccessed should be K5, K4, K3, K2, K1
-    // Pruning 3 should keep K5, K4, K3
+    // 最終表示時刻の降順（K5, K4, K3...）のうち、新しい方から3件残ることを確認
     expect(keys).toContain("K5");
     expect(keys).toContain("K4");
     expect(keys).toContain("K3");
@@ -243,7 +247,7 @@ describe("IssuesDB", () => {
   });
 
   test("importSettings - add mode", async () => {
-    // Current state (using default for settings)
+    // 追加モードでは、既存の設定は維持され、新しい設定のみが追加される
     const currentProjectSettings = [{ key: "OLD", color: "#FFFFFF" }];
     chrome.storage.local.get.mockImplementation((keys, callback) => {
       if (keys.includes("projectSettings"))
@@ -256,10 +260,10 @@ describe("IssuesDB", () => {
     );
 
     const settingsData = {
-      settings: [{ id: "2", name: "New", url: "new.com", visible: true }], // Should be added if URL unique
+      settings: [{ id: "2", name: "New", url: "new.com", visible: true }], // 重複がなければ追加
       projectSettings: [
-        { key: "OLD", color: "#CHANGED" }, // Should be ignored in add mode if key exists
-        { key: "NEW", color: "#000000" }, // Should be added
+        { key: "OLD", color: "#CHANGED" }, // 既存キーは無視（上書きしない）
+        { key: "NEW", color: "#000000" }, // 新規キーは追加
       ],
     };
 
@@ -276,5 +280,76 @@ describe("IssuesDB", () => {
       ),
     ).toBe(true);
     expect(updatedProjectSettings.some((p) => p.key === "NEW")).toBe(true);
+  });
+
+  test("getOtherCollapsed - default and set", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => callback({}));
+    expect(await db.getOtherCollapsed()).toBe(false);
+
+    await db.setOtherCollapsed(true);
+    expect(chrome.storage.local.set).toHaveBeenCalledWith({ otherCollapsed: true }, expect.any(Function));
+  });
+
+  test("getSortSettings - default and set", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => callback({}));
+    expect(await db.getSortSettings()).toEqual({ type: "lastAccessed", direction: "desc" });
+
+    const newSort = { type: "issueKey", direction: "asc" };
+    await db.setSortSettings(newSort);
+    expect(chrome.storage.local.set).toHaveBeenCalledWith({ sortSettings: newSort }, expect.any(Function));
+  });
+
+  test("history import modes", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => callback({}));
+    expect(await db.getHistoryImportMode()).toBe("add");
+    await db.setHistoryImportMode("overwrite");
+    expect(chrome.storage.local.set).toHaveBeenCalledWith({ historyImportMode: "overwrite" }, expect.any(Function));
+  });
+
+  test("settings import modes", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => callback({}));
+    expect(await db.getSettingsImportMode()).toBe("add");
+    await db.setSettingsImportMode("overwrite");
+    expect(chrome.storage.local.set).toHaveBeenCalledWith({ settingsImportMode: "overwrite" }, expect.any(Function));
+  });
+
+  test("importSettings - handle missing fields in overwrite mode", async () => {
+    const settingsData = { maxHistoryCount: 20 };
+    await db.importSettings(JSON.stringify(settingsData), "overwrite");
+    expect(chrome.storage.local.set).toHaveBeenCalledWith({ maxHistoryCount: 20 }, expect.any(Function));
+  });
+
+  test("importSettings - invalid json", async () => {
+    await expect(db.importSettings("invalid")).rejects.toThrow();
+  });
+
+  test("upsertIssue - update existing issue", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => callback({ maxHistoryCount: 50 }));
+    const url = "https://test.com";
+    await db.upsertIssue({ url, title: "Title 1" });
+    await db.upsertIssue({ url, title: "Title 2" });
+    const issues = await db.getAllIssues();
+    expect(issues.length).toBe(1);
+    expect(issues[0].title).toBe("Title 2");
+  });
+
+  test("db open error handling", async () => {
+    const error = new Error("DB Open Error");
+    jest.spyOn(indexedDB, 'open').mockImplementation(() => {
+      const req = {};
+      setTimeout(() => req.onerror(), 0);
+      req.error = error;
+      return req;
+    });
+    const newDb = new IssuesDB();
+    await expect(newDb.open()).rejects.toBe(error);
+    jest.restoreAllMocks();
+  });
+
+  test("db upgrade handling", async () => {
+    // 複数回 open を呼んでも同一のインスタンスが返る（キャッシュが効いている）ことを確認
+    const database1 = await db.open();
+    const database2 = await db.open();
+    expect(database1).toBe(database2);
   });
 });

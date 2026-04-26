@@ -98,6 +98,31 @@ export function normalizeHostInput(rawValue) {
 }
 
 /**
+ * 保存されたホストURLから許可オリジンを取得します。
+ *
+ * @param {string} hostUrl 保存されたホストURL
+ * @returns {string|null} 許可オリジン、失敗時は null
+ */
+export function getPermissionOriginFromStoredHost(hostUrl) {
+  try {
+    const parsedUrl = new URL(`https://${hostUrl}`);
+    return `https://${parsedUrl.hostname}/*`;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * 指定されたオリジンが組み込みのホストパターンであるかを判定します。
+ *
+ * @param {string} origin 判定対象のオリジン
+ * @returns {boolean}
+ */
+export function isBuiltinHostOrigin(origin) {
+  return /^https:\/\/(?:[^/]+\.)?atlassian\.net\/\*$/.test(origin);
+}
+
+/**
  * 自然な順序でのIssue Keyソート (PROJ-2 < PROJ-10)
  */
 export function compareIssueKeys(a, b) {

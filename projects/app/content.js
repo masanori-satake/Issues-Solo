@@ -312,12 +312,17 @@
     if (!isExtensionContextAlive) return;
 
     const issueKey = getIssueKey();
-    lastNotifyTime = Date.now();
+
+    // キーが取得できない場合は、まだページロード中（または課題ページ以外）とみなして通知をスキップする
+    // ただし、既に課題ページとして認識されている状態でキーが消えた場合は、タブ関連付け解除を通知する
     if (!issueKey) {
-      // 課題ページでない場合は、タブの関連付けを解除する
-      safeSendMessage({ type: "CLEAR_TAB_ASSOCIATION" });
+      if (lastNotifyTime > 0) {
+        safeSendMessage({ type: "CLEAR_TAB_ASSOCIATION" });
+      }
       return;
     }
+
+    lastNotifyTime = Date.now();
 
     if (isEditing === null) {
       isEditing = detectEditingStateFromDOM();

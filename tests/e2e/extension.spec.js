@@ -1,13 +1,15 @@
 import { test, expect } from "./fixtures";
 
+/**
+ * 拡張機能全体の主要なユーザー体験（CUJ）を検証する E2E テスト。
+ */
 test.describe("Issues-Solo E2E", () => {
   test("should record history when visiting a Jira issue", async ({
     page,
     context,
     extensionId,
   }) => {
-    // 1. Visit a Jira-like page (we mock the content because we don't have a real Jira)
-    // For E2E we can use a local html file or a mock route
+    // 1. Jira の課題ページをシミュレート
     await page.route(
       "https://test.atlassian.net/browse/PROJ-1",
       async (route) => {
@@ -32,14 +34,14 @@ test.describe("Issues-Solo E2E", () => {
 
     await page.goto("https://test.atlassian.net/browse/PROJ-1");
 
-    // Wait for content script to run and send message
+    // コンテンツスクリプトが実行され、メッセージが送信されるのを待機
     await page.waitForTimeout(1000);
 
-    // 2. Open side panel
+    // 2. サイドパネルを開く
     const sidePanel = await context.newPage();
     await sidePanel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
 
-    // 3. Verify history item exists
+    // 3. 履歴アイテムが表示されていることを確認
     const issueItem = sidePanel.locator(".issue-item");
     await expect(issueItem).toBeVisible();
     await expect(issueItem.locator(".issue-key")).toHaveText("PROJ-1");
@@ -84,13 +86,11 @@ test.describe("Issues-Solo E2E", () => {
     // Wait for debounce and message
     await page.waitForTimeout(1000);
 
-    // Verify editing indicator in side panel
+    // サイドパネルで「編集中」インジケーターが表示されることを確認
     const editIndicator = sidePanel.locator(".indicator.is-editing");
     await expect(editIndicator).toBeVisible();
 
-    // Remove focus/Simulate save (mocking Jira save button behavior)
-    // content.js detects editing if save/cancel buttons exist.
-    // Let's mock that.
+    // 保存ボタンのクリックをシミュレート（Jira の挙動を再現）
     await page.evaluate(() => {
       const btn = document.createElement("button");
       btn.innerText = "Save";
@@ -98,9 +98,8 @@ test.describe("Issues-Solo E2E", () => {
       btn.click();
     });
 
-    // In our simplified mock, we might need to manually trigger the click or wait
     await page.waitForTimeout(1000);
-    // After "Save" click, it should stop editing (based on content.js handleClick)
+    // 保存後は「編集中」状態が解除されることを確認
     await expect(editIndicator).not.toBeVisible();
   });
 
@@ -135,7 +134,7 @@ test.describe("Issues-Solo E2E", () => {
     await page.goto("https://google.com");
     await page.waitForTimeout(1000);
 
-    // opened indicator should be gone
+    // Jira 以外のページに遷移した後は「開いている」インジケーターが消えることを確認
     await expect(sidePanel.locator(".indicator.is-opened")).not.toBeVisible();
   });
 
@@ -155,10 +154,10 @@ test.describe("Issues-Solo E2E", () => {
     await sidePanel.fill("#project-key-input", "TEST");
     await sidePanel.click("#confirm-add-project");
 
-    // Verify project header in list (need to close settings or check list)
+    // プロジェクトグループのヘッダーが表示されることを確認
     await sidePanel.click("#close-settings");
-    // We need at least one issue with TEST key to see the header
-    // But since we are in E2E and DB is shared, we can visit a TEST page in another tab
+
+    // テスト用の課題ページを別タブで開き、DB に記録させる
     const page = await context.newPage();
     await page.route(
       "https://test.atlassian.net/browse/TEST-1",

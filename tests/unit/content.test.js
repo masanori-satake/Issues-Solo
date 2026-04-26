@@ -1,24 +1,14 @@
 import fs from "fs";
 import path from "path";
 
+/**
+ * コンテンツスクリプト（content.js）のデータ抽出ロジックのテスト。
+ * Jira の各バージョン（Cloud/Data Center）や UI 形式から正しく情報を抽出できるか検証します。
+ */
 describe("content.js data extraction", () => {
-  // Load source code
-  const contentJsPath = path.resolve(
-    __dirname,
-    "../../projects/app/content.js",
-  );
-  const contentJsSource = fs.readFileSync(contentJsPath, "utf8");
-
-  // Simple function to extract a function's body from the source
-  // This is brittle but better than duplication for non-modular scripts.
-  // Note: Since content.js is wrapped in IIFE, we need to be careful.
-
-  // As a more robust alternative for the current state, we'll evaluate the script in a mock DOM environment
-  // But since it's an IIFE that runs immediately, it might cause side effects.
-
-  // Instead, let's use the extraction method but make it clear it's a bridge.
-  // For now, I will keep the tests as they are because they define the "Target Specification"
-  // that the refactoring must meet. This was explicitly requested: "分割前のコードの外部仕様(I/F仕様)のテストを作成し".
+  // 注: content.js は非モジュールの IIFE 形式であるため、
+  // 抽出ロジックのコア部分をテストコード側で再現して検証します。
+  // これはリファクタリング前の外部仕様を固定するための安全網として機能します。
 
   const getIssueKey = (url) => {
     const parsedUrl = new URL(url);
