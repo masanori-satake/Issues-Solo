@@ -46,11 +46,12 @@ test.describe("Settings Reordering", () => {
     const firstHost = hostItems.nth(0);
     const secondHost = hostItems.nth(1);
 
+    await sidePanel.evaluate(() => document.querySelector(".tab-content:not(.hidden)").scrollTop = 0);
     await secondHost.hover();
     await sidePanel.mouse.down();
     // Move to the top half of the first host to trigger 'top' drop position
     const box = await firstHost.boundingBox();
-    await sidePanel.mouse.move(box.x + box.width / 2, box.y + box.height / 4, {
+    await sidePanel.mouse.move(box.x + box.width / 2, box.y + 10, {
       steps: 5,
     });
     await sidePanel.mouse.up();
@@ -99,10 +100,11 @@ test.describe("Settings Reordering", () => {
     const firstProj = projectItems.nth(0);
     const secondProj = projectItems.nth(1);
 
+    await sidePanel.evaluate(() => document.querySelector(".tab-content:not(.hidden)").scrollTop = 0);
     await secondProj.hover();
     await sidePanel.mouse.down();
     const box = await firstProj.boundingBox();
-    await sidePanel.mouse.move(box.x + box.width / 2, box.y + box.height / 4, {
+    await sidePanel.mouse.move(box.x + box.width / 2, box.y + 10, {
       steps: 5,
     });
     await sidePanel.mouse.up();
