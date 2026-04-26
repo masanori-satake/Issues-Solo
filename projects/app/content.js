@@ -273,7 +273,11 @@
     const button = el.closest('button, [role="button"]');
     if (!button) return false;
 
-    const testId = (button.getAttribute("data-testid") || "").toLowerCase();
+    const testId = (
+      button.getAttribute("data-testid") ||
+      button.getAttribute("data-test-id") ||
+      ""
+    ).toLowerCase();
 
     // ヘッダーやナビゲーション内のボタン（検索やグローバルな「作成」など）は除外する
     if (
