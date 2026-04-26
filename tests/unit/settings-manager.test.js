@@ -199,9 +199,7 @@ describe("SettingsManager", () => {
     const dropEvent = new Event("drop");
     dropEvent.preventDefault = jest.fn();
     dropEvent.clientY = 1000; // Large value to simulate bottom
-    secondItem.getBoundingClientRect = jest
-      .fn()
-      .mockReturnValue({ top: 100, height: 50 });
+    secondItem.getBoundingClientRect = jest.fn().mockReturnValue({ top: 100, height: 50 });
     secondItem.dispatchEvent(dropEvent);
 
     expect(db.setSettings).toHaveBeenCalled();
@@ -234,9 +232,7 @@ describe("SettingsManager", () => {
     const dropEvent = new Event("drop");
     dropEvent.preventDefault = jest.fn();
     dropEvent.clientY = 1000; // Large value to simulate bottom
-    secondItem.getBoundingClientRect = jest
-      .fn()
-      .mockReturnValue({ top: 100, height: 50 });
+    secondItem.getBoundingClientRect = jest.fn().mockReturnValue({ top: 100, height: 50 });
     secondItem.dispatchEvent(dropEvent);
 
     expect(db.setProjectSettings).toHaveBeenCalled();

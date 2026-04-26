@@ -30,14 +30,8 @@ test.describe("Settings Reordering", () => {
     const hostItems = sidePanel.locator(".host-item");
     await expect(hostItems).toHaveCount(2);
 
-    const firstHostName = await hostItems
-      .nth(0)
-      .locator(".host-name")
-      .textContent();
-    const secondHostName = await hostItems
-      .nth(1)
-      .locator(".host-name")
-      .textContent();
+    const firstHostName = await hostItems.nth(0).locator(".host-name").textContent();
+    const secondHostName = await hostItems.nth(1).locator(".host-name").textContent();
 
     expect(firstHostName).toBe("Jira Cloud");
     expect(secondHostName).toBe("Second Jira");
@@ -50,25 +44,17 @@ test.describe("Settings Reordering", () => {
     await sidePanel.mouse.down();
     // Move to the top half of the first host to trigger 'top' drop position
     const box = await firstHost.boundingBox();
-    await sidePanel.mouse.move(box.x + box.width / 2, box.y + box.height / 4, {
-      steps: 5,
-    });
+    await sidePanel.mouse.move(box.x + box.width / 2, box.y + box.height / 4, { steps: 5 });
     await sidePanel.mouse.up();
 
     // Verify order changed
-    await expect(hostItems.nth(0).locator(".host-name")).toHaveText(
-      "Second Jira",
-    );
-    await expect(hostItems.nth(1).locator(".host-name")).toHaveText(
-      "Jira Cloud",
-    );
+    await expect(hostItems.nth(0).locator(".host-name")).toHaveText("Second Jira");
+    await expect(hostItems.nth(1).locator(".host-name")).toHaveText("Jira Cloud");
 
     // Reload sidepanel to verify persistence
     await sidePanel.reload();
     await sidePanel.click("#settings-btn");
-    await expect(
-      sidePanel.locator(".host-item").nth(0).locator(".host-name"),
-    ).toHaveText("Second Jira");
+    await expect(sidePanel.locator(".host-item").nth(0).locator(".host-name")).toHaveText("Second Jira");
   });
 
   test("should reorder project keys via drag and drop", async ({}, testInfo) => {
@@ -88,12 +74,8 @@ test.describe("Settings Reordering", () => {
     const projectItems = sidePanel.locator(".project-item");
     await expect(projectItems).toHaveCount(2);
 
-    expect(
-      await projectItems.nth(0).locator(".project-key-label").textContent(),
-    ).toBe("AAA");
-    expect(
-      await projectItems.nth(1).locator(".project-key-label").textContent(),
-    ).toBe("BBB");
+    expect(await projectItems.nth(0).locator(".project-key-label").textContent()).toBe("AAA");
+    expect(await projectItems.nth(1).locator(".project-key-label").textContent()).toBe("BBB");
 
     // Drag BBB to the top
     const firstProj = projectItems.nth(0);
@@ -102,25 +84,17 @@ test.describe("Settings Reordering", () => {
     await secondProj.hover();
     await sidePanel.mouse.down();
     const box = await firstProj.boundingBox();
-    await sidePanel.mouse.move(box.x + box.width / 2, box.y + box.height / 4, {
-      steps: 5,
-    });
+    await sidePanel.mouse.move(box.x + box.width / 2, box.y + box.height / 4, { steps: 5 });
     await sidePanel.mouse.up();
 
     // Verify order changed
-    await expect(projectItems.nth(0).locator(".project-key-label")).toHaveText(
-      "BBB",
-    );
-    await expect(projectItems.nth(1).locator(".project-key-label")).toHaveText(
-      "AAA",
-    );
+    await expect(projectItems.nth(0).locator(".project-key-label")).toHaveText("BBB");
+    await expect(projectItems.nth(1).locator(".project-key-label")).toHaveText("AAA");
 
     // Reload sidepanel to verify persistence
     await sidePanel.reload();
     await sidePanel.click("#settings-btn");
     await sidePanel.click('[data-tab="projects"]');
-    await expect(
-      sidePanel.locator(".project-item").nth(0).locator(".project-key-label"),
-    ).toHaveText("BBB");
+    await expect(sidePanel.locator(".project-item").nth(0).locator(".project-key-label")).toHaveText("BBB");
   });
 });
