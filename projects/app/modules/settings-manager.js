@@ -532,8 +532,7 @@ export class SettingsManager {
       if (oldOrigin && !isBuiltinHostOrigin(oldOrigin)) {
         const stillNeeded = settings.some(
           (h, i) =>
-            i !== index &&
-            getPermissionOriginFromStoredHost(h.url) === oldOrigin,
+            i !== index && getPermissionOriginFromStoredHost(h.url) === oldOrigin,
         );
         if (!stillNeeded) {
           try {
@@ -583,6 +582,10 @@ export class SettingsManager {
     const titleEl = document.getElementById("project-dialog-title");
     const confirmBtn = document.getElementById("confirm-project");
     const keyInput = document.getElementById("project-key-input");
+    const errorMsg = document.getElementById("project-error-msg");
+
+    errorMsg.classList.add("hidden");
+    errorMsg.textContent = "";
 
     if (proj) {
       dialog.dataset.editKey = proj.key;
@@ -600,6 +603,14 @@ export class SettingsManager {
       keyInput.value = "";
     }
 
+    // 入力開始時にエラーメッセージを非表示にする
+    if (!keyInput.dataset.listenerAdded) {
+      keyInput.addEventListener("input", () => {
+        errorMsg.classList.add("hidden");
+      });
+      keyInput.dataset.listenerAdded = "true";
+    }
+
     dialog.classList.remove("hidden");
     keyInput.focus();
   }
@@ -610,14 +621,15 @@ export class SettingsManager {
   async addProject(key) {
     const settings = await this.db.getProjectSettings();
     if (settings.some((p) => p.key === key)) {
-      this.elements.projectDialog.classList.add("hidden");
-      return;
+      this._showProjectError(chrome.i18n.getMessage("duplicateProjectKey"));
+      return false;
     }
 
     settings.push({ key, color: "#0061A4", isCollapsed: false });
     await this.db.setProjectSettings(settings);
     this.elements.projectDialog.classList.add("hidden");
     await this.renderProjectSettings();
+    return true;
   }
 
   /**
@@ -628,20 +640,26 @@ export class SettingsManager {
     const index = settings.findIndex((p) => p.key === oldKey);
     if (index === -1) {
       this.elements.projectDialog.classList.add("hidden");
-      return;
+      return true;
     }
 
     if (oldKey !== newKey) {
       // 重複チェック
       if (settings.some((p) => p.key === newKey)) {
-        // すでに存在する場合は何もしない（ダイアログは閉じる）
-        this.elements.projectDialog.classList.add("hidden");
-        return;
+        this._showProjectError(chrome.i18n.getMessage("duplicateProjectKey"));
+        return false;
       }
       settings[index].key = newKey;
       await this.db.setProjectSettings(settings);
       await this.renderProjectSettings();
     }
     this.elements.projectDialog.classList.add("hidden");
+    return true;
+  }
+
+  _showProjectError(message) {
+    const errorMsg = document.getElementById("project-error-msg");
+    errorMsg.textContent = message;
+    errorMsg.classList.remove("hidden");
   }
 }

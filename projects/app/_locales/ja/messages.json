@@ -226,5 +226,8 @@
   },
   "permissionDenied": {
     "message": "この Jira サイトで課題を追跡するには、ホスト権限の許可が必要です。"
+  },
+  "duplicateProjectKey": {
+    "message": "このプロジェクトキーは既に登録されています。"
   }
 }

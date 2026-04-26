@@ -231,6 +231,12 @@ header {
   color: var(--secondary-text);
 }
 
+.error-msg {
+  color: #b3261e;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
 .host-group-header {
   background-color: #0061a4; /* Material 3 Blue - Jira-like */
   padding: 6px 16px;

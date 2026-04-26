@@ -272,7 +272,6 @@ class SidePanel {
           } else {
             await this.settings.addProject(key);
           }
-          dialog.classList.add("hidden");
         }
       });
 

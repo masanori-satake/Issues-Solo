@@ -226,5 +226,8 @@
   },
   "permissionDenied": {
     "message": "Host access permission is required to track issues on this Jira site."
+  },
+  "duplicateProjectKey": {
+    "message": "This project key is already registered."
   }
 }
