@@ -1,6 +1,6 @@
 {
   "name": "issues-solo",
-  "version": "0.12.8",
+  "version": "0.12.9",
   "description": "JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能",
   "scripts": {
     "build": "python3 scripts/generate_png_icons.py && python3 scripts/check_version.py && python3 scripts/verify_project_policies.py && python3 scripts/build.py",
