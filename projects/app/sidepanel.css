@@ -587,7 +587,7 @@ section:last-child {
 }
 
 .project-list-container {
-  height: calc(48px * 3.5); /* 3.5 items height (assuming 48px per item) */
+  height: calc(48px * 8.5); /* 8.5 items height (assuming 48px per item) */
   border: 1px solid var(--border-color);
   border-radius: 8px;
   overflow-y: scroll; /* Always show scrollbar */
@@ -785,7 +785,7 @@ section:last-child {
   line-height: 1.5;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .about-section {
@@ -829,10 +829,6 @@ section:last-child {
   font-style: italic;
 }
 
-.about-section.credits,
-.about-section.disclaimer {
-  margin-top: 4px;
-}
 
 .no-history {
   padding: 40px 20px;
