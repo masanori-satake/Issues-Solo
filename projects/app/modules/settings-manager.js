@@ -13,6 +13,8 @@ export class SettingsManager {
     this.db = db;
     this.renderer = renderer;
     this.previousMaxHistoryCount = 50;
+    this.draggingIndex = null;
+    this.draggingType = null;
 
     // UI要素のキャッシュ
     this.elements = {
@@ -149,9 +151,61 @@ export class SettingsManager {
     // ドラッグ＆ドロップ用イベント
     li.addEventListener("dragstart", (e) => {
       li.classList.add("dragging");
-      e.dataTransfer.setData("text/plain", index);
+      this.draggingIndex = index;
+      this.draggingType = "host";
+      e.dataTransfer.effectAllowed = "move";
     });
-    li.addEventListener("dragend", () => li.classList.remove("dragging"));
+
+    li.addEventListener("dragover", (e) => {
+      if (this.draggingType !== "host") return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      const rect = li.getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      if (e.clientY < midpoint) {
+        li.classList.add("drag-over-top");
+        li.classList.remove("drag-over-bottom");
+      } else {
+        li.classList.add("drag-over-bottom");
+        li.classList.remove("drag-over-top");
+      }
+    });
+
+    li.addEventListener("dragleave", () => {
+      li.classList.remove("drag-over-top", "drag-over-bottom");
+    });
+
+    li.addEventListener("dragend", () => {
+      li.classList.remove("dragging", "drag-over-top", "drag-over-bottom");
+      this.draggingIndex = null;
+      this.draggingType = null;
+    });
+
+    li.addEventListener("drop", async (e) => {
+      if (this.draggingType !== "host") return;
+      e.preventDefault();
+      li.classList.remove("drag-over-top", "drag-over-bottom");
+
+      const fromIndex = this.draggingIndex;
+      const toIndex = index;
+
+      if (fromIndex === toIndex) return;
+
+      const rect = li.getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      const dropPosition = e.clientY < midpoint ? "top" : "bottom";
+
+      let finalToIndex = toIndex;
+      if (dropPosition === "bottom" && fromIndex > toIndex) finalToIndex++;
+      if (dropPosition === "top" && fromIndex < toIndex) finalToIndex--;
+
+      const newSettings = [...allSettings];
+      const [movedItem] = newSettings.splice(fromIndex, 1);
+      newSettings.splice(finalToIndex, 0, movedItem);
+
+      await this.db.setSettings(newSettings);
+      this.renderHostSettings();
+    });
 
     return li;
   }
@@ -222,9 +276,61 @@ export class SettingsManager {
 
     li.addEventListener("dragstart", (e) => {
       li.classList.add("dragging");
-      e.dataTransfer.setData("text/plain", index);
+      this.draggingIndex = index;
+      this.draggingType = "project";
+      e.dataTransfer.effectAllowed = "move";
     });
-    li.addEventListener("dragend", () => li.classList.remove("dragging"));
+
+    li.addEventListener("dragover", (e) => {
+      if (this.draggingType !== "project") return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      const rect = li.getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      if (e.clientY < midpoint) {
+        li.classList.add("drag-over-top");
+        li.classList.remove("drag-over-bottom");
+      } else {
+        li.classList.add("drag-over-bottom");
+        li.classList.remove("drag-over-top");
+      }
+    });
+
+    li.addEventListener("dragleave", () => {
+      li.classList.remove("drag-over-top", "drag-over-bottom");
+    });
+
+    li.addEventListener("dragend", () => {
+      li.classList.remove("dragging", "drag-over-top", "drag-over-bottom");
+      this.draggingIndex = null;
+      this.draggingType = null;
+    });
+
+    li.addEventListener("drop", async (e) => {
+      if (this.draggingType !== "project") return;
+      e.preventDefault();
+      li.classList.remove("drag-over-top", "drag-over-bottom");
+
+      const fromIndex = this.draggingIndex;
+      const toIndex = index;
+
+      if (fromIndex === toIndex) return;
+
+      const rect = li.getBoundingClientRect();
+      const midpoint = rect.top + rect.height / 2;
+      const dropPosition = e.clientY < midpoint ? "top" : "bottom";
+
+      let finalToIndex = toIndex;
+      if (dropPosition === "bottom" && fromIndex > toIndex) finalToIndex++;
+      if (dropPosition === "top" && fromIndex < toIndex) finalToIndex--;
+
+      const newSettings = [...allSettings];
+      const [movedItem] = newSettings.splice(fromIndex, 1);
+      newSettings.splice(finalToIndex, 0, movedItem);
+
+      await this.db.setProjectSettings(newSettings);
+      this.renderProjectSettings();
+    });
 
     return li;
   }
