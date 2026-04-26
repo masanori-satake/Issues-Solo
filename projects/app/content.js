@@ -298,8 +298,9 @@
         // ボタンの近傍（同じフォームやコンテナ内）に編集可能要素があるか確認する。
         // これにより、グローバルな検索バーのボタンなどとの誤認を防ぐ。
         const container =
-          btn.closest("form, [role='dialog'], [data-testid*='editor'], .inline-edit-section") ||
-          document.body;
+          btn.closest(
+            "form, [role='dialog'], [data-testid*='editor'], .inline-edit-section",
+          ) || document.body;
 
         const hasEditable = !!container.querySelector(
           'textarea, [contenteditable="true"], [role="textbox"]',
