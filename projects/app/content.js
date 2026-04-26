@@ -273,17 +273,28 @@
     const button = el.closest('button, [role="button"]');
     if (!button) return false;
 
-    // ヘッダーやナビゲーション内のボタン（検索など）は除外する
+    const testId = (
+      button.getAttribute("data-testid") ||
+      button.getAttribute("data-test-id") ||
+      ""
+    ).toLowerCase();
+
+    // ヘッダーやナビゲーション内のボタン（検索やグローバルな「作成」など）は除外する
     if (
+      testId.includes("atlassian-navigation") ||
       button.closest(
-        'header, [data-testid="global-pages.header.pushed-navigation-header"]',
+        'header, [data-testid="global-pages.header.pushed-navigation-header"], [data-testid="atlassian-navigation"]',
       )
     ) {
       return false;
     }
 
+    // 監査ログの更新ボタンなどは除外
+    if (testId.includes("audit-log") && testId.includes("refresh")) {
+      return false;
+    }
+
     const text = button.innerText.trim().toLowerCase();
-    const testId = (button.getAttribute("data-testid") || "").toLowerCase();
     const ariaLabel = (button.getAttribute("aria-label") || "").toLowerCase();
 
     // 保存・作成・更新系キーワード
@@ -304,9 +315,10 @@
       keywords.some((kw) => target.includes(kw));
 
     const isSave =
-      matchKeywords(saveKeywords, text) ||
-      matchKeywords(saveKeywords, testId) ||
-      matchKeywords(saveKeywords, ariaLabel);
+      (matchKeywords(saveKeywords, text) ||
+        matchKeywords(saveKeywords, testId) ||
+        matchKeywords(saveKeywords, ariaLabel)) &&
+      !matchKeywords(["comment-text-area-placeholder"], testId);
 
     const isCancel =
       matchKeywords(cancelKeywords, text) ||
@@ -330,12 +342,17 @@
         const container =
           btn.closest(
             "form, [role='dialog'], [data-testid*='editor-container'], [data-component='editor'], .inline-edit-section",
-          ) ||
-          btn.closest("[data-testid*='editor']")?.parentElement ||
-          document.body;
+          ) || btn.closest("[data-testid*='editor']")?.parentElement;
 
-        const hasEditable = !!container.querySelector(
+        // ボタンが特定のコンテナ内にない場合は、広範囲（document.body）を探索する。
+        // ただし、グローバルな「作成」ボタンなどが除外されていることが前提。
+        const searchRoot = container || document.body;
+
+        const editables = searchRoot.querySelectorAll(
           'textarea, input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), [contenteditable="true"], [role="textbox"], [role="combobox"]',
+        );
+        const hasEditable = Array.from(editables).some((el) =>
+          isEditableElement(el),
         );
         if (hasEditable) return true;
       }
@@ -453,6 +470,16 @@
     const tagName = el.tagName;
     const role = el.getAttribute("role");
     const isContentEditable = el.isContentEditable;
+    const testId = (
+      el.getAttribute("data-testid") ||
+      el.getAttribute("data-test-id") ||
+      ""
+    ).toLowerCase();
+
+    // 検索窓などは編集対象から除外する
+    if (testId.includes("search")) {
+      return false;
+    }
 
     return (
       tagName === "TEXTAREA" ||
