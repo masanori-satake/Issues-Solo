@@ -90,7 +90,6 @@ function isBuiltinHostOrigin(origin) {
   return /^https:\/\/(?:[^/]+\.)?atlassian\.net\/\*$/.test(origin);
 }
 
-
 /**
  * i18n対応: data-i18n属性を持つ要素のテキストを更新
  */
