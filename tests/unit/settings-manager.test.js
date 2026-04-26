@@ -174,4 +174,70 @@ describe("SettingsManager", () => {
       document.getElementById("add-host-dialog").classList.contains("hidden"),
     ).toBe(true);
   });
+
+  test("should reorder hosts via drag and drop", async () => {
+    const mockSettings = [
+      { id: "1", name: "Host 1", url: "host1.net", visible: true },
+      { id: "2", name: "Host 2", url: "host2.net", visible: true },
+    ];
+    db.getSettings.mockResolvedValue(mockSettings);
+
+    await manager.renderHostSettings();
+    const items = document.querySelectorAll(".host-item");
+    const firstItem = items[0];
+    const secondItem = items[1];
+
+    // Simulate drag start on Host 1
+    const dragStartEvent = new Event("dragstart");
+    dragStartEvent.dataTransfer = { setData: jest.fn(), effectAllowed: null };
+    firstItem.dispatchEvent(dragStartEvent);
+
+    expect(manager.draggingIndex).toBe(0);
+    expect(manager.draggingType).toBe("host");
+
+    // Simulate drop on Host 2 (at the bottom)
+    const dropEvent = new Event("drop");
+    dropEvent.preventDefault = jest.fn();
+    dropEvent.clientY = 1000; // Large value to simulate bottom
+    secondItem.getBoundingClientRect = jest.fn().mockReturnValue({ top: 100, height: 50 });
+    secondItem.dispatchEvent(dropEvent);
+
+    expect(db.setSettings).toHaveBeenCalled();
+    const newSettings = db.setSettings.mock.calls[0][0];
+    expect(newSettings[0].name).toBe("Host 2");
+    expect(newSettings[1].name).toBe("Host 1");
+  });
+
+  test("should reorder projects via drag and drop", async () => {
+    const mockProj = [
+      { key: "PROJ1", color: "#0061A4" },
+      { key: "PROJ2", color: "#0061A4" },
+    ];
+    db.getProjectSettings.mockResolvedValue(mockProj);
+
+    await manager.renderProjectSettings();
+    const items = document.querySelectorAll(".project-item");
+    const firstItem = items[0];
+    const secondItem = items[1];
+
+    // Simulate drag start on Project 1
+    const dragStartEvent = new Event("dragstart");
+    dragStartEvent.dataTransfer = { setData: jest.fn(), effectAllowed: null };
+    firstItem.dispatchEvent(dragStartEvent);
+
+    expect(manager.draggingIndex).toBe(0);
+    expect(manager.draggingType).toBe("project");
+
+    // Simulate drop on Project 2 (at the bottom)
+    const dropEvent = new Event("drop");
+    dropEvent.preventDefault = jest.fn();
+    dropEvent.clientY = 1000; // Large value to simulate bottom
+    secondItem.getBoundingClientRect = jest.fn().mockReturnValue({ top: 100, height: 50 });
+    secondItem.dispatchEvent(dropEvent);
+
+    expect(db.setProjectSettings).toHaveBeenCalled();
+    const newSettings = db.setProjectSettings.mock.calls[0][0];
+    expect(newSettings[0].key).toBe("PROJ2");
+    expect(newSettings[1].key).toBe("PROJ1");
+  });
 });
