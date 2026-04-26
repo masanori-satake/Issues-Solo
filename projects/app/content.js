@@ -273,17 +273,46 @@
     const button = el.closest('button, [role="button"]');
     if (!button) return false;
 
+    // ヘッダーやナビゲーション内のボタン（検索など）は除外する
+    if (
+      button.closest(
+        'header, [data-testid="global-pages.header.pushed-navigation-header"]',
+      )
+    ) {
+      return false;
+    }
+
     const text = button.innerText.trim().toLowerCase();
-    const testId = button.getAttribute("data-testid");
+    const testId = (button.getAttribute("data-testid") || "").toLowerCase();
+    const ariaLabel = (button.getAttribute("aria-label") || "").toLowerCase();
+
+    // 保存・作成・更新系キーワード
+    const saveKeywords = [
+      "save",
+      "保存",
+      "create",
+      "作成",
+      "update",
+      "更新",
+      "add",
+      "追加",
+    ];
+    // キャンセル系キーワード
+    const cancelKeywords = ["cancel", "キャンセル"];
+
+    const matchKeywords = (keywords, target) =>
+      keywords.some((kw) => target.includes(kw));
 
     const isSave =
-      text.includes("save") ||
-      text.includes("保存") ||
-      (testId && testId.includes("save"));
+      matchKeywords(saveKeywords, text) ||
+      matchKeywords(saveKeywords, testId) ||
+      matchKeywords(saveKeywords, ariaLabel);
+
     const isCancel =
-      text.includes("cancel") ||
-      text.includes("キャンセル") ||
-      (testId && testId.includes("cancel"));
+      matchKeywords(cancelKeywords, text) ||
+      matchKeywords(cancelKeywords, testId) ||
+      matchKeywords(cancelKeywords, ariaLabel);
+
     return isSave || isCancel;
   };
 
@@ -296,14 +325,17 @@
     for (const btn of buttons) {
       if (isSaveOrCancelButton(btn)) {
         // ボタンの近傍（同じフォームやコンテナ内）に編集可能要素があるか確認する。
-        // これにより、グローバルな検索バーのボタンなどとの誤認を防ぐ。
+        // Jira Cloudの新UIではボタンが ak-editor-secondary-toolbar などに分離されているため、
+        // より広い範囲（editor-container等）を探索対象とする。
         const container =
           btn.closest(
-            "form, [role='dialog'], [data-testid*='editor'], .inline-edit-section",
-          ) || document.body;
+            "form, [role='dialog'], [data-testid*='editor-container'], [data-component='editor'], .inline-edit-section",
+          ) ||
+          btn.closest("[data-testid*='editor']")?.parentElement ||
+          document.body;
 
         const hasEditable = !!container.querySelector(
-          'textarea, [contenteditable="true"], [role="textbox"]',
+          'textarea, input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), [contenteditable="true"], [role="textbox"], [role="combobox"]',
         );
         if (hasEditable) return true;
       }
@@ -478,7 +510,11 @@
   const handleClick = (e) => {
     if (!isEditingState) return;
     if (isSaveOrCancelButton(e.target)) {
-      stopEditing();
+      // JiraのSPAでは、保存ボタン押下直後はまだDOMにボタンや入力欄が残っており、
+      // 即座にdetectEditingStateFromDOMを実行すると「編集中」のままと誤判定されることがある。
+      // そのため、少し遅延させて（非同期処理の完了を待って）再判定を行う。
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(checkInfoChange, 500);
     }
   };
 

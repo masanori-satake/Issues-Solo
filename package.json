@@ -1,6 +1,6 @@
 {
   "name": "issues-solo",
-  "version": "0.12.7",
+  "version": "0.12.8",
   "description": "JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能",
   "scripts": {
     "build": "python3 scripts/generate_png_icons.py && python3 scripts/check_version.py && python3 scripts/verify_project_policies.py && python3 scripts/build.py",
@@ -13,14 +13,14 @@
   "devDependencies": {
     "@babel/core": "^7.29.0",
     "@babel/preset-env": "^7.29.2",
-    "@playwright/test": "1.58.0",
+    "@playwright/test": "^1.58.0",
     "@tootallnate/once": "^3.0.1",
     "babel-jest": "^29.7.0",
     "fake-indexeddb": "^6.2.5",
     "jest": "^29.7.0",
     "jest-chrome": "^0.8.0",
     "jest-environment-jsdom": "^29.7.0",
-    "playwright": "1.58.0"
+    "playwright": "^1.58.0"
   },
   "overrides": {
     "@tootallnate/once": "^3.0.1"
