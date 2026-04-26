@@ -224,6 +224,7 @@
 
     // イベントリスナーの削除
     document.removeEventListener("focusin", startEditing);
+    document.removeEventListener("focusout", handleFocusOut);
     document.removeEventListener("visibilitychange", handleVisibilityChange);
     window.removeEventListener("focus", handleVisibilityChange);
     document.removeEventListener("keydown", handleKeyDown, true);
@@ -278,8 +279,7 @@
     const isSave =
       text.includes("save") ||
       text.includes("保存") ||
-      (testId && testId.includes("save")) ||
-      button.type === "submit";
+      (testId && testId.includes("save"));
     const isCancel =
       text.includes("cancel") ||
       text.includes("キャンセル") ||
@@ -295,8 +295,14 @@
     const buttons = document.querySelectorAll('button, [role="button"]');
     for (const btn of buttons) {
       if (isSaveOrCancelButton(btn)) {
-        // ボタンが表示されている＝編集フォームが開いているとみなす
-        const hasEditable = !!document.querySelector(
+        // ボタンの近傍（同じフォームやコンテナ内）に編集可能要素があるか確認する。
+        // これにより、グローバルな検索バーのボタンなどとの誤認を防ぐ。
+        const container =
+          btn.closest(
+            "form, [role='dialog'], [data-testid*='editor'], .inline-edit-section",
+          ) || document.body;
+
+        const hasEditable = !!container.querySelector(
           'textarea, [contenteditable="true"], [role="textbox"]',
         );
         if (hasEditable) return true;
@@ -328,14 +334,27 @@
       isEditing = detectEditingStateFromDOM();
     }
 
+    const summary = getSummary();
+    const priority = getPriority();
+    const status = getStatus();
+
+    // 内部状態を更新し、checkInfoChangeとの二重通知を防ぐ
+    lastInfo = JSON.stringify({
+      k: issueKey,
+      s: summary,
+      p: priority,
+      st: status,
+      e: isEditing,
+    });
+
     if (
       !safeSendMessage({
         type: "ISSUE_UPDATED",
         data: {
           issueKey,
-          title: getSummary(),
-          priority: getPriority(),
-          status: getStatus(),
+          title: summary,
+          priority: priority,
+          status: status,
           isEditing,
           url: window.location.href,
         },
@@ -352,8 +371,12 @@
   const checkInfoChange = () => {
     if (!isExtensionContextAlive) return;
 
+    const issueKey = getIssueKey();
+    if (!issueKey) return;
+
     const isEditing = detectEditingStateFromDOM();
     const info = JSON.stringify({
+      k: issueKey,
       s: getSummary(),
       p: getPriority(),
       st: getStatus(),
@@ -413,9 +436,20 @@
 
   const startEditing = (e) => {
     if (isEditableElement(e.target)) {
-      if (!isEditingState) {
-        notifyChange(true);
-      }
+      // フォーカスが入っただけでは即座に「編集中」とせず、
+      // 実際に保存・キャンセルボタンが存在するかどうかを確認する。
+      // JiraのDOM反映（ボタンの表示など）を待つため、少し遅延させてチェックを実行する。
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(checkInfoChange, 300);
+    }
+  };
+
+  const handleFocusOut = (e) => {
+    if (isEditableElement(e.target)) {
+      // フォーカスが外れた際も、即座に解除せずDOM状態を確認する。
+      // （ボタンをクリックしてフォーカスが外れた場合などを考慮）
+      if (debounceTimer) clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(checkInfoChange, 300);
     }
   };
 
@@ -484,6 +518,7 @@
 
   // 3. イベントリスナーの登録
   document.addEventListener("focusin", startEditing);
+  document.addEventListener("focusout", handleFocusOut);
   document.addEventListener("visibilitychange", handleVisibilityChange);
   window.addEventListener("focus", handleVisibilityChange);
   document.addEventListener("keydown", handleKeyDown, true);
