@@ -3,7 +3,7 @@
     "message": "Issues-Solo"
   },
   "extDescription": {
-    "message": "JIRA閲覧履歴と編集状態を管理するローカル完結型Chrome拡張機能"
+    "message": "JIRA閲覧履歴を管理するローカル完結型Chrome拡張機能"
   },
   "actionTitle": {
     "message": "Issues-Soloを開く"
@@ -148,9 +148,6 @@
   },
   "tabClosed": {
     "message": "タブは閉じています"
-  },
-  "editing": {
-    "message": "編集中"
   },
   "statusLabel": {
     "message": "ステータス: $1",
