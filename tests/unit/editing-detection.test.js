@@ -1,4 +1,4 @@
-import { jest } from '@jest/globals';
+import { jest } from "@jest/globals";
 
 // content.js is an IIFE, so we need to extract or mock the functions.
 // For unit testing, we can define the functions in the test scope
@@ -27,7 +27,9 @@ describe("content.js editing state detection", () => {
       return false;
     }
 
-    const text = (button.innerText || button.textContent || "").trim().toLowerCase();
+    const text = (button.innerText || button.textContent || "")
+      .trim()
+      .toLowerCase();
     const ariaLabel = (button.getAttribute("aria-label") || "").toLowerCase();
 
     // 保存・作成・更新系キーワード
@@ -113,7 +115,7 @@ describe("content.js editing state detection", () => {
   };
 
   beforeEach(() => {
-    document.body.innerHTML = '';
+    document.body.innerHTML = "";
   });
 
   test("should NOT detect editing for global navigation Create button", () => {
