@@ -1,4 +1,9 @@
-import { normalizeHostInput, M3_COLORS, getPermissionOriginFromStoredHost, isBuiltinHostOrigin } from "../utils.js";
+import {
+  normalizeHostInput,
+  M3_COLORS,
+  getPermissionOriginFromStoredHost,
+  isBuiltinHostOrigin,
+} from "../utils.js";
 
 /**
  * 設定パネルの表示と操作を担当するクラスです。
@@ -25,11 +30,13 @@ export class SettingsManager {
     this.hostAccessMessages = {
       en: {
         invalidHost: "Please enter a valid HTTPS Jira host.",
-        permissionDenied: "Host access permission is required to track issues on this Jira site.",
+        permissionDenied:
+          "Host access permission is required to track issues on this Jira site.",
       },
       ja: {
         invalidHost: "有効な HTTPS の Jira ホストを入力してください。",
-        permissionDenied: "この Jira サイトで課題を追跡するには、ホスト権限の許可が必要です。",
+        permissionDenied:
+          "この Jira サイトで課題を追跡するには、ホスト権限の許可が必要です。",
       },
     };
   }
@@ -78,7 +85,8 @@ export class SettingsManager {
     // ドラッグハンドル
     const dragHandle = document.createElement("div");
     dragHandle.className = "drag-handle";
-    dragHandle.innerHTML = '<span class="material-symbols-outlined">drag_indicator</span>';
+    dragHandle.innerHTML =
+      '<span class="material-symbols-outlined">drag_indicator</span>';
 
     // ホスト情報
     const info = document.createElement("div");
@@ -88,8 +96,12 @@ export class SettingsManager {
     // 表示切り替えトグル
     const toggle = document.createElement("div");
     toggle.className = "visibility-toggle";
-    toggle.title = host.visible ? chrome.i18n.getMessage("visible") : chrome.i18n.getMessage("hidden");
-    toggle.innerHTML = `<span class="material-symbols-outlined">${host.visible ? "visibility" : "visibility_off"}</span>`;
+    toggle.title = host.visible
+      ? chrome.i18n.getMessage("visible")
+      : chrome.i18n.getMessage("hidden");
+    toggle.innerHTML = `<span class="material-symbols-outlined">${
+      host.visible ? "visibility" : "visibility_off"
+    }</span>`;
     toggle.addEventListener("click", async (e) => {
       e.stopPropagation();
       host.visible = !host.visible;
@@ -100,17 +112,31 @@ export class SettingsManager {
     // 削除ボタン
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
-    deleteBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+    deleteBtn.innerHTML =
+      '<span class="material-symbols-outlined">delete</span>';
     deleteBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const newSettings = allSettings.filter((_, i) => i !== index);
-      const removedPermissionOrigin = getPermissionOriginFromStoredHost(host.url);
+      const removedPermissionOrigin = getPermissionOriginFromStoredHost(
+        host.url,
+      );
       await this.db.setSettings(newSettings);
 
-      if (removedPermissionOrigin && !isBuiltinHostOrigin(removedPermissionOrigin)) {
-        const stillNeeded = newSettings.some(h => getPermissionOriginFromStoredHost(h.url) === removedPermissionOrigin);
+      if (
+        removedPermissionOrigin &&
+        !isBuiltinHostOrigin(removedPermissionOrigin)
+      ) {
+        const stillNeeded = newSettings.some(
+          (h) =>
+            getPermissionOriginFromStoredHost(h.url) ===
+            removedPermissionOrigin,
+        );
         if (!stillNeeded) {
-          try { await chrome.permissions.remove({ origins: [removedPermissionOrigin] }); } catch (e) {}
+          try {
+            await chrome.permissions.remove({
+              origins: [removedPermissionOrigin],
+            });
+          } catch (e) {}
         }
       }
       this.renderHostSettings();
@@ -153,7 +179,8 @@ export class SettingsManager {
 
     const dragHandle = document.createElement("div");
     dragHandle.className = "drag-handle";
-    dragHandle.innerHTML = '<span class="material-symbols-outlined">drag_indicator</span>';
+    dragHandle.innerHTML =
+      '<span class="material-symbols-outlined">drag_indicator</span>';
 
     const keyLabel = document.createElement("span");
     keyLabel.className = "project-key-label";
@@ -163,7 +190,9 @@ export class SettingsManager {
     colorPicker.className = "color-picker";
     M3_COLORS.forEach((color) => {
       const option = document.createElement("div");
-      option.className = `color-option ${proj.color === color ? "selected" : ""}`;
+      option.className = `color-option ${
+        proj.color === color ? "selected" : ""
+      }`;
       option.style.backgroundColor = color;
       option.addEventListener("click", async () => {
         proj.color = color;
@@ -175,7 +204,8 @@ export class SettingsManager {
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
-    deleteBtn.innerHTML = '<span class="material-symbols-outlined">delete</span>';
+    deleteBtn.innerHTML =
+      '<span class="material-symbols-outlined">delete</span>';
     deleteBtn.addEventListener("click", async (e) => {
       const newSettings = allSettings.filter((_, i) => i !== index);
       await this.db.setProjectSettings(newSettings);
@@ -212,11 +242,15 @@ export class SettingsManager {
    */
   async initImportModes() {
     const hMode = await this.db.getHistoryImportMode();
-    const hRadio = document.querySelector(`input[name="history-import-mode"][value="${hMode}"]`);
+    const hRadio = document.querySelector(
+      `input[name="history-import-mode"][value="${hMode}"]`,
+    );
     if (hRadio) hRadio.checked = true;
 
     const sMode = await this.db.getSettingsImportMode();
-    const sRadio = document.querySelector(`input[name="settings-import-mode"][value="${sMode}"]`);
+    const sRadio = document.querySelector(
+      `input[name="settings-import-mode"][value="${sMode}"]`,
+    );
     if (sRadio) sRadio.checked = true;
   }
 
@@ -225,7 +259,8 @@ export class SettingsManager {
    */
   async updateAboutStats() {
     const versionSpan = document.getElementById("extension-version");
-    if (versionSpan) versionSpan.textContent = "v" + chrome.runtime.getManifest().version;
+    if (versionSpan)
+      versionSpan.textContent = "v" + chrome.runtime.getManifest().version;
 
     const hosts = await this.db.getSettings();
     const projects = await this.db.getProjectSettings();
@@ -289,7 +324,9 @@ export class SettingsManager {
     if (!isBuiltinHostOrigin(normalized.permissionOrigin)) {
       let granted = false;
       try {
-        granted = await chrome.permissions.request({ origins: [normalized.permissionOrigin] });
+        granted = await chrome.permissions.request({
+          origins: [normalized.permissionOrigin],
+        });
       } catch (e) {}
       if (!granted) {
         alert(this.hostAccessMessages[this.uiLanguage].permissionDenied);
@@ -308,9 +345,11 @@ export class SettingsManager {
     this.elements.addHostDialog.classList.add("hidden");
     await this.renderHostSettings();
 
-    chrome.runtime.sendMessage({
-      type: "HOST_PERMISSION_GRANTED",
-      origin: normalized.permissionOrigin,
-    }).catch(() => {});
+    chrome.runtime
+      .sendMessage({
+        type: "HOST_PERMISSION_GRANTED",
+        origin: normalized.permissionOrigin,
+      })
+      .catch(() => {});
   }
 }

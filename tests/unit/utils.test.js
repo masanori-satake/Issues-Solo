@@ -56,8 +56,12 @@ describe("utils.js", () => {
   });
 
   test("getPermissionOriginFromStoredHost", () => {
-    expect(getPermissionOriginFromStoredHost("test.atlassian.net")).toBe("https://test.atlassian.net/*");
-    expect(getPermissionOriginFromStoredHost("test.com/jira")).toBe("https://test.com/*");
+    expect(getPermissionOriginFromStoredHost("test.atlassian.net")).toBe(
+      "https://test.atlassian.net/*",
+    );
+    expect(getPermissionOriginFromStoredHost("test.com/jira")).toBe(
+      "https://test.com/*",
+    );
     expect(getPermissionOriginFromStoredHost("invalid url")).toBeNull();
   });
 

@@ -17,19 +17,21 @@ test.describe("Sidepanel Features", () => {
     });
 
     await sidePanel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
-    test.info().annotations.push({ type: 'sidePanel', description: sidePanel });
+    test.info().annotations.push({ type: "sidePanel", description: sidePanel });
   });
 
   async function getSidePanel(testInfo) {
-    return testInfo.annotations.find(a => a.type === 'sidePanel').description;
+    return testInfo.annotations.find((a) => a.type === "sidePanel").description;
   }
 
-  test("should toggle settings panel and switch tabs", async ({ }, testInfo) => {
+  test("should toggle settings panel and switch tabs", async ({}, testInfo) => {
     const sidePanel = await getSidePanel(testInfo);
 
     // 設定を開く
     await sidePanel.click("#settings-btn");
-    await expect(sidePanel.locator("#settings-panel")).not.toHaveClass(/hidden/);
+    await expect(sidePanel.locator("#settings-panel")).not.toHaveClass(
+      /hidden/,
+    );
 
     // プロジェクトタブに切り替え
     await sidePanel.click('[data-tab="projects"]');
@@ -46,7 +48,7 @@ test.describe("Sidepanel Features", () => {
     await expect(sidePanel.locator("#settings-panel")).toHaveClass(/hidden/);
   });
 
-  test("should manage project keys", async ({ }, testInfo) => {
+  test("should manage project keys", async ({}, testInfo) => {
     const sidePanel = await getSidePanel(testInfo);
 
     await sidePanel.click("#settings-btn");
@@ -58,7 +60,9 @@ test.describe("Sidepanel Features", () => {
     await sidePanel.click("#confirm-add-project");
 
     // 追加されたことを確認
-    await expect(sidePanel.locator(".project-item .project-key-label")).toContainText("NEWPROJ");
+    await expect(
+      sidePanel.locator(".project-item .project-key-label"),
+    ).toContainText("NEWPROJ");
 
     // 色を変更
     const colorOption = sidePanel.locator(".color-option").nth(1);
@@ -67,10 +71,12 @@ test.describe("Sidepanel Features", () => {
 
     // プロジェクトを削除
     await sidePanel.click(".project-item:has-text('NEWPROJ') .delete-btn");
-    await expect(sidePanel.locator(".project-item:has-text('NEWPROJ')")).not.toBeVisible();
+    await expect(
+      sidePanel.locator(".project-item:has-text('NEWPROJ')"),
+    ).not.toBeVisible();
   });
 
-  test("should manage Jira hosts", async ({ }, testInfo) => {
+  test("should manage Jira hosts", async ({}, testInfo) => {
     const sidePanel = await getSidePanel(testInfo);
 
     await sidePanel.click("#settings-btn");
@@ -82,29 +88,39 @@ test.describe("Sidepanel Features", () => {
     await sidePanel.click("#confirm-add-host");
 
     // 追加されたことを確認
-    const hostItem = sidePanel.locator(".host-item", { hasText: "Custom Jira" });
+    const hostItem = sidePanel.locator(".host-item", {
+      hasText: "Custom Jira",
+    });
     await expect(hostItem).toBeVisible();
     await expect(hostItem.locator(".host-name")).toContainText("Custom Jira");
-    await expect(hostItem.locator(".host-url-preview")).toContainText("jira.custom.com");
+    await expect(hostItem.locator(".host-url-preview")).toContainText(
+      "jira.custom.com",
+    );
 
     // 表示・非表示を切り替え
     const toggleBtn = hostItem.locator(".visibility-toggle");
-    await expect(toggleBtn.locator(".material-symbols-outlined")).toHaveText("visibility");
+    await expect(toggleBtn.locator(".material-symbols-outlined")).toHaveText(
+      "visibility",
+    );
     await toggleBtn.click();
-    await expect(toggleBtn.locator(".material-symbols-outlined")).toHaveText("visibility_off");
+    await expect(toggleBtn.locator(".material-symbols-outlined")).toHaveText(
+      "visibility_off",
+    );
 
     // ホストを削除
     await hostItem.locator(".delete-btn").click();
     await expect(hostItem).not.toBeVisible();
   });
 
-  test("should clear history with confirmation", async ({ }, testInfo) => {
+  test("should clear history with confirmation", async ({}, testInfo) => {
     const sidePanel = await getSidePanel(testInfo);
 
     await sidePanel.click("#settings-btn");
     await sidePanel.click("#clear-history-btn");
 
-    await expect(sidePanel.locator("#confirm-dialog")).not.toHaveClass(/hidden/);
+    await expect(sidePanel.locator("#confirm-dialog")).not.toHaveClass(
+      /hidden/,
+    );
     await sidePanel.click("#confirm-ok");
     await expect(sidePanel.locator("#confirm-dialog")).toHaveClass(/hidden/);
   });
