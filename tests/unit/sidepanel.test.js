@@ -18,69 +18,72 @@
 import { chrome } from "jest-chrome";
 
 describe("sidepanel.js utilities (via manual extraction for now)", () => {
-    // Manually copying functions from sidepanel.js to test them as units
-    // In a real refactor, these would be in a separate utils.js file.
+  // Manually copying functions from sidepanel.js to test them as units
+  // In a real refactor, these would be in a separate utils.js file.
 
-    function normalizeHostInput(rawValue) {
-        let candidate = rawValue.trim();
-        if (!candidate) {
-          throw new Error("empty-host");
-        }
-
-        if (!/^[a-z]+:\/\//i.test(candidate)) {
-          candidate = `https://${candidate}`;
-        }
-
-        const parsedUrl = new URL(candidate);
-        if (parsedUrl.protocol !== "https:") {
-          throw new Error("https-only");
-        }
-
-        const pathMatch = parsedUrl.pathname.match(
-          /^(.*?)\/(?:browse|issues)(?:\/|$)/,
-        );
-        const contextPath = pathMatch
-          ? pathMatch[1]
-          : parsedUrl.pathname.replace(/\/+$/, "");
-        const normalizedPath = contextPath === "/" ? "" : contextPath;
-
-        return {
-          storedUrl: `${parsedUrl.hostname}${normalizedPath}`,
-          permissionOrigin: `https://${parsedUrl.hostname}/*`,
-        };
+  function normalizeHostInput(rawValue) {
+    let candidate = rawValue.trim();
+    if (!candidate) {
+      throw new Error("empty-host");
     }
 
-    function compareIssueKeys(a, b) {
-        const partsA = a.split("-");
-        const partsB = b.split("-");
-        if (partsA[0] !== partsB[0]) return partsA[0].localeCompare(partsB[0] || "");
-
-        const numA = parseInt(partsA[1], 10);
-        const numB = parseInt(partsB[1], 10);
-
-        if (isNaN(numA) && isNaN(numB)) return 0;
-        if (isNaN(numA)) return 1;
-        if (isNaN(numB)) return -1;
-
-        return numA - numB;
+    if (!/^[a-z]+:\/\//i.test(candidate)) {
+      candidate = `https://${candidate}`;
     }
 
-    test("normalizeHostInput", () => {
-        expect(normalizeHostInput("test.atlassian.net")).toEqual({
-            storedUrl: "test.atlassian.net",
-            permissionOrigin: "https://test.atlassian.net/*"
-        });
-        expect(normalizeHostInput("https://myjira.com/jira/browse/PROJ-1")).toEqual({
-            storedUrl: "myjira.com/jira",
-            permissionOrigin: "https://myjira.com/*"
-        });
-        expect(() => normalizeHostInput("")).toThrow("empty-host");
-        expect(() => normalizeHostInput("http://unsafe.com")).toThrow("https-only");
-    });
+    const parsedUrl = new URL(candidate);
+    if (parsedUrl.protocol !== "https:") {
+      throw new Error("https-only");
+    }
 
-    test("compareIssueKeys (natural sort)", () => {
-        const keys = ["PROJ-10", "PROJ-2", "PROJ-1", "OTHER-1"];
-        keys.sort(compareIssueKeys);
-        expect(keys).toEqual(["OTHER-1", "PROJ-1", "PROJ-2", "PROJ-10"]);
+    const pathMatch = parsedUrl.pathname.match(
+      /^(.*?)\/(?:browse|issues)(?:\/|$)/,
+    );
+    const contextPath = pathMatch
+      ? pathMatch[1]
+      : parsedUrl.pathname.replace(/\/+$/, "");
+    const normalizedPath = contextPath === "/" ? "" : contextPath;
+
+    return {
+      storedUrl: `${parsedUrl.hostname}${normalizedPath}`,
+      permissionOrigin: `https://${parsedUrl.hostname}/*`,
+    };
+  }
+
+  function compareIssueKeys(a, b) {
+    const partsA = a.split("-");
+    const partsB = b.split("-");
+    if (partsA[0] !== partsB[0])
+      return partsA[0].localeCompare(partsB[0] || "");
+
+    const numA = parseInt(partsA[1], 10);
+    const numB = parseInt(partsB[1], 10);
+
+    if (isNaN(numA) && isNaN(numB)) return 0;
+    if (isNaN(numA)) return 1;
+    if (isNaN(numB)) return -1;
+
+    return numA - numB;
+  }
+
+  test("normalizeHostInput", () => {
+    expect(normalizeHostInput("test.atlassian.net")).toEqual({
+      storedUrl: "test.atlassian.net",
+      permissionOrigin: "https://test.atlassian.net/*",
     });
+    expect(normalizeHostInput("https://myjira.com/jira/browse/PROJ-1")).toEqual(
+      {
+        storedUrl: "myjira.com/jira",
+        permissionOrigin: "https://myjira.com/*",
+      },
+    );
+    expect(() => normalizeHostInput("")).toThrow("empty-host");
+    expect(() => normalizeHostInput("http://unsafe.com")).toThrow("https-only");
+  });
+
+  test("compareIssueKeys (natural sort)", () => {
+    const keys = ["PROJ-10", "PROJ-2", "PROJ-1", "OTHER-1"];
+    keys.sort(compareIssueKeys);
+    expect(keys).toEqual(["OTHER-1", "PROJ-1", "PROJ-2", "PROJ-10"]);
+  });
 });
