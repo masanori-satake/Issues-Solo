@@ -83,6 +83,7 @@ def check_project_cleanliness():
         "sidepanel.html",
         "sidepanel.js",
         "sidepanel.css",
+        "utils.js",
         "LICENSE",
         "MaterialSymbolsOutlined.woff2",
     }
