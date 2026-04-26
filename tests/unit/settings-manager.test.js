@@ -17,8 +17,17 @@ describe("SettingsManager", () => {
         <ul id="project-list"></ul>
         <input type="range" id="max-history-range">
         <span id="max-history-value"></span>
-        <div id="add-host-dialog" class="hidden"></div>
-        <div id="add-project-dialog" class="hidden"></div>
+        <div id="host-dialog" class="hidden">
+          <h3 id="host-dialog-title"></h3>
+          <input id="host-name">
+          <input id="host-url">
+          <button id="confirm-host"></button>
+        </div>
+        <div id="project-dialog" class="hidden">
+          <h3 id="project-dialog-title"></h3>
+          <input id="project-key-input">
+          <button id="confirm-project"></button>
+        </div>
         <div id="confirm-dialog" class="hidden">
           <span id="confirm-title"></span>
           <p id="confirm-message"></p>
@@ -171,7 +180,51 @@ describe("SettingsManager", () => {
 
     expect(db.setSettings).toHaveBeenCalled();
     expect(
-      document.getElementById("add-host-dialog").classList.contains("hidden"),
+      document.getElementById("host-dialog").classList.contains("hidden"),
+    ).toBe(true);
+  });
+
+  test("should update host", async () => {
+    const mockSettings = [
+      { id: "1", name: "Old Name", url: "old.atlassian.net", visible: true },
+    ];
+    db.getSettings.mockResolvedValue(mockSettings);
+
+    const newName = "New Name";
+    const newUrl = "new.atlassian.net";
+
+    await manager.updateHost("1", newName, newUrl);
+
+    expect(db.setSettings).toHaveBeenCalled();
+    const updated = db.setSettings.mock.calls[0][0][0];
+    expect(updated.name).toBe(newName);
+    expect(updated.url).toBe("new.atlassian.net");
+    expect(
+      document.getElementById("host-dialog").classList.contains("hidden"),
+    ).toBe(true);
+  });
+
+  test("should add project", async () => {
+    db.getProjectSettings.mockResolvedValue([]);
+    await manager.addProject("NEWPROJ");
+
+    expect(db.setProjectSettings).toHaveBeenCalled();
+    expect(
+      document.getElementById("project-dialog").classList.contains("hidden"),
+    ).toBe(true);
+  });
+
+  test("should update project", async () => {
+    const mockProj = [{ key: "OLDPROJ", color: "#0061A4" }];
+    db.getProjectSettings.mockResolvedValue(mockProj);
+
+    await manager.updateProject("OLDPROJ", "NEWPROJ");
+
+    expect(db.setProjectSettings).toHaveBeenCalled();
+    const updated = db.setProjectSettings.mock.calls[0][0][0];
+    expect(updated.key).toBe("NEWPROJ");
+    expect(
+      document.getElementById("project-dialog").classList.contains("hidden"),
     ).toBe(true);
   });
 

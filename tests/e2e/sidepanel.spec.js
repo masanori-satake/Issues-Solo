@@ -57,7 +57,7 @@ test.describe("Sidepanel Features", () => {
     // プロジェクトを追加
     await sidePanel.click("#add-project-btn");
     await sidePanel.fill("#project-key-input", "NEWPROJ");
-    await sidePanel.click("#confirm-add-project");
+    await sidePanel.click("#confirm-project");
 
     // 追加されたことを確認
     await expect(
@@ -85,7 +85,7 @@ test.describe("Sidepanel Features", () => {
     await sidePanel.click("#add-host-btn");
     await sidePanel.fill("#host-name", "Custom Jira");
     await sidePanel.fill("#host-url", "jira.custom.com");
-    await sidePanel.click("#confirm-add-host");
+    await sidePanel.click("#confirm-host");
 
     // 追加されたことを確認
     const hostItem = sidePanel.locator(".host-item", {

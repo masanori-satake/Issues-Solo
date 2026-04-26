@@ -25,7 +25,7 @@ test.describe("Settings Reordering", () => {
     await sidePanel.click("#add-host-btn");
     await sidePanel.fill("#host-name", "Second Jira");
     await sidePanel.fill("#host-url", "second.atlassian.net");
-    await sidePanel.click("#confirm-add-host");
+    await sidePanel.click("#confirm-host");
 
     const hostItems = sidePanel.locator(".host-item");
     await expect(hostItems).toHaveCount(2);
@@ -79,11 +79,11 @@ test.describe("Settings Reordering", () => {
     // Add two projects
     await sidePanel.click("#add-project-btn");
     await sidePanel.fill("#project-key-input", "AAA");
-    await sidePanel.click("#confirm-add-project");
+    await sidePanel.click("#confirm-project");
 
     await sidePanel.click("#add-project-btn");
     await sidePanel.fill("#project-key-input", "BBB");
-    await sidePanel.click("#confirm-add-project");
+    await sidePanel.click("#confirm-project");
 
     const projectItems = sidePanel.locator(".project-item");
     await expect(projectItems).toHaveCount(2);

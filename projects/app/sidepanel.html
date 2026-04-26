@@ -305,9 +305,11 @@
       </div>
     </div>
 
-    <div id="add-project-dialog" class="overlay hidden">
+    <div id="project-dialog" class="overlay hidden">
       <div class="dialog">
-        <h3 data-i18n="addProjectTitle">Add Project Key</h3>
+        <h3 id="project-dialog-title" data-i18n="addProjectTitle">
+          Add Project Key
+        </h3>
         <div class="input-field">
           <label for="project-key-input" data-i18n="projectKey"
             >Project Key</label
@@ -318,21 +320,22 @@
             data-i18n-placeholder="projectKeyPlaceholder"
             placeholder="e.g., PROJ"
           />
+          <div id="project-error-msg" class="error-msg hidden"></div>
         </div>
         <div class="dialog-actions">
-          <button id="cancel-add-project" class="text-btn" data-i18n="cancel">
+          <button id="cancel-project" class="text-btn" data-i18n="cancel">
             Cancel
           </button>
-          <button id="confirm-add-project" class="text-btn" data-i18n="ok">
+          <button id="confirm-project" class="text-btn" data-i18n="ok">
             OK
           </button>
         </div>
       </div>
     </div>
 
-    <div id="add-host-dialog" class="overlay hidden">
+    <div id="host-dialog" class="overlay hidden">
       <div class="dialog">
-        <h3 data-i18n="addHostTitle">Add Jira Host</h3>
+        <h3 id="host-dialog-title" data-i18n="addHostTitle">Add Jira Host</h3>
         <div class="input-field">
           <label for="host-name" data-i18n="hostName">Display Name</label>
           <input
@@ -352,10 +355,10 @@
           />
         </div>
         <div class="dialog-actions">
-          <button id="cancel-add-host" class="text-btn" data-i18n="cancel">
+          <button id="cancel-host" class="text-btn" data-i18n="cancel">
             Cancel
           </button>
-          <button id="confirm-add-host" class="text-btn" data-i18n="add">
+          <button id="confirm-host" class="text-btn" data-i18n="add">
             Add
           </button>
         </div>
