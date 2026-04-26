@@ -106,14 +106,12 @@ describe("IssuesDB", () => {
       issueKey: "K1",
       tabId: 123,
       isOpened: true,
-      isEditing: true,
     });
     await db.upsertIssue({
       url: "url2",
       issueKey: "K2",
       tabId: 123,
       isOpened: true,
-      isEditing: true,
     });
 
     const changed = await db.clearTabAssociation(123, "url1");
@@ -130,7 +128,6 @@ describe("IssuesDB", () => {
     // url2 は同じタブIDを持っていたため、フラグがクリアされることを確認
     expect(i2.tabId).toBeNull();
     expect(i2.isOpened).toBe(false);
-    expect(i2.isEditing).toBe(false);
   });
 
   test("storage settings: getSettings/setSettings", async () => {

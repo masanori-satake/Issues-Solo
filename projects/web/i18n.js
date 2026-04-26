@@ -1,22 +1,18 @@
 const translations = {
   en: {
     title:
-      "Issues-Solo - Local-only Chrome extension to manage JIRA browsing history and editing status",
+      "Issues-Solo - Local-only Chrome extension to manage JIRA browsing history",
     usage: "Usage",
     privacy: "Privacy Policy",
-    tagline:
-      "〜Local-only Chrome extension to manage JIRA browsing history and editing status〜",
+    tagline: "〜Local-only Chrome extension to manage JIRA browsing history〜",
     cta: "Add to Chrome Web Store",
     projectOverview: "Project Overview",
     overviewText:
-      "Issues-Solo is a JIRA-specific browsing history and editing status management tool designed with privacy as the top priority. It safely records 'which task you saw and when' and 'how much you have written' within your browser, supporting the restoration of your work context.",
+      "Issues-Solo is a JIRA-specific browsing history management tool designed with privacy as the top priority. It safely records 'which task you saw and when' within your browser, supporting the restoration of your work context.",
     features: "Features",
     featureJira: "JIRA Specialized",
     featureJiraText:
       "Automatically extracts issue keys and titles on the atlassian.net domain and lists them as browsing history.",
-    featureEditing: "Save Editing Status",
-    featureEditingText:
-      "Detects changes in comments or descriptions being entered and saves them. Even if you close the browser, you can restore the 'work-in-progress' state.",
     featureLocal: "Complete Local Execution",
     featureLocalText:
       "All data is saved in IndexedDB within the browser. No data is ever sent to external servers.",
@@ -38,7 +34,7 @@ const translations = {
     langJa: "日本語",
     privacyHeader1: "1. Data Collection and Use",
     privacyText1:
-      "Issues-Solo collects JIRA issue keys, titles, and the editing status of input forms to improve user convenience. All of this data is stored within the user's browser (IndexedDB) and is used only to provide the functions of this extension.",
+      "Issues-Solo collects JIRA issue keys and titles to improve user convenience. All of this data is stored within the user's browser (IndexedDB) and is used only to provide the functions of this extension.",
     privacyHeader2: "2. Data Transmission",
     privacyText2:
       "Collected data is never sent to external servers. This extension is designed (Local-Only) not to transmit data over the internet.",
@@ -57,9 +53,6 @@ const translations = {
     usageHeader3: "3. Checking History and Navigation",
     usageText3:
       "Clicking on a history entry in the side panel will switch to the corresponding JIRA issue tab or open it in a new tab.",
-    usageHeader4: "4. Managing Editing Status (Work-in-Progress)",
-    usageText4:
-      "The 'Editing' status is detected when you are editing a JIRA comment field or description. This state is maintained even if you close or restart the browser and can be checked from the side panel.",
     top: "Top",
   },
   ja: {
@@ -70,17 +63,14 @@ const translations = {
     cta: "Chrome ウェブストアで追加",
     projectOverview: "プロジェクト概要",
     overviewText:
-      "Issues-Soloは、プライバシーを最優先に設計された、JIRA専用の閲覧履歴・編集状態管理ツールです。「どのタスクをいつ見たか」「どこまで書き込んだか」をブラウザ内に安全に記録し、あなたの作業の文脈復元をサポートします。",
+      "Issues-Soloは、プライバシーを最優先に設計された、JIRA専用の閲覧履歴管理ツールです。「どのタスクをいつ見たか」をブラウザ内に安全に記録し、あなたの作業の文脈復元をサポートします。",
     features: "特徴",
     featureJira: "JIRA特化",
     featureJiraText:
       "JIRAの課題キーとタイトルを自動抽出し、閲覧履歴としてリスト化します。",
-    featureEditing: "編集中状態も記録",
-    featureEditingText:
-      "コメントが入力中かを検知し、保存。ブラウザを閉じても「書きかけ」の状態を把握できます。",
     featureLocal: "完全ローカル実行",
     featureLocalText:
-      "すべてのデータはブラウザ内の IndexedDB に保存されます。外部サーバーへの送信は一切行われません。",
+      "すべてのデータはブラウザ内の IndexedDB に保存されます。外部サーバーへの送信は一切行われず、機密性の高いJIRAの情報を安全に管理できます。",
     featureM3: "Material 3 UI",
     featureM3Text:
       "Google Material 3 (M3) デザインを採用。サイドパネルで作業を邪魔せず快適に操作できます。",
@@ -99,7 +89,7 @@ const translations = {
     langJa: "日本語",
     privacyHeader1: "1. データの収集と利用",
     privacyText1:
-      "Issues-Solo は、JIRAの課題キー、タイトル、および入力フォームの編集状態を収集します。これらのデータはすべて利用者のブラウザ内（IndexedDB）に保存され、本拡張機能の機能提供のためにのみ利用されます。",
+      "Issues-Solo は、JIRAの課題キー、タイトルを収集します。これらのデータはすべて利用者のブラウザ内（IndexedDB）に保存され、本拡張機能の機能提供のためにのみ利用されます。",
     privacyHeader2: "2. データの送信",
     privacyText2:
       "収集されたデータが外部サーバーに送信されることは一切ありません。本拡張機能は、インターネット経由でのデータ送信を行わない設計（Local-Only）となっています。",
@@ -118,9 +108,6 @@ const translations = {
     usageHeader3: "3. 履歴の確認と移動",
     usageText3:
       "サイドパネルに表示された履歴リストをクリックすると、該当するJIRA課題のタブに切り替わるか、新しいタブで開きます。",
-    usageHeader4: "4. 編集状態（書きかけ）の管理",
-    usageText4:
-      "JIRAのコメント欄や説明文を編集しているときに「編集中」の状態が検知されます。ブラウザを閉じたり再起動したりしても、その状態は保持され、サイドパネルから確認できます。",
     top: "トップ",
   },
 };

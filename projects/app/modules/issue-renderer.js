@@ -270,16 +270,7 @@ export class IssueRenderer {
       ? chrome.i18n.getMessage("tabOpened")
       : chrome.i18n.getMessage("tabClosed");
 
-    const editIndicator = document.createElement("div");
-    editIndicator.className = `indicator ${
-      issue.isEditing ? "is-editing" : ""
-    }`;
-    editIndicator.title = issue.isEditing
-      ? chrome.i18n.getMessage("editing")
-      : "";
-
     indicators.appendChild(openIndicator);
-    indicators.appendChild(editIndicator);
 
     const content = document.createElement("div");
     content.className = "issue-content";

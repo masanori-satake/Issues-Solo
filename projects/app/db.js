@@ -92,7 +92,6 @@ export class IssuesDB {
           const issue = cursor.value;
           if (issue.url !== exceptUrl) {
             issue.isOpened = false;
-            issue.isEditing = false;
             issue.tabId = null;
             cursor.update(issue);
             changed = true;
