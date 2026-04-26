@@ -28,7 +28,6 @@
   --border-color: #dfe1e6;
   --hover-bg: #f4f5f7;
   --active-indicator: #36b37e;
-  --editing-indicator: #ffab00;
   --secondary-text: #6b778c;
   --issue-key-color: #0052cc;
 }
@@ -144,8 +143,9 @@ header {
 .status-indicators {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: center;
   flex-shrink: 0;
+  min-height: 24px; /* Ensure enough space for centering if needed */
 }
 
 .indicator {
@@ -158,15 +158,6 @@ header {
 .indicator.is-opened {
   background-color: var(--active-indicator);
   box-shadow: 0 0 4px var(--active-indicator);
-}
-
-.indicator.is-editing {
-  background-color: var(--editing-indicator);
-  mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>');
-  -webkit-mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>');
-  width: 12px;
-  height: 12px;
-  border-radius: 0;
 }
 
 .issue-content {

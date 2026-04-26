@@ -137,7 +137,6 @@ async function reconcileOpenTabsState() {
       await db.upsertIssue({
         url: issue.url,
         isOpened: false,
-        isEditing: false,
         tabId: null,
       });
     }

@@ -49,7 +49,6 @@ describe("IssueRenderer", () => {
         title: "Test Issue",
         lastAccessed: Date.now(),
         isOpened: true,
-        isEditing: false,
         status: "To Do",
         priority: "High",
       },

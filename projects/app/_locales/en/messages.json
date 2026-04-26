@@ -3,7 +3,7 @@
     "message": "Issues-Solo"
   },
   "extDescription": {
-    "message": "Local-only Chrome extension to manage JIRA browsing history and editing status."
+    "message": "Local-only Chrome extension to manage JIRA browsing history."
   },
   "actionTitle": {
     "message": "Open Issues-Solo"
@@ -148,9 +148,6 @@
   },
   "tabClosed": {
     "message": "Tab is closed"
-  },
-  "editing": {
-    "message": "Editing"
   },
   "statusLabel": {
     "message": "Status: $1",

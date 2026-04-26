@@ -198,7 +198,6 @@
     return "";
   };
 
-  let isEditingState = false;
   let isExtensionContextAlive = true;
   let observer = null;
   let debounceTimer = null;
@@ -223,12 +222,8 @@
     }
 
     // イベントリスナーの削除
-    document.removeEventListener("focusin", startEditing);
-    document.removeEventListener("focusout", handleFocusOut);
     document.removeEventListener("visibilitychange", handleVisibilityChange);
     window.removeEventListener("focus", handleVisibilityChange);
-    document.removeEventListener("keydown", handleKeyDown, true);
-    document.removeEventListener("click", handleClick, true);
   };
 
   /**
@@ -266,104 +261,9 @@
   };
 
   /**
-   * 要素が保存またはキャンセルボタンかどうかを判定する
-   */
-  const isSaveOrCancelButton = (el) => {
-    if (!el) return false;
-    const button = el.closest('button, [role="button"]');
-    if (!button) return false;
-
-    const testId = (
-      button.getAttribute("data-testid") ||
-      button.getAttribute("data-test-id") ||
-      ""
-    ).toLowerCase();
-
-    // ヘッダーやナビゲーション内のボタン（検索やグローバルな「作成」など）は除外する
-    if (
-      testId.includes("atlassian-navigation") ||
-      button.closest(
-        'header, [data-testid="global-pages.header.pushed-navigation-header"], [data-testid="atlassian-navigation"]',
-      )
-    ) {
-      return false;
-    }
-
-    // 監査ログの更新ボタンなどは除外
-    if (testId.includes("audit-log") && testId.includes("refresh")) {
-      return false;
-    }
-
-    const text = button.innerText.trim().toLowerCase();
-    const ariaLabel = (button.getAttribute("aria-label") || "").toLowerCase();
-
-    // 保存・作成・更新系キーワード
-    const saveKeywords = [
-      "save",
-      "保存",
-      "create",
-      "作成",
-      "update",
-      "更新",
-      "add",
-      "追加",
-    ];
-    // キャンセル系キーワード
-    const cancelKeywords = ["cancel", "キャンセル"];
-
-    const matchKeywords = (keywords, target) =>
-      keywords.some((kw) => target.includes(kw));
-
-    const isSave =
-      (matchKeywords(saveKeywords, text) ||
-        matchKeywords(saveKeywords, testId) ||
-        matchKeywords(saveKeywords, ariaLabel)) &&
-      !matchKeywords(["comment-text-area-placeholder"], testId);
-
-    const isCancel =
-      matchKeywords(cancelKeywords, text) ||
-      matchKeywords(cancelKeywords, testId) ||
-      matchKeywords(cancelKeywords, ariaLabel);
-
-    return isSave || isCancel;
-  };
-
-  /**
-   * DOMの状態から現在の編集状態を推測する
-   */
-  const detectEditingStateFromDOM = () => {
-    // 保存・キャンセルボタンが存在する場合は、編集中である可能性が高い（Jiraの仕様）
-    const buttons = document.querySelectorAll('button, [role="button"]');
-    for (const btn of buttons) {
-      if (isSaveOrCancelButton(btn)) {
-        // ボタンの近傍（同じフォームやコンテナ内）に編集可能要素があるか確認する。
-        // Jira Cloudの新UIではボタンが ak-editor-secondary-toolbar などに分離されているため、
-        // より広い範囲（editor-container等）を探索対象とする。
-        const container =
-          btn.closest(
-            "form, [role='dialog'], [data-testid*='editor-container'], [data-component='editor'], .inline-edit-section",
-          ) || btn.closest("[data-testid*='editor']")?.parentElement;
-
-        // ボタンが特定のコンテナ内にない場合は、広範囲（document.body）を探索する。
-        // ただし、グローバルな「作成」ボタンなどが除外されていることが前提。
-        const searchRoot = container || document.body;
-
-        const editables = searchRoot.querySelectorAll(
-          'textarea, input:not([type="button"]):not([type="submit"]):not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), [contenteditable="true"], [role="textbox"], [role="combobox"]',
-        );
-        const hasEditable = Array.from(editables).some((el) =>
-          isEditableElement(el),
-        );
-        if (hasEditable) return true;
-      }
-    }
-    return false;
-  };
-
-  /**
    * 変更をバックグラウンドに通知する
    */
-  const notifyChange = (isEditing = null) => {
+  const notifyChange = () => {
     if (!isExtensionContextAlive) return;
 
     const issueKey = getIssueKey();
@@ -379,10 +279,6 @@
 
     lastNotifyTime = Date.now();
 
-    if (isEditing === null) {
-      isEditing = detectEditingStateFromDOM();
-    }
-
     const summary = getSummary();
     const priority = getPriority();
     const status = getStatus();
@@ -393,7 +289,6 @@
       s: summary,
       p: priority,
       st: status,
-      e: isEditing,
     });
 
     if (
@@ -404,14 +299,12 @@
           title: summary,
           priority: priority,
           status: status,
-          isEditing,
           url: window.location.href,
         },
       })
     ) {
       return;
     }
-    isEditingState = isEditing;
   };
 
   /**
@@ -423,18 +316,15 @@
     const issueKey = getIssueKey();
     if (!issueKey) return;
 
-    const isEditing = detectEditingStateFromDOM();
     const info = JSON.stringify({
       k: issueKey,
       s: getSummary(),
       p: getPriority(),
       st: getStatus(),
-      e: isEditing,
     });
     if (info !== lastInfo) {
       lastInfo = info;
-      // 既に編集状態を取得済みなので、notifyChangeに渡して二重実行を避ける
-      notifyChange(isEditing);
+      notifyChange();
     }
   };
 
@@ -463,86 +353,6 @@
       childList: true,
       characterData: true,
     });
-  };
-
-  const isEditableElement = (el) => {
-    if (!el) return false;
-    const tagName = el.tagName;
-    const role = el.getAttribute("role");
-    const isContentEditable = el.isContentEditable;
-    const testId = (
-      el.getAttribute("data-testid") ||
-      el.getAttribute("data-test-id") ||
-      ""
-    ).toLowerCase();
-
-    // 検索窓などは編集対象から除外する
-    if (testId.includes("search")) {
-      return false;
-    }
-
-    return (
-      tagName === "TEXTAREA" ||
-      (tagName === "INPUT" &&
-        !["button", "submit", "checkbox", "radio", "hidden"].includes(
-          el.type,
-        )) ||
-      isContentEditable ||
-      role === "textbox" ||
-      role === "combobox"
-    );
-  };
-
-  const startEditing = (e) => {
-    if (isEditableElement(e.target)) {
-      // フォーカスが入っただけでは即座に「編集中」とせず、
-      // 実際に保存・キャンセルボタンが存在するかどうかを確認する。
-      // JiraのDOM反映（ボタンの表示など）を待つため、少し遅延させてチェックを実行する。
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(checkInfoChange, 300);
-    }
-  };
-
-  const handleFocusOut = (e) => {
-    if (isEditableElement(e.target)) {
-      // フォーカスが外れた際も、即座に解除せずDOM状態を確認する。
-      // （ボタンをクリックしてフォーカスが外れた場合などを考慮）
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(checkInfoChange, 300);
-    }
-  };
-
-  const stopEditing = () => {
-    if (isEditingState) {
-      notifyChange(false);
-    }
-  };
-
-  /**
-   * キー操作による編集終了（EnterやEscape）を処理する
-   */
-  const handleKeyDown = (e) => {
-    if (isEditingState) {
-      if (e.key === "Escape") {
-        stopEditing();
-      } else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-        stopEditing();
-      }
-    }
-  };
-
-  /**
-   * 保存・キャンセルボタンのクリックを処理する
-   */
-  const handleClick = (e) => {
-    if (!isEditingState) return;
-    if (isSaveOrCancelButton(e.target)) {
-      // JiraのSPAでは、保存ボタン押下直後はまだDOMにボタンや入力欄が残っており、
-      // 即座にdetectEditingStateFromDOMを実行すると「編集中」のままと誤判定されることがある。
-      // そのため、少し遅延させて（非同期処理の完了を待って）再判定を行う。
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(checkInfoChange, 500);
-    }
   };
 
   /**
@@ -580,10 +390,6 @@
   reconnectObserver();
 
   // 3. イベントリスナーの登録
-  document.addEventListener("focusin", startEditing);
-  document.addEventListener("focusout", handleFocusOut);
   document.addEventListener("visibilitychange", handleVisibilityChange);
   window.addEventListener("focus", handleVisibilityChange);
-  document.addEventListener("keydown", handleKeyDown, true);
-  document.addEventListener("click", handleClick, true);
 })();
