@@ -15,7 +15,7 @@ export const test = base.extend({
     await context.close();
   },
   extensionId: async ({ context }, use) => {
-    // サービスワーカーの URL から拡張機能 ID を抽出
+    // サービスワーカーの URL から拡張機能 ID を取得
     let [background] = context.serviceWorkers();
     if (!background) background = await context.waitForEvent("serviceworker");
 

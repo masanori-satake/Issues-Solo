@@ -208,5 +208,11 @@
   },
   "creditsText": {
     "message": "This project uses Material Design 3, an open-source design system by Google."
+  },
+  "invalidHost": {
+    "message": "Please enter a valid HTTPS Jira host."
+  },
+  "permissionDenied": {
+    "message": "Host access permission is required to track issues on this Jira site."
   }
 }

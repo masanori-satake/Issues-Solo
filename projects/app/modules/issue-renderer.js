@@ -45,8 +45,7 @@ export class IssueRenderer {
         return direction === "desc" ? -result : result;
       }
       if (type === "priority") {
-        const result =
-          getPriorityWeight(b.priority) - getPriorityWeight(a.priority);
+        const result = getPriorityWeight(b.priority) - getPriorityWeight(a.priority);
         return direction === "desc" ? -result : result;
       }
       if (type === "status") {
@@ -70,9 +69,7 @@ export class IssueRenderer {
     // ホストごとのグルーピング
     const hostGroups = visibleSettings
       .map((host) => {
-        const hostIssues = issues.filter((issue) =>
-          this._isIssueInHost(issue, host.url),
-        );
+        const hostIssues = issues.filter((issue) => this._isIssueInHost(issue, host.url));
         return { host, issues: hostIssues };
       })
       .filter((group) => group.issues.length > 0);
@@ -104,19 +101,10 @@ export class IssueRenderer {
       if (hostUrlLower.includes("/")) {
         const [hostPart, ...pathParts] = hostUrlLower.split("/");
         const pathPart = "/" + pathParts.join("/");
-        const isCorrectPath =
-          issuePathname === pathPart ||
-          issuePathname.startsWith(pathPart + "/");
-        return (
-          (issueHostname === hostPart ||
-            issueHostname.endsWith("." + hostPart)) &&
-          isCorrectPath
-        );
+        const isCorrectPath = issuePathname === pathPart || issuePathname.startsWith(pathPart + "/");
+        return (issueHostname === hostPart || issueHostname.endsWith("." + hostPart)) && isCorrectPath;
       }
-      return (
-        issueHostname === hostUrlLower ||
-        issueHostname.endsWith("." + hostUrlLower)
-      );
+      return issueHostname === hostUrlLower || issueHostname.endsWith("." + hostUrlLower);
     } catch (e) {
       return false;
     }
@@ -165,12 +153,8 @@ export class IssueRenderer {
       });
 
       if (projIssues.length > 0) {
-        remainingIssues = remainingIssues.filter(
-          (i) => !projIssues.includes(i),
-        );
-        this.listElement.appendChild(
-          this._createProjectHeader(proj, projectSettings),
-        );
+        remainingIssues = remainingIssues.filter((i) => !projIssues.includes(i));
+        this.listElement.appendChild(this._createProjectHeader(proj, projectSettings));
         if (!proj.isCollapsed) {
           projIssues.forEach((issue) => {
             this.listElement.appendChild(this._createIssueItem(issue));
@@ -271,12 +255,8 @@ export class IssueRenderer {
       : chrome.i18n.getMessage("tabClosed");
 
     const editIndicator = document.createElement("div");
-    editIndicator.className = `indicator ${
-      issue.isEditing ? "is-editing" : ""
-    }`;
-    editIndicator.title = issue.isEditing
-      ? chrome.i18n.getMessage("editing")
-      : "";
+    editIndicator.className = `indicator ${issue.isEditing ? "is-editing" : ""}`;
+    editIndicator.title = issue.isEditing ? chrome.i18n.getMessage("editing") : "";
 
     indicators.appendChild(openIndicator);
     indicators.appendChild(editIndicator);
@@ -311,10 +291,7 @@ export class IssueRenderer {
     }
 
     if (issue.priority) {
-      const pInfo = PRIORITY_MAP[issue.priority] || {
-        glyph: "•",
-        color: "#7A869A",
-      };
+      const pInfo = PRIORITY_MAP[issue.priority] || { glyph: "•", color: "#7A869A" };
       const pBadge = document.createElement("span");
       pBadge.className = "priority-badge";
       pBadge.textContent = pInfo.glyph;

@@ -10,5 +10,8 @@ module.exports = {
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageReporters: ["text", "lcov", "json-summary"],
-  collectCoverageFrom: ["projects/app/**/*.js", "!projects/app/assets/**"],
+  collectCoverageFrom: [
+    "projects/app/**/*.js",
+    "!projects/app/assets/**",
+  ],
 };

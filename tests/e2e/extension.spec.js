@@ -75,15 +75,15 @@ test.describe("Issues-Solo E2E", () => {
 
     await page.goto("https://test.atlassian.net/browse/PROJ-1");
 
-    // Open side panel
+    // サイドパネルを開く
     const sidePanel = await context.newPage();
     await sidePanel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
 
-    // Focus textarea to trigger editing state
+    // テキストエリアにフォーカスして編集状態をトリガー
     await page.focus("#comment");
     await page.type("#comment", "Working on it");
 
-    // Wait for debounce and message
+    // デバウンスとメッセージ送信を待機
     await page.waitForTimeout(1000);
 
     // サイドパネルで「編集中」インジケーターが表示されることを確認
@@ -145,11 +145,11 @@ test.describe("Issues-Solo E2E", () => {
     const sidePanel = await context.newPage();
     await sidePanel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
 
-    // Open settings
+    // 設定を開く
     await sidePanel.click("#settings-btn");
     await sidePanel.click('[data-tab="projects"]');
 
-    // Add project key
+    // プロジェクトキーを追加
     await sidePanel.click("#add-project-btn");
     await sidePanel.fill("#project-key-input", "TEST");
     await sidePanel.click("#confirm-add-project");

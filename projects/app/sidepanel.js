@@ -12,7 +12,7 @@ class SidePanel {
     this.renderer = new IssueRenderer(
       document.getElementById("issue-list"),
       this.db,
-      this.handleIssueClick.bind(this),
+      this.handleIssueClick.bind(this)
     );
     this.settings = new SettingsManager(this.db, this.renderer);
 
@@ -37,11 +37,7 @@ class SidePanel {
       document.documentElement.lang = uiLang.split("-")[0];
     }
 
-    const selectors = [
-      "[data-i18n]",
-      "[data-i18n-title]",
-      "[data-i18n-placeholder]",
-    ];
+    const selectors = ["[data-i18n]", "[data-i18n-title]", "[data-i18n-placeholder]"];
     document.querySelectorAll(selectors.join(", ")).forEach((el) => {
       const { i18n, i18nTitle, i18nPlaceholder } = el.dataset;
       if (i18n) {
@@ -74,10 +70,7 @@ class SidePanel {
     Object.keys(sortBtns).forEach((type) => {
       sortBtns[type].addEventListener("click", async () => {
         const current = await this.db.getSortSettings();
-        const newDirection =
-          current.type === type && current.direction === "desc"
-            ? "asc"
-            : "desc";
+        const newDirection = current.type === type && current.direction === "desc" ? "asc" : "desc";
         await this.db.setSortSettings({ type, direction: newDirection });
         this.updateSortUI({ type, direction: newDirection });
         await this.renderer.render();
@@ -85,15 +78,11 @@ class SidePanel {
     });
 
     // 初期状態のソートUI反映
-    this.db.getSortSettings().then((settings) => this.updateSortUI(settings));
+    this.db.getSortSettings().then(settings => this.updateSortUI(settings));
 
     // 設定ボタン
-    document
-      .getElementById("settings-btn")
-      .addEventListener("click", () => this.settings.open());
-    document
-      .getElementById("close-settings")
-      .addEventListener("click", () => this.settings.close());
+    document.getElementById("settings-btn").addEventListener("click", () => this.settings.open());
+    document.getElementById("close-settings").addEventListener("click", () => this.settings.close());
 
     // パネル外クリックで閉じる
     const settingsPanel = document.getElementById("settings-panel");
@@ -105,14 +94,10 @@ class SidePanel {
     document.querySelectorAll(".tab-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         const tabName = btn.dataset.tab;
-        document
-          .querySelectorAll(".tab-btn")
-          .forEach((b) => b.classList.toggle("active", b === btn));
-        document
-          .querySelectorAll(".tab-content")
-          .forEach((c) =>
-            c.classList.toggle("hidden", c.id !== `${tabName}-tab`),
-          );
+        document.querySelectorAll(".tab-btn").forEach((b) => b.classList.toggle("active", b === btn));
+        document.querySelectorAll(".tab-content").forEach((c) =>
+          c.classList.toggle("hidden", c.id !== `${tabName}-tab`)
+        );
         if (tabName === "about") this.settings.updateAboutStats();
       });
     });
@@ -124,10 +109,7 @@ class SidePanel {
       const newCount = counts[range.value];
       const currentIssues = await this.db.getAllIssues();
 
-      if (
-        newCount < this.settings.previousMaxHistoryCount &&
-        currentIssues.length > newCount
-      ) {
+      if (newCount < this.settings.previousMaxHistoryCount && currentIssues.length > newCount) {
         this.settings.showConfirm(
           chrome.i18n.getMessage("changeHistoryLimit"),
           chrome.i18n.getMessage("changeHistoryLimitConfirm", [
@@ -141,10 +123,7 @@ class SidePanel {
             this.settings.updateMaxHistoryUI(newCount);
             await this.renderer.render();
           },
-          () =>
-            this.settings.updateMaxHistoryUI(
-              this.settings.previousMaxHistoryCount,
-            ),
+          () => this.settings.updateMaxHistoryUI(this.settings.previousMaxHistoryCount)
         );
       } else {
         await this.db.setMaxHistoryCount(newCount);
@@ -154,99 +133,69 @@ class SidePanel {
     });
 
     // 履歴・設定の管理
-    document
-      .getElementById("clear-history-btn")
-      .addEventListener("click", () => {
-        this.settings.showConfirm(
-          chrome.i18n.getMessage("clearHistoryTitle"),
-          chrome.i18n.getMessage("clearHistoryConfirm"),
-          async () => {
-            await this.db.clearAllIssues();
-            await this.renderer.render();
-          },
-        );
-      });
-
-    document
-      .getElementById("export-history-btn")
-      .addEventListener("click", async () => {
-        const issues = await this.db.getAllIssues();
-        const ndjson = issues.map((i) => JSON.stringify(i)).join("\n");
-        try {
-          await navigator.clipboard.writeText(ndjson);
-          alert(chrome.i18n.getMessage("historyExportSuccess"));
-        } catch (err) {
-          console.error(err);
-        }
-      });
-
-    document
-      .getElementById("import-history-btn")
-      .addEventListener("click", async () => {
-        try {
-          const text = await navigator.clipboard.readText();
-          const mode = document.querySelector(
-            'input[name="history-import-mode"]:checked',
-          ).value;
-          await this.db.importIssues(text, mode);
+    document.getElementById("clear-history-btn").addEventListener("click", () => {
+      this.settings.showConfirm(
+        chrome.i18n.getMessage("clearHistoryTitle"),
+        chrome.i18n.getMessage("clearHistoryConfirm"),
+        async () => {
+          await this.db.clearAllIssues();
           await this.renderer.render();
-          alert(chrome.i18n.getMessage("historyImportSuccess"));
-        } catch (err) {
-          alert(chrome.i18n.getMessage("importError"));
         }
-      });
+      );
+    });
 
-    document
-      .querySelectorAll('input[name="history-import-mode"]')
-      .forEach((radio) => {
-        radio.addEventListener("change", () =>
-          this.db.setHistoryImportMode(radio.value),
-        );
-      });
+    document.getElementById("export-history-btn").addEventListener("click", async () => {
+      const issues = await this.db.getAllIssues();
+      const ndjson = issues.map((i) => JSON.stringify(i)).join("\n");
+      try {
+        await navigator.clipboard.writeText(ndjson);
+        alert(chrome.i18n.getMessage("historyExportSuccess"));
+      } catch (err) { console.error(err); }
+    });
 
-    document
-      .getElementById("export-settings-btn")
-      .addEventListener("click", async () => {
-        const data = {
-          settings: await this.db.getSettings(),
-          projectSettings: await this.db.getProjectSettings(),
-          otherCollapsed: await this.db.getOtherCollapsed(),
-          maxHistoryCount: await this.db.getMaxHistoryCount(),
-        };
-        try {
-          await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
-          alert(chrome.i18n.getMessage("settingsExportSuccess"));
-        } catch (err) {
-          console.error(err);
-        }
-      });
+    document.getElementById("import-history-btn").addEventListener("click", async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        const mode = document.querySelector('input[name="history-import-mode"]:checked').value;
+        await this.db.importIssues(text, mode);
+        await this.renderer.render();
+        alert(chrome.i18n.getMessage("historyImportSuccess"));
+      } catch (err) { alert(chrome.i18n.getMessage("importError")); }
+    });
 
-    document
-      .getElementById("import-settings-btn")
-      .addEventListener("click", async () => {
-        try {
-          const text = await navigator.clipboard.readText();
-          const mode = document.querySelector(
-            'input[name="settings-import-mode"]:checked',
-          ).value;
-          await this.db.importSettings(text, mode);
-          await this.renderer.render();
-          await this.settings.renderHostSettings();
-          await this.settings.renderProjectSettings();
-          this.settings.updateMaxHistoryUI(await this.db.getMaxHistoryCount());
-          alert(chrome.i18n.getMessage("settingsImportSuccess"));
-        } catch (err) {
-          alert(chrome.i18n.getMessage("importError"));
-        }
-      });
+    document.querySelectorAll('input[name="history-import-mode"]').forEach(radio => {
+      radio.addEventListener("change", () => this.db.setHistoryImportMode(radio.value));
+    });
 
-    document
-      .querySelectorAll('input[name="settings-import-mode"]')
-      .forEach((radio) => {
-        radio.addEventListener("change", () =>
-          this.db.setSettingsImportMode(radio.value),
-        );
-      });
+    document.getElementById("export-settings-btn").addEventListener("click", async () => {
+      const data = {
+        settings: await this.db.getSettings(),
+        projectSettings: await this.db.getProjectSettings(),
+        otherCollapsed: await this.db.getOtherCollapsed(),
+        maxHistoryCount: await this.db.getMaxHistoryCount(),
+      };
+      try {
+        await navigator.clipboard.writeText(JSON.stringify(data, null, 2));
+        alert(chrome.i18n.getMessage("settingsExportSuccess"));
+      } catch (err) { console.error(err); }
+    });
+
+    document.getElementById("import-settings-btn").addEventListener("click", async () => {
+      try {
+        const text = await navigator.clipboard.readText();
+        const mode = document.querySelector('input[name="settings-import-mode"]:checked').value;
+        await this.db.importSettings(text, mode);
+        await this.renderer.render();
+        await this.settings.renderHostSettings();
+        await this.settings.renderProjectSettings();
+        this.settings.updateMaxHistoryUI(await this.db.getMaxHistoryCount());
+        alert(chrome.i18n.getMessage("settingsImportSuccess"));
+      } catch (err) { alert(chrome.i18n.getMessage("importError")); }
+    });
+
+    document.querySelectorAll('input[name="settings-import-mode"]').forEach(radio => {
+      radio.addEventListener("change", () => this.db.setSettingsImportMode(radio.value));
+    });
 
     // プロジェクト追加
     document.getElementById("add-project-btn").addEventListener("click", () => {
@@ -255,29 +204,22 @@ class SidePanel {
       document.getElementById("project-key-input").focus();
     });
 
-    document
-      .getElementById("cancel-add-project")
-      .addEventListener("click", () => {
-        document.getElementById("add-project-dialog").classList.add("hidden");
-      });
+    document.getElementById("cancel-add-project").addEventListener("click", () => {
+      document.getElementById("add-project-dialog").classList.add("hidden");
+    });
 
-    document
-      .getElementById("confirm-add-project")
-      .addEventListener("click", async () => {
-        const key = document
-          .getElementById("project-key-input")
-          .value.trim()
-          .toUpperCase();
-        if (key) {
-          const settings = await this.db.getProjectSettings();
-          if (!settings.some((p) => p.key === key)) {
-            settings.push({ key, color: "#0061A4", isCollapsed: false });
-            await this.db.setProjectSettings(settings);
-            await this.settings.renderProjectSettings();
-          }
-          document.getElementById("add-project-dialog").classList.add("hidden");
+    document.getElementById("confirm-add-project").addEventListener("click", async () => {
+      const key = document.getElementById("project-key-input").value.trim().toUpperCase();
+      if (key) {
+        const settings = await this.db.getProjectSettings();
+        if (!settings.some((p) => p.key === key)) {
+          settings.push({ key, color: "#0061A4", isCollapsed: false });
+          await this.db.setProjectSettings(settings);
+          await this.settings.renderProjectSettings();
         }
-      });
+        document.getElementById("add-project-dialog").classList.add("hidden");
+      }
+    });
 
     // ホスト追加
     document.getElementById("add-host-btn").addEventListener("click", () => {
@@ -290,13 +232,11 @@ class SidePanel {
       document.getElementById("add-host-dialog").classList.add("hidden");
     });
 
-    document
-      .getElementById("confirm-add-host")
-      .addEventListener("click", () => {
-        const name = document.getElementById("host-name").value.trim();
-        const url = document.getElementById("host-url").value.trim();
-        this.settings.addHost(name, url);
-      });
+    document.getElementById("confirm-add-host").addEventListener("click", () => {
+      const name = document.getElementById("host-name").value.trim();
+      const url = document.getElementById("host-url").value.trim();
+      this.settings.addHost(name, url);
+    });
 
     // メッセージ受信
     chrome.runtime.onMessage.addListener((message) => {
@@ -305,17 +245,9 @@ class SidePanel {
 
     // ストレージ変更監視
     chrome.storage.onChanged.addListener((changes) => {
-      if (
-        changes.settings ||
-        changes.projectSettings ||
-        changes.otherCollapsed
-      ) {
+      if (changes.settings || changes.projectSettings || changes.otherCollapsed) {
         this.renderer.render();
-        if (
-          !document
-            .getElementById("settings-panel")
-            .classList.contains("hidden")
-        ) {
+        if (!document.getElementById("settings-panel").classList.contains("hidden")) {
           this.settings.renderHostSettings();
           this.settings.renderProjectSettings();
         }
@@ -359,8 +291,7 @@ class SidePanel {
       btn.classList.toggle("active", isActive);
       const dirIcon = btn.querySelector(".dir-icon");
       if (isActive) {
-        dirIcon.textContent =
-          sortSettings.direction === "desc" ? "arrow_downward" : "arrow_upward";
+        dirIcon.textContent = sortSettings.direction === "desc" ? "arrow_downward" : "arrow_upward";
       } else {
         dirIcon.textContent = "arrow_downward";
       }
