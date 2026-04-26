@@ -152,7 +152,7 @@ test.describe("Issues-Solo E2E", () => {
     // プロジェクトキーを追加
     await sidePanel.click("#add-project-btn");
     await sidePanel.fill("#project-key-input", "TEST");
-    await sidePanel.click("#confirm-add-project");
+    await sidePanel.click("#confirm-project");
 
     // プロジェクトグループのヘッダーが表示されることを確認
     await sidePanel.click("#close-settings");

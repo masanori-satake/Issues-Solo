@@ -532,8 +532,7 @@ export class SettingsManager {
       if (oldOrigin && !isBuiltinHostOrigin(oldOrigin)) {
         const stillNeeded = settings.some(
           (h, i) =>
-            i !== index &&
-            getPermissionOriginFromStoredHost(h.url) === oldOrigin,
+            i !== index && getPermissionOriginFromStoredHost(h.url) === oldOrigin,
         );
         if (!stillNeeded) {
           try {
