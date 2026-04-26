@@ -12,6 +12,9 @@ ALLOWED_FILES = {
     ".python-version",
     "README.md",
     "SECURITY.md",
+    "jest.config.js",
+    "playwright.config.js",
+    ".babelrc",
 }
 
 # List of allowed directories in the root directory.
@@ -25,6 +28,9 @@ ALLOWED_DIRS = {
     ".git",
     ".ruff_cache",
     ".cache",
+    "tests",
+    "playwright-report",
+    "test-results",
 }
 
 
@@ -77,6 +83,7 @@ def check_project_cleanliness():
         "sidepanel.html",
         "sidepanel.js",
         "sidepanel.css",
+        "utils.js",
         "LICENSE",
         "MaterialSymbolsOutlined.woff2",
     }
