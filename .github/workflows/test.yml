@@ -41,8 +41,25 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Cache Playwright browsers
+      uses: actions/cache@v4
+      id: playwright-cache
+      with:
+        path: ~/.cache/ms-playwright
+        key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json', '.github/workflows/test.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-playwright-
+
+    - name: Install Python Playwright
+      run: pip install playwright==1.58.0
+
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps chromium
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: python -m playwright install chromium --with-deps
+
+    - name: Install Playwright Dependencies (if cache hit)
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      run: python -m playwright install-deps chromium
 
     - name: Generate Icons
       run: python3 scripts/generate_png_icons.py

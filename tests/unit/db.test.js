@@ -20,9 +20,9 @@ describe("IssuesDB", () => {
       db._db = null;
     }
     await new Promise((resolve) => {
-      const req = indexedDB.deleteDatabase("IssuesSoloDB");
-      req.onsuccess = () => resolve();
-      req.onerror = () => resolve();
+        const req = indexedDB.deleteDatabase("IssuesSoloDB");
+        req.onsuccess = () => resolve();
+        req.onerror = () => resolve();
     });
     jest.clearAllMocks();
   });
@@ -35,7 +35,7 @@ describe("IssuesDB", () => {
 
   test("upsertIssue and getAllIssues", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ maxHistoryCount: 50 });
+        callback({ maxHistoryCount: 50 });
     });
 
     const issue1 = {
@@ -63,7 +63,7 @@ describe("IssuesDB", () => {
 
   test("getIssueCount", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ maxHistoryCount: 50 });
+        callback({ maxHistoryCount: 50 });
     });
     await db.upsertIssue({ url: "url1", issueKey: "K1" });
     await db.upsertIssue({ url: "url2", issueKey: "K2" });
@@ -73,7 +73,7 @@ describe("IssuesDB", () => {
 
   test("deleteIssue", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ maxHistoryCount: 50 });
+        callback({ maxHistoryCount: 50 });
     });
     await db.upsertIssue({ url: "url1", issueKey: "K1" });
     await db.deleteIssue("url1");
@@ -83,7 +83,7 @@ describe("IssuesDB", () => {
 
   test("clearAllIssues", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ maxHistoryCount: 50 });
+        callback({ maxHistoryCount: 50 });
     });
     await db.upsertIssue({ url: "url1", issueKey: "K1" });
     await db.upsertIssue({ url: "url2", issueKey: "K2" });
@@ -94,7 +94,7 @@ describe("IssuesDB", () => {
 
   test("clearTabAssociation", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ maxHistoryCount: 50 });
+        callback({ maxHistoryCount: 50 });
     });
     await db.upsertIssue({
       url: "url1",
@@ -129,17 +129,13 @@ describe("IssuesDB", () => {
   });
 
   test("storage settings: getSettings/setSettings", async () => {
-    const mockSettings = [
-      { id: "1", name: "Jira", url: "jira.com", visible: true },
-    ];
+    const mockSettings = [{ id: "1", name: "Jira", url: "jira.com", visible: true }];
 
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      if (keys.includes("settings")) callback({ settings: mockSettings });
-      else callback({});
+        if (keys.includes("settings")) callback({ settings: mockSettings });
+        else callback({});
     });
-    chrome.storage.local.set.mockImplementation(
-      (obj, callback) => callback && callback(),
-    );
+    chrome.storage.local.set.mockImplementation((obj, callback) => callback && callback());
 
     const settings = await db.getSettings();
     expect(settings).toEqual(mockSettings);
@@ -150,7 +146,7 @@ describe("IssuesDB", () => {
 
   test("pruneIssues (history limit)", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ maxHistoryCount: 10 });
+        callback({ maxHistoryCount: 10 });
     });
 
     // Manually add issues via a single transaction to ensure absolute control
@@ -163,7 +159,7 @@ describe("IssuesDB", () => {
     store.put({ url: "url4", issueKey: "K4", lastAccessed: 4000 });
     store.put({ url: "url5", issueKey: "K5", lastAccessed: 5000 });
 
-    await new Promise((r) => (tx.oncomplete = r));
+    await new Promise(r => tx.oncomplete = r);
 
     // Now prune to 3
     await db.pruneIssues(3);
@@ -171,7 +167,7 @@ describe("IssuesDB", () => {
     const issues = await db.getAllIssues();
     expect(issues.length).toBe(3);
 
-    const keys = issues.map((i) => i.issueKey);
+    const keys = issues.map(i => i.issueKey);
     // Sort desc by lastAccessed should be K5, K4, K3, K2, K1
     // Pruning 3 should keep K5, K4, K3
     expect(keys).toContain("K5");
@@ -181,13 +177,11 @@ describe("IssuesDB", () => {
 
   test("importIssues - add mode", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ maxHistoryCount: 50 });
+        callback({ maxHistoryCount: 50 });
     });
     await db.upsertIssue({ url: "url1", issueKey: "K1" });
-    const ndjson =
-      JSON.stringify({ url: "url2", issueKey: "K2" }) +
-      "\n" +
-      JSON.stringify({ url: "url3", issueKey: "K3" });
+    const ndjson = JSON.stringify({ url: "url2", issueKey: "K2" }) + "\n" +
+                   JSON.stringify({ url: "url3", issueKey: "K3" });
 
     await db.importIssues(ndjson, "add");
     const count = await db.getIssueCount();
@@ -196,7 +190,7 @@ describe("IssuesDB", () => {
 
   test("importIssues - overwrite mode", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ maxHistoryCount: 50 });
+        callback({ maxHistoryCount: 50 });
     });
     await db.upsertIssue({ url: "url1", issueKey: "K1" });
     const ndjson = JSON.stringify({ url: "url2", issueKey: "K2" });
@@ -209,10 +203,9 @@ describe("IssuesDB", () => {
 
   test("importIssues - invalid json handling", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      callback({ maxHistoryCount: 50 });
+        callback({ maxHistoryCount: 50 });
     });
-    const ndjson =
-      '{"url": "url1", "issueKey": "K1"}\nINVALID\n{"url": "url2", "issueKey": "K2"}';
+    const ndjson = '{"url": "url1", "issueKey": "K1"}\nINVALID\n{"url": "url2", "issueKey": "K2"}';
     await db.importIssues(ndjson, "add");
     const count = await db.getIssueCount();
     expect(count).toBe(2);
@@ -220,61 +213,45 @@ describe("IssuesDB", () => {
 
   test("importSettings - overwrite mode", async () => {
     const settingsData = {
-      settings: [
-        { id: "1", name: "New Jira", url: "new.jira.com", visible: true },
-      ],
+      settings: [{ id: "1", name: "New Jira", url: "new.jira.com", visible: true }],
       projectSettings: [{ key: "NEW", color: "#000000" }],
       maxHistoryCount: 100,
     };
 
-    chrome.storage.local.set.mockImplementation(
-      (obj, callback) => callback && callback(),
-    );
+    chrome.storage.local.set.mockImplementation((obj, callback) => callback && callback());
 
     await db.importSettings(JSON.stringify(settingsData), "overwrite");
-    expect(chrome.storage.local.set).toHaveBeenCalledWith(
-      expect.objectContaining({
-        settings: settingsData.settings,
-        projectSettings: settingsData.projectSettings,
-        maxHistoryCount: 100,
-      }),
-      expect.any(Function),
-    );
+    expect(chrome.storage.local.set).toHaveBeenCalledWith(expect.objectContaining({
+      settings: settingsData.settings,
+      projectSettings: settingsData.projectSettings,
+      maxHistoryCount: 100,
+    }), expect.any(Function));
   });
 
   test("importSettings - add mode", async () => {
     // Current state (using default for settings)
     const currentProjectSettings = [{ key: "OLD", color: "#FFFFFF" }];
     chrome.storage.local.get.mockImplementation((keys, callback) => {
-      if (keys.includes("projectSettings"))
-        callback({ projectSettings: currentProjectSettings });
-      else if (keys.includes("settings")) callback({ settings: [] });
-      else callback({});
+        if (keys.includes("projectSettings")) callback({ projectSettings: currentProjectSettings });
+        else if (keys.includes("settings")) callback({ settings: [] });
+        else callback({});
     });
-    chrome.storage.local.set.mockImplementation(
-      (obj, callback) => callback && callback(),
-    );
+    chrome.storage.local.set.mockImplementation((obj, callback) => callback && callback());
 
     const settingsData = {
       settings: [{ id: "2", name: "New", url: "new.com", visible: true }], // Should be added if URL unique
       projectSettings: [
-        { key: "OLD", color: "#CHANGED" }, // Should be ignored in add mode if key exists
-        { key: "NEW", color: "#000000" }, // Should be added
+          { key: "OLD", color: "#CHANGED" }, // Should be ignored in add mode if key exists
+          { key: "NEW", color: "#000000" }   // Should be added
       ],
     };
 
     await db.importSettings(JSON.stringify(settingsData), "add");
 
-    const setCall = chrome.storage.local.set.mock.calls.find(
-      (call) => call[0].projectSettings,
-    );
+    const setCall = chrome.storage.local.set.mock.calls.find(call => call[0].projectSettings);
     const updatedProjectSettings = setCall[0].projectSettings;
     expect(updatedProjectSettings.length).toBe(2);
-    expect(
-      updatedProjectSettings.some(
-        (p) => p.key === "OLD" && p.color === "#FFFFFF",
-      ),
-    ).toBe(true);
-    expect(updatedProjectSettings.some((p) => p.key === "NEW")).toBe(true);
+    expect(updatedProjectSettings.some(p => p.key === "OLD" && p.color === "#FFFFFF")).toBe(true);
+    expect(updatedProjectSettings.some(p => p.key === "NEW")).toBe(true);
   });
 });
