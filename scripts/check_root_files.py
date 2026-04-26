@@ -31,6 +31,7 @@ ALLOWED_DIRS = {
     "tests",
     "playwright-report",
     "test-results",
+    "coverage",
 }
 
 
@@ -87,7 +88,7 @@ def check_project_cleanliness():
         "LICENSE",
         "MaterialSymbolsOutlined.woff2",
     }
-    app_allowed_dirs = {"_locales", "assets"}
+    app_allowed_dirs = {"_locales", "assets", "modules"}
     app_success = check_directory_cleanliness(
         app_dir, app_allowed_files, app_allowed_dirs
     )

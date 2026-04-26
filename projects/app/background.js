@@ -21,6 +21,13 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   }
 });
 
+/**
+ * 課題情報が更新された際の処理を行います。
+ * 指定されたタブに関連付けられていた古い課題情報をクリアし、新しい課題情報を保存します。
+ *
+ * @param {Object} data 受信した課題データ
+ * @param {number} tabId 送信元のタブID
+ */
 async function handleIssueUpdated(data, tabId) {
   if (!tabId) return;
 
@@ -35,6 +42,10 @@ async function handleIssueUpdated(data, tabId) {
   chrome.runtime.sendMessage({ type: "DB_UPDATED" }).catch(() => {});
 }
 
+/**
+ * 指定されたタブIDに関連付けられた課題のフラグをクリアします。
+ * @param {number} tabId 対象のタブID
+ */
 async function handleClearTabAssociation(tabId) {
   if (!tabId) return;
 
@@ -44,6 +55,11 @@ async function handleClearTabAssociation(tabId) {
   }
 }
 
+/**
+ * URLがJiraの課題ページであるかを判定します。
+ * @param {string} url 判定対象のURL
+ * @returns {boolean}
+ */
 function isIssuePageUrl(url) {
   return /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/.test(url);
 }
@@ -66,6 +82,10 @@ async function getGrantedOptionalOrigins() {
   return origins.filter((origin) => !BUILTIN_HOST_PATTERNS.includes(origin));
 }
 
+/**
+ * 指定されたタブにコンテンツスクリプトを注入します。
+ * @param {number} tabId 対象のタブID
+ */
 async function injectContentScript(tabId) {
   try {
     await chrome.scripting.executeScript({
@@ -77,6 +97,11 @@ async function injectContentScript(tabId) {
   }
 }
 
+/**
+ * ホスト権限が許可された際に、該当する既存タブにコンテンツスクリプトを注入します。
+ * @param {Array<string>|null} origins 対象のオリジンリスト（nullの場合はすべての許可済みオリジン）
+ * @returns {Promise<Array<Object>>} 注入対象となったタブのリスト
+ */
 async function syncGrantedHostTabs(origins = null) {
   const targetOrigins = origins ?? (await getGrantedOptionalOrigins());
   if (!targetOrigins.length) {
@@ -90,6 +115,10 @@ async function syncGrantedHostTabs(origins = null) {
   return tabs;
 }
 
+/**
+ * 起動時やインストール時に、開いているすべてのタブの状態をIndexedDBと同期します。
+ * 実在しないタブに関連付けられた課題の opened フラグを落とします。
+ */
 async function reconcileOpenTabsState() {
   const optionalOrigins = await getGrantedOptionalOrigins();
   const queryPatterns = [...BUILTIN_HOST_PATTERNS, ...optionalOrigins];

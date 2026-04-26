@@ -1,10 +1,16 @@
 import {
   normalizeHostInput,
+  getPermissionOriginFromStoredHost,
+  isBuiltinHostOrigin,
   compareIssueKeys,
   getPriorityWeight,
   compareStatus,
 } from "../../projects/app/utils.js";
 
+/**
+ * ユーティリティ関数のユニットテスト。
+ * ホスト名の正規化、ソート比較ロジックなどを検証します。
+ */
 describe("utils.js", () => {
   test("normalizeHostInput", () => {
     expect(normalizeHostInput("test.atlassian.net")).toEqual({
@@ -39,13 +45,36 @@ describe("utils.js", () => {
     const todo = { status: "To Do" };
     const unknown = { status: "Unknown" };
 
-    // Desc: Done(3) > To Do(1) > Unknown(0)
+    // 降順: Done(3) > To Do(1) > Unknown(0)
     expect(compareStatus(done, todo, "desc")).toBeLessThan(0);
     expect(compareStatus(todo, done, "desc")).toBeGreaterThan(0);
 
-    // Asc: To Do(1) < Done(3) < Unknown(0)
+    // 昇順: To Do(1) < Done(3) < Unknown(0)
     expect(compareStatus(todo, done, "asc")).toBeLessThan(0);
     expect(compareStatus(done, unknown, "asc")).toBeLessThan(0);
     expect(compareStatus(unknown, todo, "asc")).toBeGreaterThan(0);
+  });
+
+  test("getPermissionOriginFromStoredHost", () => {
+    expect(getPermissionOriginFromStoredHost("test.atlassian.net")).toBe(
+      "https://test.atlassian.net/*",
+    );
+    expect(getPermissionOriginFromStoredHost("test.com/jira")).toBe(
+      "https://test.com/*",
+    );
+    expect(getPermissionOriginFromStoredHost("invalid url")).toBeNull();
+  });
+
+  test("isBuiltinHostOrigin", () => {
+    expect(isBuiltinHostOrigin("https://test.atlassian.net/*")).toBe(true);
+    expect(isBuiltinHostOrigin("https://atlassian.net/*")).toBe(true);
+    expect(isBuiltinHostOrigin("https://jira.com/*")).toBe(false);
+  });
+
+  test("normalizeHostInput extra cases", () => {
+    expect(normalizeHostInput("  myjira.atlassian.net/  ")).toEqual({
+      storedUrl: "myjira.atlassian.net",
+      permissionOrigin: "https://myjira.atlassian.net/*",
+    });
   });
 });
