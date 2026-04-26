@@ -1,4 +1,9 @@
-import { normalizeHostInput, M3_COLORS, getPermissionOriginFromStoredHost, isBuiltinHostOrigin } from "../utils.js";
+import {
+  normalizeHostInput,
+  M3_COLORS,
+  getPermissionOriginFromStoredHost,
+  isBuiltinHostOrigin,
+} from "../utils.js";
 
 /**
  * 設定パネルの表示と操作を担当するクラスです。
@@ -20,7 +25,6 @@ export class SettingsManager {
       addProjectDialog: document.getElementById("add-project-dialog"),
       confirmDialog: document.getElementById("confirm-dialog"),
     };
-
   }
 
   /**
@@ -88,7 +92,9 @@ export class SettingsManager {
     // 表示切り替えトグル
     const toggle = document.createElement("div");
     toggle.className = "visibility-toggle";
-    toggle.title = host.visible ? chrome.i18n.getMessage("visible") : chrome.i18n.getMessage("hidden");
+    toggle.title = host.visible
+      ? chrome.i18n.getMessage("visible")
+      : chrome.i18n.getMessage("hidden");
     const toggleIcon = document.createElement("span");
     toggleIcon.className = "material-symbols-outlined";
     toggleIcon.textContent = host.visible ? "visibility" : "visibility_off";
@@ -110,13 +116,26 @@ export class SettingsManager {
     deleteBtn.addEventListener("click", async (e) => {
       e.stopPropagation();
       const newSettings = allSettings.filter((_, i) => i !== index);
-      const removedPermissionOrigin = getPermissionOriginFromStoredHost(host.url);
+      const removedPermissionOrigin = getPermissionOriginFromStoredHost(
+        host.url,
+      );
       await this.db.setSettings(newSettings);
 
-      if (removedPermissionOrigin && !isBuiltinHostOrigin(removedPermissionOrigin)) {
-        const stillNeeded = newSettings.some(h => getPermissionOriginFromStoredHost(h.url) === removedPermissionOrigin);
+      if (
+        removedPermissionOrigin &&
+        !isBuiltinHostOrigin(removedPermissionOrigin)
+      ) {
+        const stillNeeded = newSettings.some(
+          (h) =>
+            getPermissionOriginFromStoredHost(h.url) ===
+            removedPermissionOrigin,
+        );
         if (!stillNeeded) {
-          try { await chrome.permissions.remove({ origins: [removedPermissionOrigin] }); } catch (e) {}
+          try {
+            await chrome.permissions.remove({
+              origins: [removedPermissionOrigin],
+            });
+          } catch (e) {}
         }
       }
       this.renderHostSettings();
@@ -172,7 +191,9 @@ export class SettingsManager {
     colorPicker.className = "color-picker";
     M3_COLORS.forEach((color) => {
       const option = document.createElement("div");
-      option.className = `color-option ${proj.color === color ? "selected" : ""}`;
+      option.className = `color-option ${
+        proj.color === color ? "selected" : ""
+      }`;
       option.style.backgroundColor = color;
       option.addEventListener("click", async () => {
         proj.color = color;
@@ -224,11 +245,15 @@ export class SettingsManager {
    */
   async initImportModes() {
     const hMode = await this.db.getHistoryImportMode();
-    const hRadio = document.querySelector(`input[name="history-import-mode"][value="${hMode}"]`);
+    const hRadio = document.querySelector(
+      `input[name="history-import-mode"][value="${hMode}"]`,
+    );
     if (hRadio) hRadio.checked = true;
 
     const sMode = await this.db.getSettingsImportMode();
-    const sRadio = document.querySelector(`input[name="settings-import-mode"][value="${sMode}"]`);
+    const sRadio = document.querySelector(
+      `input[name="settings-import-mode"][value="${sMode}"]`,
+    );
     if (sRadio) sRadio.checked = true;
   }
 
@@ -237,7 +262,8 @@ export class SettingsManager {
    */
   async updateAboutStats() {
     const versionSpan = document.getElementById("extension-version");
-    if (versionSpan) versionSpan.textContent = "v" + chrome.runtime.getManifest().version;
+    if (versionSpan)
+      versionSpan.textContent = "v" + chrome.runtime.getManifest().version;
 
     const hosts = await this.db.getSettings();
     const projects = await this.db.getProjectSettings();
@@ -322,9 +348,11 @@ export class SettingsManager {
     this.elements.addHostDialog.classList.add("hidden");
     await this.renderHostSettings();
 
-    chrome.runtime.sendMessage({
-      type: "HOST_PERMISSION_GRANTED",
-      origin: normalized.permissionOrigin,
-    }).catch(() => {});
+    chrome.runtime
+      .sendMessage({
+        type: "HOST_PERMISSION_GRANTED",
+        origin: normalized.permissionOrigin,
+      })
+      .catch(() => {});
   }
 }

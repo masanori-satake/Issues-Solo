@@ -283,40 +283,66 @@ describe("IssuesDB", () => {
   });
 
   test("getOtherCollapsed - default and set", async () => {
-    chrome.storage.local.get.mockImplementation((keys, callback) => callback({}));
+    chrome.storage.local.get.mockImplementation((keys, callback) =>
+      callback({}),
+    );
     expect(await db.getOtherCollapsed()).toBe(false);
 
     await db.setOtherCollapsed(true);
-    expect(chrome.storage.local.set).toHaveBeenCalledWith({ otherCollapsed: true }, expect.any(Function));
+    expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      { otherCollapsed: true },
+      expect.any(Function),
+    );
   });
 
   test("getSortSettings - default and set", async () => {
-    chrome.storage.local.get.mockImplementation((keys, callback) => callback({}));
-    expect(await db.getSortSettings()).toEqual({ type: "lastAccessed", direction: "desc" });
+    chrome.storage.local.get.mockImplementation((keys, callback) =>
+      callback({}),
+    );
+    expect(await db.getSortSettings()).toEqual({
+      type: "lastAccessed",
+      direction: "desc",
+    });
 
     const newSort = { type: "issueKey", direction: "asc" };
     await db.setSortSettings(newSort);
-    expect(chrome.storage.local.set).toHaveBeenCalledWith({ sortSettings: newSort }, expect.any(Function));
+    expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      { sortSettings: newSort },
+      expect.any(Function),
+    );
   });
 
   test("history import modes", async () => {
-    chrome.storage.local.get.mockImplementation((keys, callback) => callback({}));
+    chrome.storage.local.get.mockImplementation((keys, callback) =>
+      callback({}),
+    );
     expect(await db.getHistoryImportMode()).toBe("add");
     await db.setHistoryImportMode("overwrite");
-    expect(chrome.storage.local.set).toHaveBeenCalledWith({ historyImportMode: "overwrite" }, expect.any(Function));
+    expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      { historyImportMode: "overwrite" },
+      expect.any(Function),
+    );
   });
 
   test("settings import modes", async () => {
-    chrome.storage.local.get.mockImplementation((keys, callback) => callback({}));
+    chrome.storage.local.get.mockImplementation((keys, callback) =>
+      callback({}),
+    );
     expect(await db.getSettingsImportMode()).toBe("add");
     await db.setSettingsImportMode("overwrite");
-    expect(chrome.storage.local.set).toHaveBeenCalledWith({ settingsImportMode: "overwrite" }, expect.any(Function));
+    expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      { settingsImportMode: "overwrite" },
+      expect.any(Function),
+    );
   });
 
   test("importSettings - handle missing fields in overwrite mode", async () => {
     const settingsData = { maxHistoryCount: 20 };
     await db.importSettings(JSON.stringify(settingsData), "overwrite");
-    expect(chrome.storage.local.set).toHaveBeenCalledWith({ maxHistoryCount: 20 }, expect.any(Function));
+    expect(chrome.storage.local.set).toHaveBeenCalledWith(
+      { maxHistoryCount: 20 },
+      expect.any(Function),
+    );
   });
 
   test("importSettings - invalid json", async () => {
@@ -324,7 +350,9 @@ describe("IssuesDB", () => {
   });
 
   test("upsertIssue - update existing issue", async () => {
-    chrome.storage.local.get.mockImplementation((keys, callback) => callback({ maxHistoryCount: 50 }));
+    chrome.storage.local.get.mockImplementation((keys, callback) =>
+      callback({ maxHistoryCount: 50 }),
+    );
     const url = "https://test.com";
     await db.upsertIssue({ url, title: "Title 1" });
     await db.upsertIssue({ url, title: "Title 2" });
@@ -335,7 +363,7 @@ describe("IssuesDB", () => {
 
   test("db open error handling", async () => {
     const error = new Error("DB Open Error");
-    jest.spyOn(indexedDB, 'open').mockImplementation(() => {
+    jest.spyOn(indexedDB, "open").mockImplementation(() => {
       const req = {};
       setTimeout(() => req.onerror(), 0);
       req.error = error;
