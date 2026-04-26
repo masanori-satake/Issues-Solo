@@ -1,6 +1,6 @@
 # Issues-Solo
 
-[![version](https://img.shields.io/badge/version-0.12.8-blue)](manifest.json)
+[![version](https://img.shields.io/badge/version-0.12.9-blue)](manifest.json)
 [![Coverage](https://img.shields.io/badge/coverage-51%25-orange)](#)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](manifest.json)
