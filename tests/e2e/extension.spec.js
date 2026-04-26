@@ -80,10 +80,17 @@ test.describe("Issues-Solo E2E", () => {
     await sidePanel.goto(`chrome-extension://${extensionId}/sidepanel.html`);
 
     // テキストエリアにフォーカスして編集状態をトリガー
+    // 注: content.js の仕様変更により、フォーカスしただけでは「編集中」にならず、
+    // 保存・キャンセルボタンが存在する必要がある。
+    await page.evaluate(() => {
+      const btn = document.createElement("button");
+      btn.innerText = "Save";
+      document.body.appendChild(btn);
+    });
     await page.focus("#comment");
     await page.type("#comment", "Working on it");
 
-    // デバウンスとメッセージ送信を待機
+    // デバウンス（300ms）とメッセージ送信を待機
     await page.waitForTimeout(1000);
 
     // サイドパネルで「編集中」インジケーターが表示されることを確認
