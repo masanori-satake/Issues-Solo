@@ -81,11 +81,17 @@ test.describe("Issues-Solo E2E", () => {
 
     // テキストエリアにフォーカスして編集状態をトリガー
     // 注: content.js の仕様変更により、フォーカスしただけでは「編集中」にならず、
-    // 保存・キャンセルボタンが存在する必要がある。
+    // 保存・キャンセルボタンが（同一コンテナ内に）存在する必要がある。
     await page.evaluate(() => {
+      const form = document.createElement("form");
+      form.id = "edit-form";
+      const textarea = document.getElementById("comment");
+      textarea.parentNode.insertBefore(form, textarea);
+      form.appendChild(textarea);
+
       const btn = document.createElement("button");
       btn.innerText = "Save";
-      document.body.appendChild(btn);
+      form.appendChild(btn);
     });
     await page.focus("#comment");
     await page.type("#comment", "Working on it");

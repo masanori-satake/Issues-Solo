@@ -279,8 +279,7 @@
     const isSave =
       text.includes("save") ||
       text.includes("保存") ||
-      (testId && testId.includes("save")) ||
-      button.type === "submit";
+      (testId && testId.includes("save"));
     const isCancel =
       text.includes("cancel") ||
       text.includes("キャンセル") ||
@@ -296,8 +295,13 @@
     const buttons = document.querySelectorAll('button, [role="button"]');
     for (const btn of buttons) {
       if (isSaveOrCancelButton(btn)) {
-        // ボタンが表示されている＝編集フォームが開いているとみなす
-        const hasEditable = !!document.querySelector(
+        // ボタンの近傍（同じフォームやコンテナ内）に編集可能要素があるか確認する。
+        // これにより、グローバルな検索バーのボタンなどとの誤認を防ぐ。
+        const container =
+          btn.closest("form, [role='dialog'], [data-testid*='editor'], .inline-edit-section") ||
+          document.body;
+
+        const hasEditable = !!container.querySelector(
           'textarea, [contenteditable="true"], [role="textbox"]',
         );
         if (hasEditable) return true;
@@ -335,6 +339,7 @@
 
     // 内部状態を更新し、checkInfoChangeとの二重通知を防ぐ
     lastInfo = JSON.stringify({
+      k: issueKey,
       s: summary,
       p: priority,
       st: status,
@@ -365,8 +370,12 @@
   const checkInfoChange = () => {
     if (!isExtensionContextAlive) return;
 
+    const issueKey = getIssueKey();
+    if (!issueKey) return;
+
     const isEditing = detectEditingStateFromDOM();
     const info = JSON.stringify({
+      k: issueKey,
       s: getSummary(),
       p: getPriority(),
       st: getStatus(),
