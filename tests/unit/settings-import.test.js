@@ -62,36 +62,36 @@ describe("SettingsManager.handleSettingsImport", () => {
     db.getSettings = jest.fn().mockResolvedValue([]);
     db.getProjectSettings = jest.fn().mockResolvedValue([]);
     db.getMaxHistoryCount = jest.fn().mockResolvedValue(50);
-    db.processSettingsImport = jest
-      .fn()
-      .mockImplementation(async (json, mode) => {
-        const data = JSON.parse(json);
-        if (mode === "overwrite") {
-          return {
-            settings: data.settings || [],
-            projectSettings: data.projectSettings || [],
-            maxHistoryCount: data.maxHistoryCount || 50,
-          };
-        } else {
-          return {
-            settings: data.settings || [],
-            projectSettings: data.projectSettings || [],
-          };
-        }
-      });
+    db.processSettingsImport = jest.fn().mockImplementation(async (json, mode) => {
+      const data = JSON.parse(json);
+      if (mode === "overwrite") {
+        return {
+          settings: data.settings || [],
+          projectSettings: data.projectSettings || [],
+          maxHistoryCount: data.maxHistoryCount || 50
+        };
+      } else {
+        return {
+          settings: data.settings || [],
+          projectSettings: data.projectSettings || []
+        };
+      }
+    });
 
     global.alert = jest.fn();
   });
 
   test("should request permissions for new hosts during import", async () => {
     const importData = {
-      settings: [{ id: "1", name: "New Jira", url: "new-jira.com" }],
+      settings: [
+        { id: "1", name: "New Jira", url: "new-jira.com" }
+      ]
     };
 
     await manager.handleSettingsImport(JSON.stringify(importData), "add");
 
     expect(chrome.permissions.request).toHaveBeenCalledWith({
-      origins: ["https://new-jira.com/*"],
+      origins: ["https://new-jira.com/*"]
     });
     expect(chrome.storage.local.set).toHaveBeenCalled();
     expect(global.alert).toHaveBeenCalledWith("settingsImportSuccess");
@@ -101,13 +101,13 @@ describe("SettingsManager.handleSettingsImport", () => {
     const importData = {
       settings: [
         { id: "1", name: "Denied Jira", url: "denied.com" },
-        { id: "2", name: "Allowed Jira", url: "allowed.com" },
-      ],
+        { id: "2", name: "Allowed Jira", url: "allowed.com" }
+      ]
     };
 
     chrome.permissions.request
       .mockResolvedValueOnce(false) // Denied
-      .mockResolvedValueOnce(true); // Allowed
+      .mockResolvedValueOnce(true);  // Allowed
 
     await manager.handleSettingsImport(JSON.stringify(importData), "add");
 
@@ -118,30 +118,34 @@ describe("SettingsManager.handleSettingsImport", () => {
 
   test("should remove unused permissions in overwrite mode", async () => {
     db.getSettings.mockResolvedValue([
-      { id: "old", name: "Old Jira", url: "old-jira.com" },
+      { id: "old", name: "Old Jira", url: "old-jira.com" }
     ]);
 
     chrome.permissions.getAll.mockResolvedValue({
-      origins: ["https://old-jira.com/*"],
+      origins: ["https://old-jira.com/*"]
     });
 
     const importData = {
-      settings: [{ id: "new", name: "New Jira", url: "new-jira.com" }],
+      settings: [
+        { id: "new", name: "New Jira", url: "new-jira.com" }
+      ]
     };
 
     await manager.handleSettingsImport(JSON.stringify(importData), "overwrite");
 
     expect(chrome.permissions.remove).toHaveBeenCalledWith({
-      origins: ["https://old-jira.com/*"],
+      origins: ["https://old-jira.com/*"]
     });
     expect(chrome.permissions.request).toHaveBeenCalledWith({
-      origins: ["https://new-jira.com/*"],
+      origins: ["https://new-jira.com/*"]
     });
   });
 
   test("should not request permissions for builtin hosts", async () => {
     const importData = {
-      settings: [{ id: "cloud", name: "Jira Cloud", url: "atlassian.net" }],
+      settings: [
+        { id: "cloud", name: "Jira Cloud", url: "atlassian.net" }
+      ]
     };
 
     await manager.handleSettingsImport(JSON.stringify(importData), "add");
