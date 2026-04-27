@@ -15,6 +15,8 @@ export class SettingsManager {
     this.previousMaxHistoryCount = 50;
     this.draggingIndex = null;
     this.draggingType = null;
+    this.draggingId = null;
+    this.draggingProjectKey = null;
 
     // UI要素のキャッシュ
     this.elements = {
@@ -158,9 +160,15 @@ export class SettingsManager {
       li.classList.add("dragging");
       this.draggingIndex = index;
       this.draggingType = "host";
-      e.dataTransfer.effectAllowed = "move";
-      // dataTransfer に値をセットしないと一部の環境でドラッグが開始されない場合がある
-      e.dataTransfer.setData("text/plain", index);
+      this.draggingId = host.id;
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", index.toString());
+      }
+    });
+
+    li.addEventListener("dragenter", (e) => {
+      if (this.draggingType === "host") e.preventDefault();
     });
 
     li.addEventListener("dragover", (e) => {
@@ -183,38 +191,48 @@ export class SettingsManager {
     });
 
     li.addEventListener("dragend", () => {
-      li.classList.remove("dragging", "drag-over-top", "drag-over-bottom");
-      // drop イベントが先に処理されるように少し遅らせてクリーンアップする
-      setTimeout(() => {
-        this.draggingIndex = null;
-        this.draggingType = null;
-      }, 50);
+      const items = this.elements.hostList.querySelectorAll(".host-item");
+      items.forEach((el) =>
+        el.classList.remove("dragging", "drag-over-top", "drag-over-bottom"),
+      );
+      this.draggingType = null;
+      this.draggingId = null;
+      this.draggingIndex = null;
     });
 
     li.addEventListener("drop", async (e) => {
       if (this.draggingType !== "host") return;
       e.preventDefault();
-      li.classList.remove("drag-over-top", "drag-over-bottom");
 
-      const fromIndex = this.draggingIndex;
-      const toIndex = index;
+      let fromIndex = -1;
+      if (e.dataTransfer) {
+        const data = e.dataTransfer.getData("text/plain");
+        fromIndex = data ? parseInt(data) : this.draggingIndex;
+      } else {
+        fromIndex = this.draggingIndex;
+      }
 
-      if (fromIndex === null || fromIndex === toIndex) return;
+      if (fromIndex === null || fromIndex === -1 || isNaN(fromIndex) || fromIndex === index) {
+        li.classList.remove("drag-over-top", "drag-over-bottom");
+        return;
+      }
 
       const rect = li.getBoundingClientRect();
       const midpoint = rect.top + rect.height / 2;
-      const dropPosition = e.clientY < midpoint ? "top" : "bottom";
+      const isTop = e.clientY < midpoint;
 
-      let finalToIndex = toIndex;
-      if (dropPosition === "bottom" && fromIndex > toIndex) finalToIndex++;
-      if (dropPosition === "top" && fromIndex < toIndex) finalToIndex--;
+      li.classList.remove("drag-over-top", "drag-over-bottom");
 
       const newSettings = [...allSettings];
       const [movedItem] = newSettings.splice(fromIndex, 1);
-      newSettings.splice(finalToIndex, 0, movedItem);
+
+      let targetIndex = newSettings.findIndex(h => h.id === host.id);
+      if (!isTop) targetIndex++;
+
+      newSettings.splice(targetIndex, 0, movedItem);
 
       await this.db.setSettings(newSettings);
-      this.renderHostSettings();
+      await this.renderHostSettings();
     });
 
     return li;
@@ -291,8 +309,15 @@ export class SettingsManager {
       li.classList.add("dragging");
       this.draggingIndex = index;
       this.draggingType = "project";
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", index);
+      this.draggingProjectKey = proj.key;
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", index.toString());
+      }
+    });
+
+    li.addEventListener("dragenter", (e) => {
+      if (this.draggingType === "project") e.preventDefault();
     });
 
     li.addEventListener("dragover", (e) => {
@@ -315,37 +340,48 @@ export class SettingsManager {
     });
 
     li.addEventListener("dragend", () => {
-      li.classList.remove("dragging", "drag-over-top", "drag-over-bottom");
-      setTimeout(() => {
-        this.draggingIndex = null;
-        this.draggingType = null;
-      }, 50);
+      const items = this.elements.projectList.querySelectorAll(".project-item");
+      items.forEach((el) =>
+        el.classList.remove("dragging", "drag-over-top", "drag-over-bottom"),
+      );
+      this.draggingType = null;
+      this.draggingProjectKey = null;
+      this.draggingIndex = null;
     });
 
     li.addEventListener("drop", async (e) => {
       if (this.draggingType !== "project") return;
       e.preventDefault();
-      li.classList.remove("drag-over-top", "drag-over-bottom");
 
-      const fromIndex = this.draggingIndex;
-      const toIndex = index;
+      let fromIndex = -1;
+      if (e.dataTransfer) {
+        const data = e.dataTransfer.getData("text/plain");
+        fromIndex = data ? parseInt(data) : this.draggingIndex;
+      } else {
+        fromIndex = this.draggingIndex;
+      }
 
-      if (fromIndex === null || fromIndex === toIndex) return;
+      if (fromIndex === null || fromIndex === -1 || isNaN(fromIndex) || fromIndex === index) {
+        li.classList.remove("drag-over-top", "drag-over-bottom");
+        return;
+      }
 
       const rect = li.getBoundingClientRect();
       const midpoint = rect.top + rect.height / 2;
-      const dropPosition = e.clientY < midpoint ? "top" : "bottom";
+      const isTop = e.clientY < midpoint;
 
-      let finalToIndex = toIndex;
-      if (dropPosition === "bottom" && fromIndex > toIndex) finalToIndex++;
-      if (dropPosition === "top" && fromIndex < toIndex) finalToIndex--;
+      li.classList.remove("drag-over-top", "drag-over-bottom");
 
       const newSettings = [...allSettings];
       const [movedItem] = newSettings.splice(fromIndex, 1);
-      newSettings.splice(finalToIndex, 0, movedItem);
+
+      let targetIndex = newSettings.findIndex(p => p.key === proj.key);
+      if (!isTop) targetIndex++;
+
+      newSettings.splice(targetIndex, 0, movedItem);
 
       await this.db.setProjectSettings(newSettings);
-      this.renderProjectSettings();
+      await this.renderProjectSettings();
     });
 
     return li;
