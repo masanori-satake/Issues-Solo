@@ -230,12 +230,8 @@ class SidePanel {
           const mode = document.querySelector(
             'input[name="settings-import-mode"]:checked',
           ).value;
-          await this.db.importSettings(text, mode);
+          await this.settings.handleSettingsImport(text, mode);
           await this.renderer.render();
-          await this.settings.renderHostSettings();
-          await this.settings.renderProjectSettings();
-          this.settings.updateMaxHistoryUI(await this.db.getMaxHistoryCount());
-          alert(chrome.i18n.getMessage("settingsImportSuccess"));
         } catch (err) {
           alert(chrome.i18n.getMessage("importError"));
         }

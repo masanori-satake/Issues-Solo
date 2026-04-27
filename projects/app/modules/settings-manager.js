@@ -754,6 +754,10 @@ export class SettingsManager {
 
       // 最終的な設定を保存
       processed.settings = finalSettings;
+
+      // 不要なプロジェクト設定のクリーンアップ (オプション: ホストが存在しないプロジェクトも維持する方針なら不要)
+      // 今回は、ホストが削除されてもプロジェクト設定（キーと色）は共通設定として維持する仕様とする。
+
       await chrome.storage.local.set(processed);
 
       // UIの更新
