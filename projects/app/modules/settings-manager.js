@@ -212,7 +212,12 @@ export class SettingsManager {
         fromIndex = this.draggingIndex;
       }
 
-      if (fromIndex === null || fromIndex === -1 || isNaN(fromIndex) || fromIndex === index) {
+      if (
+        fromIndex === null ||
+        fromIndex === -1 ||
+        isNaN(fromIndex) ||
+        fromIndex === index
+      ) {
         li.classList.remove("drag-over-top", "drag-over-bottom");
         return;
       }
@@ -226,7 +231,7 @@ export class SettingsManager {
       const newSettings = [...allSettings];
       const [movedItem] = newSettings.splice(fromIndex, 1);
 
-      let targetIndex = newSettings.findIndex(h => h.id === host.id);
+      let targetIndex = newSettings.findIndex((h) => h.id === host.id);
       if (!isTop) targetIndex++;
 
       newSettings.splice(targetIndex, 0, movedItem);
@@ -361,7 +366,12 @@ export class SettingsManager {
         fromIndex = this.draggingIndex;
       }
 
-      if (fromIndex === null || fromIndex === -1 || isNaN(fromIndex) || fromIndex === index) {
+      if (
+        fromIndex === null ||
+        fromIndex === -1 ||
+        isNaN(fromIndex) ||
+        fromIndex === index
+      ) {
         li.classList.remove("drag-over-top", "drag-over-bottom");
         return;
       }
@@ -375,7 +385,7 @@ export class SettingsManager {
       const newSettings = [...allSettings];
       const [movedItem] = newSettings.splice(fromIndex, 1);
 
-      let targetIndex = newSettings.findIndex(p => p.key === proj.key);
+      let targetIndex = newSettings.findIndex((p) => p.key === proj.key);
       if (!isTop) targetIndex++;
 
       newSettings.splice(targetIndex, 0, movedItem);
