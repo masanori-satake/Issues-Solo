@@ -1,70 +1,107 @@
 import fs from "fs";
 import path from "path";
+import { TextEncoder, TextDecoder } from "util";
 
 /**
- * コンテンツスクリプト（content.js）のデータ抽出ロジックのテスト。
- * Jira の各バージョン（Cloud/Data Center）や UI 形式から正しく情報を抽出できるか検証します。
+ * content.js の実ロジックを読み込んでテストします。
  */
-describe("content.js data extraction", () => {
-  // 注: content.js は非モジュールの IIFE 形式であるため、
-  // 抽出ロジックのコア部分をテストコード側で再現して検証します。
-  // これはリファクタリング前の外部仕様を固定するための安全網として機能します。
+describe("content.js real logic extraction", () => {
+  let document;
 
-  const getIssueKey = (url) => {
-    const parsedUrl = new URL(url);
-    const match = parsedUrl.pathname.match(
-      /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/,
-    );
-    return match ? match[1] : null;
-  };
+  const contentJsCode = fs.readFileSync(
+    path.resolve(__dirname, "../../projects/app/content.js"),
+    "utf8"
+  );
 
-  test("getIssueKey", () => {
-    expect(getIssueKey("https://site.atlassian.net/browse/KAN-1")).toBe(
-      "KAN-1",
-    );
-    expect(getIssueKey("https://site.atlassian.net/issues/ABC-123")).toBe(
-      "ABC-123",
-    );
-    expect(getIssueKey("https://site.atlassian.net/projects/KAN")).toBeNull();
+  function setupDOM(url = "https://test.atlassian.net/browse/PROJ-1") {
+    delete global.window.location;
+    global.window.location = new URL(url);
+
+    document = global.document;
+
+    // Mock chrome API
+    global.chrome = {
+      runtime: {
+        id: "test-id",
+        sendMessage: jest.fn().mockReturnValue(Promise.resolve({ catch: jest.fn() })),
+        onMessage: { addListener: jest.fn() }
+      }
+    };
+
+    if (typeof global.TextEncoder === "undefined") {
+      global.TextEncoder = TextEncoder;
+    }
+    if (typeof global.TextDecoder === "undefined") {
+      global.TextDecoder = TextDecoder;
+    }
+
+    // JSDOM elements don't have innerText by default, but content.js uses it.
+    // We should use textContent or mock innerText.
+    Object.defineProperty(global.HTMLElement.prototype, 'innerText', {
+      get() { return this.textContent; },
+      configurable: true
+    });
+  }
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+    document.body.innerHTML = "";
+    delete global.window.__ISSUES_SOLO_CONTENT_SCRIPT_LOADED__;
   });
 
-  test("getSummary extraction", () => {
-    document.body.innerHTML = `
-            <h1 data-testid="issue.views.issue-base.foundation.summary.heading">Cloud Summary</h1>
-        `;
-    const getSummary = () => {
-      const cloudSummary = document.querySelector(
-        '[data-testid="issue.views.issue-base.foundation.summary.heading"]',
-      );
-      if (cloudSummary)
-        return (cloudSummary.innerText || cloudSummary.textContent).trim();
-      return "";
-    };
-    expect(getSummary()).toBe("Cloud Summary");
+  test("getIssueKey from real logic", () => {
+    setupDOM("https://test.atlassian.net/browse/KAN-1");
+    document.body.innerHTML = '<div id="jira-frontend"></div>';
 
-    document.body.innerHTML = `<div id="summary-val">DC Summary</div>`;
-    const getSummaryDC = () => {
-      const dcSummary = document.querySelector("#summary-val");
-      if (dcSummary)
-        return (dcSummary.innerText || dcSummary.textContent).trim();
-      return "";
-    };
-    expect(getSummaryDC()).toBe("DC Summary");
+    const script = new Function(contentJsCode);
+    script();
+
+    expect(global.chrome.runtime.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        type: "ISSUE_UPDATED",
+        data: expect.objectContaining({ issueKey: "KAN-1" })
+      })
+    );
   });
 
-  test("getPriority extraction", () => {
+  test("getSummary from real logic (Cloud)", () => {
+    setupDOM("https://test.atlassian.net/browse/KAN-1");
     document.body.innerHTML = `
-            <div data-testid="issue.views.issue-base.foundation.priority.priority-view">
-                <img alt="High" src="..."/>
-            </div>
-        `;
-    const getPriority = () => {
-      const el = document.querySelector(
-        '[data-testid="issue.views.issue-base.foundation.priority.priority-view"]',
-      );
-      const img = el.querySelector("img");
-      return img ? img.getAttribute("alt") : "";
-    };
-    expect(getPriority()).toBe("High");
+      <div id="jira-frontend">
+        <h1 data-testid="issue.views.issue-base.foundation.summary.heading">Real Cloud Summary</h1>
+      </div>
+    `;
+    const script = new Function(contentJsCode);
+    script();
+
+    expect(global.chrome.runtime.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ title: "Real Cloud Summary" })
+      })
+    );
+  });
+
+  test("getPriority and getStatus from real logic (DC)", () => {
+    setupDOM("https://jira.example.com/browse/DC-123");
+    document.body.innerHTML = `
+      <div id="content">
+        <h1 id="summary-val">DC Summary</h1>
+        <div id="priority-val"><img alt="Highest" src="..."></div>
+        <div id="status-val">In Progress</div>
+      </div>
+    `;
+    const script = new Function(contentJsCode);
+    script();
+
+    expect(global.chrome.runtime.sendMessage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          issueKey: "DC-123",
+          title: "DC Summary",
+          priority: "Highest",
+          status: "In Progress"
+        })
+      })
+    );
   });
 });

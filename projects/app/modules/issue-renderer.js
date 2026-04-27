@@ -295,7 +295,7 @@ export class IssueRenderer {
     glyphs.className = "issue-glyphs";
 
     if (issue.status) {
-      const sColor = STATUS_COLOR_MAP[issue.status] || "#7A869A";
+      const sColor = STATUS_COLOR_MAP[issue.status] || OTHER_COLOR;
       const sBadge = document.createElement("span");
       sBadge.className = "status-badge";
       sBadge.textContent = issue.status;
@@ -309,7 +309,7 @@ export class IssueRenderer {
     if (issue.priority) {
       const pInfo = PRIORITY_MAP[issue.priority] || {
         glyph: "•",
-        color: "#7A869A",
+        color: OTHER_COLOR,
       };
       const pBadge = document.createElement("span");
       pBadge.className = "priority-badge";

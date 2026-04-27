@@ -266,7 +266,10 @@ export class IssuesDB {
   }
 
   /**
-   * 履歴の件数を制限数に収まるよう削除する
+   * 履歴の件数を上限数に収まるように古いものから削除します。
+   *
+   * @param {number} maxCount 保持する履歴の最大件数
+   * @returns {Promise<void>}
    */
   async pruneIssues(maxCount) {
     const db = await this.open();
@@ -280,7 +283,12 @@ export class IssuesDB {
   }
 
   /**
-   * トランザクション内で履歴上限を適用する（内部用）
+   * 指定されたオブジェクトストアに対して、履歴上限を適用します。
+   * 最終表示時刻（lastAccessed）が古い順に削除対象を決定します。
+   *
+   * @private
+   * @param {IDBObjectStore} store 対象のオブジェクトストア
+   * @param {number} maxCount 保持する最大件数
    */
   _applyMaxHistoryLimit(store, maxCount) {
     const countRequest = store.count();
@@ -301,7 +309,12 @@ export class IssuesDB {
   }
 
   /**
-   * 履歴データのインポート
+   * NDJSON形式のテキストから履歴データをインポートします。
+   * インポートされた課題は、一貫性のため「未読・タブ未紐付け」状態で保存されます。
+   *
+   * @param {string} ndjsonText インポートするNDJSON文字列
+   * @param {string} mode "add"（追加）または "overwrite"（全削除後に上書き）
+   * @returns {Promise<void>}
    */
   async importIssues(ndjsonText, mode = "add") {
     const lines = ndjsonText.trim().split("\n");
@@ -346,11 +359,11 @@ export class IssuesDB {
   }
 
   /**
-   * 設定データのインポート用にデータを処理します。
+   * 設定データのインポート用にデータを処理し、保存します。
    *
    * @param {string} jsonText インポートするJSON文字列
    * @param {string} mode "add" または "overwrite"
-   * @returns {Promise<Object>} 処理後の設定データ
+   * @returns {Promise<Object>} 処理後の設定データ。エラー時は例外をスローします。
    */
   async processSettingsImport(jsonText, mode = "add") {
     try {
@@ -360,8 +373,9 @@ export class IssuesDB {
         return () => (nextId++).toString();
       };
 
+      let toSet = {};
+
       if (mode === "overwrite") {
-        const toSet = {};
         if (data.settings) {
           const maxId = data.settings.reduce(
             (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
@@ -384,8 +398,6 @@ export class IssuesDB {
           toSet.otherCollapsed = data.otherCollapsed;
         if (data.maxHistoryCount !== undefined)
           toSet.maxHistoryCount = data.maxHistoryCount;
-
-        return toSet;
       } else {
         // 追加モード
         const currentSettings = await this.getSettings();
@@ -427,29 +439,15 @@ export class IssuesDB {
           }
         }
 
-        return {
+        toSet = {
           settings: newSettings,
           projectSettings: newProjectSettings,
         };
       }
+
+      return toSet;
     } catch (e) {
       console.error("Import processing failed", e);
-      throw e;
-    }
-  }
-
-  /**
-   * 設定データのインポート
-   * (レガシー互換および直接呼び出し用。内部的には processSettingsImport を使用することを推奨)
-   */
-  async importSettings(jsonText, mode = "add") {
-    try {
-      const toSet = await this.processSettingsImport(jsonText, mode);
-      return new Promise((resolve) => {
-        chrome.storage.local.set(toSet, () => resolve());
-      });
-    } catch (e) {
-      console.error("Import failed", e);
       throw e;
     }
   }

@@ -11,10 +11,19 @@
    */
 
   /**
-   * 現在のURLから課題キー（例: KAN-1）を抽出する
+   * 現在のURLから課題キー（例: KAN-1）を抽出します。
+   *
+   * JiraのURL構造には主に以下の2パターンがあります：
+   * 1. /browse/KEY-123 (標準的な個別課題表示)
+   * 2. /issues/KEY-123 (リストビューや新UIでの表示)
+   *
+   * 正規表現の解説:
+   * - \/(?:browse|issues)\/ : "browse" または "issues" というディレクトリ名にマッチ
+   * - ([A-Z0-9]+-[0-9]+) : プロジェクトキー（英数字）+ ハイフン + 課題番号（数字）をキャプチャ
+   *
+   * @returns {string|null} 抽出された課題キー、見つからない場合は null
    */
   const getIssueKey = () => {
-    // /browse/KEY or /issues/KEY に対応 (Data CenterやCloudの新UIに対応)
     const match = window.location.pathname.match(
       /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/,
     );
@@ -27,8 +36,11 @@
   const EXCLUDED_LABELS = ["優先度", "Priority", "ステータス", "Status"];
 
   /**
-   * DOMから課題の要約（Summary）を取得する
-   * Cloud版とData Center版の両方に対応
+   * DOMから課題の要約（Summary/Title）を取得します。
+   * Jira Cloud版とData Center版、および多様なビューの差異を吸収するため、
+   * 優先度の高い順に複数のセレクタ候補を試行します。
+   *
+   * @returns {string} 抽出されたサマリー。見つからない場合は空文字。
    */
   const getSummary = () => {
     // Cloud
@@ -75,7 +87,10 @@
   ];
 
   /**
-   * DOMから優先度を取得する
+   * DOMから優先度（Priority）を取得します。
+   * アイコン（img/svg）の属性値、代替テキスト、またはテキスト要素から抽出を試みます。
+   *
+   * @returns {string} 抽出された優先度名。見つからない場合は空文字。
    */
   const getPriority = () => {
     // Cloud: 複数のセレクタ候補を試行
@@ -149,7 +164,10 @@
   };
 
   /**
-   * DOMからステータスを取得する
+   * DOMからステータス（Status）を取得します。
+   * ボタン要素やバッジ要素のテキストから抽出を試みます。
+   *
+   * @returns {string} 抽出されたステータス名。見つからない場合は空文字。
    */
   const getStatus = () => {
     // Cloud: 複数のセレクタ候補を試行（ステータスボタン、ピッカーなど）
@@ -227,7 +245,11 @@
   };
 
   /**
-   * コンテキストの無効化を処理する
+   * 拡張機能のコンテキスト無効化（アップデート時など）を処理します。
+   *
+   * Chrome拡張機能が更新またはリロードされると、既存のコンテンツスクリプトの
+   * 実行コンテキストが無効になり、API呼び出しが失敗するようになります。
+   * これを検知してクリーンアップを行うことで、メモリーリークやエラーの頻出を防ぎます。
    */
   const invalidateContext = () => {
     if (!isExtensionContextAlive) return;
@@ -342,17 +364,24 @@
   };
 
   /**
-   * MutationObserverを再接続する
+   * MutationObserverを再接続します。
+   *
+   * JiraのようなSPA（Single Page Application）環境では、画面遷移や大きなDOM更新によって
+   * 監視対象のルート要素が削除・置換されることがあるため、必要に応じて再接続を行います。
+   * これにより、動的なコンテンツ更新による課題情報の変更を継続的に検知できます。
    */
   const reconnectObserver = () => {
     if (!isExtensionContextAlive || !observer) return;
 
     observer.disconnect();
-    observer.observe(getObserverTarget(), {
-      subtree: true,
-      childList: true,
-      characterData: true,
-    });
+    const target = getObserverTarget();
+    if (target) {
+      observer.observe(target, {
+        subtree: true,
+        childList: true,
+        characterData: true,
+      });
+    }
   };
 
   /**
