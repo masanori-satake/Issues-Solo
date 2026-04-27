@@ -371,6 +371,7 @@ export class IssuesDB {
           const seenIds = new Set();
 
           toSet.settings = data.settings.map((s) => {
+            // IDの重複や欠落を修正する
             if (!s.id || seenIds.has(s.id)) {
               s.id = generateId();
             }
@@ -405,6 +406,7 @@ export class IssuesDB {
 
           for (const s of data.settings) {
             if (!newSettings.some((existing) => existing.url === s.url)) {
+              // IDの重複を避ける
               if (!s.id || seenIds.has(s.id)) {
                 s.id = generateId();
               }
