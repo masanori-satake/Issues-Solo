@@ -159,6 +159,8 @@ export class SettingsManager {
       this.draggingIndex = index;
       this.draggingType = "host";
       e.dataTransfer.effectAllowed = "move";
+      // dataTransfer に値をセットしないと一部の環境でドラッグが開始されない場合がある
+      e.dataTransfer.setData("text/plain", index);
     });
 
     li.addEventListener("dragover", (e) => {
@@ -182,8 +184,11 @@ export class SettingsManager {
 
     li.addEventListener("dragend", () => {
       li.classList.remove("dragging", "drag-over-top", "drag-over-bottom");
-      this.draggingIndex = null;
-      this.draggingType = null;
+      // drop イベントが先に処理されるように少し遅らせてクリーンアップする
+      setTimeout(() => {
+        this.draggingIndex = null;
+        this.draggingType = null;
+      }, 50);
     });
 
     li.addEventListener("drop", async (e) => {
@@ -194,7 +199,7 @@ export class SettingsManager {
       const fromIndex = this.draggingIndex;
       const toIndex = index;
 
-      if (fromIndex === toIndex) return;
+      if (fromIndex === null || fromIndex === toIndex) return;
 
       const rect = li.getBoundingClientRect();
       const midpoint = rect.top + rect.height / 2;
@@ -287,6 +292,7 @@ export class SettingsManager {
       this.draggingIndex = index;
       this.draggingType = "project";
       e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", index);
     });
 
     li.addEventListener("dragover", (e) => {
@@ -310,8 +316,10 @@ export class SettingsManager {
 
     li.addEventListener("dragend", () => {
       li.classList.remove("dragging", "drag-over-top", "drag-over-bottom");
-      this.draggingIndex = null;
-      this.draggingType = null;
+      setTimeout(() => {
+        this.draggingIndex = null;
+        this.draggingType = null;
+      }, 50);
     });
 
     li.addEventListener("drop", async (e) => {
@@ -322,7 +330,7 @@ export class SettingsManager {
       const fromIndex = this.draggingIndex;
       const toIndex = index;
 
-      if (fromIndex === toIndex) return;
+      if (fromIndex === null || fromIndex === toIndex) return;
 
       const rect = li.getBoundingClientRect();
       const midpoint = rect.top + rect.height / 2;
