@@ -346,9 +346,13 @@ export class IssuesDB {
   }
 
   /**
-   * 設定データのインポート
+   * 設定データのインポート用にデータを処理します。
+   *
+   * @param {string} jsonText インポートするJSON文字列
+   * @param {string} mode "add" または "overwrite"
+   * @returns {Promise<Object>} 処理後の設定データ
    */
-  async importSettings(jsonText, mode = "add") {
+  async processSettingsImport(jsonText, mode = "add") {
     try {
       const data = JSON.parse(jsonText);
       const getNextId = (currentMaxId) => {
@@ -381,9 +385,7 @@ export class IssuesDB {
         if (data.maxHistoryCount !== undefined)
           toSet.maxHistoryCount = data.maxHistoryCount;
 
-        return new Promise((resolve) => {
-          chrome.storage.local.set(toSet, () => resolve());
-        });
+        return toSet;
       } else {
         // 追加モード
         const currentSettings = await this.getSettings();
@@ -425,15 +427,27 @@ export class IssuesDB {
           }
         }
 
-        const toSet = {
+        return {
           settings: newSettings,
           projectSettings: newProjectSettings,
         };
-        // booleanや数値は上書きせざるを得ないが、addモードなら現在の値を優先
-        return new Promise((resolve) => {
-          chrome.storage.local.set(toSet, () => resolve());
-        });
       }
+    } catch (e) {
+      console.error("Import processing failed", e);
+      throw e;
+    }
+  }
+
+  /**
+   * 設定データのインポート
+   * (レガシー互換および直接呼び出し用。内部的には processSettingsImport を使用することを推奨)
+   */
+  async importSettings(jsonText, mode = "add") {
+    try {
+      const toSet = await this.processSettingsImport(jsonText, mode);
+      return new Promise((resolve) => {
+        chrome.storage.local.set(toSet, () => resolve());
+      });
     } catch (e) {
       console.error("Import failed", e);
       throw e;

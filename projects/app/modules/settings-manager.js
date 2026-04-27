@@ -15,6 +15,8 @@ export class SettingsManager {
     this.previousMaxHistoryCount = 50;
     this.draggingIndex = null;
     this.draggingType = null;
+    this.draggingId = null;
+    this.draggingProjectKey = null;
 
     // UI要素のキャッシュ
     this.elements = {
@@ -158,7 +160,15 @@ export class SettingsManager {
       li.classList.add("dragging");
       this.draggingIndex = index;
       this.draggingType = "host";
-      e.dataTransfer.effectAllowed = "move";
+      this.draggingId = host.id;
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", index.toString());
+      }
+    });
+
+    li.addEventListener("dragenter", (e) => {
+      if (this.draggingType === "host") e.preventDefault();
     });
 
     li.addEventListener("dragover", (e) => {
@@ -181,35 +191,53 @@ export class SettingsManager {
     });
 
     li.addEventListener("dragend", () => {
-      li.classList.remove("dragging", "drag-over-top", "drag-over-bottom");
-      this.draggingIndex = null;
+      const items = this.elements.hostList.querySelectorAll(".host-item");
+      items.forEach((el) =>
+        el.classList.remove("dragging", "drag-over-top", "drag-over-bottom"),
+      );
       this.draggingType = null;
+      this.draggingId = null;
+      this.draggingIndex = null;
     });
 
     li.addEventListener("drop", async (e) => {
       if (this.draggingType !== "host") return;
       e.preventDefault();
-      li.classList.remove("drag-over-top", "drag-over-bottom");
 
-      const fromIndex = this.draggingIndex;
-      const toIndex = index;
+      let fromIndex = -1;
+      if (e.dataTransfer) {
+        const data = e.dataTransfer.getData("text/plain");
+        fromIndex = data ? parseInt(data) : this.draggingIndex;
+      } else {
+        fromIndex = this.draggingIndex;
+      }
 
-      if (fromIndex === toIndex) return;
+      if (
+        fromIndex === null ||
+        fromIndex === -1 ||
+        isNaN(fromIndex) ||
+        fromIndex === index
+      ) {
+        li.classList.remove("drag-over-top", "drag-over-bottom");
+        return;
+      }
 
       const rect = li.getBoundingClientRect();
       const midpoint = rect.top + rect.height / 2;
-      const dropPosition = e.clientY < midpoint ? "top" : "bottom";
+      const isTop = e.clientY < midpoint;
 
-      let finalToIndex = toIndex;
-      if (dropPosition === "bottom" && fromIndex > toIndex) finalToIndex++;
-      if (dropPosition === "top" && fromIndex < toIndex) finalToIndex--;
+      li.classList.remove("drag-over-top", "drag-over-bottom");
 
       const newSettings = [...allSettings];
       const [movedItem] = newSettings.splice(fromIndex, 1);
-      newSettings.splice(finalToIndex, 0, movedItem);
+
+      let targetIndex = newSettings.findIndex((h) => h.id === host.id);
+      if (!isTop) targetIndex++;
+
+      newSettings.splice(targetIndex, 0, movedItem);
 
       await this.db.setSettings(newSettings);
-      this.renderHostSettings();
+      await this.renderHostSettings();
     });
 
     return li;
@@ -286,7 +314,15 @@ export class SettingsManager {
       li.classList.add("dragging");
       this.draggingIndex = index;
       this.draggingType = "project";
-      e.dataTransfer.effectAllowed = "move";
+      this.draggingProjectKey = proj.key;
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = "move";
+        e.dataTransfer.setData("text/plain", index.toString());
+      }
+    });
+
+    li.addEventListener("dragenter", (e) => {
+      if (this.draggingType === "project") e.preventDefault();
     });
 
     li.addEventListener("dragover", (e) => {
@@ -309,35 +345,53 @@ export class SettingsManager {
     });
 
     li.addEventListener("dragend", () => {
-      li.classList.remove("dragging", "drag-over-top", "drag-over-bottom");
-      this.draggingIndex = null;
+      const items = this.elements.projectList.querySelectorAll(".project-item");
+      items.forEach((el) =>
+        el.classList.remove("dragging", "drag-over-top", "drag-over-bottom"),
+      );
       this.draggingType = null;
+      this.draggingProjectKey = null;
+      this.draggingIndex = null;
     });
 
     li.addEventListener("drop", async (e) => {
       if (this.draggingType !== "project") return;
       e.preventDefault();
-      li.classList.remove("drag-over-top", "drag-over-bottom");
 
-      const fromIndex = this.draggingIndex;
-      const toIndex = index;
+      let fromIndex = -1;
+      if (e.dataTransfer) {
+        const data = e.dataTransfer.getData("text/plain");
+        fromIndex = data ? parseInt(data) : this.draggingIndex;
+      } else {
+        fromIndex = this.draggingIndex;
+      }
 
-      if (fromIndex === toIndex) return;
+      if (
+        fromIndex === null ||
+        fromIndex === -1 ||
+        isNaN(fromIndex) ||
+        fromIndex === index
+      ) {
+        li.classList.remove("drag-over-top", "drag-over-bottom");
+        return;
+      }
 
       const rect = li.getBoundingClientRect();
       const midpoint = rect.top + rect.height / 2;
-      const dropPosition = e.clientY < midpoint ? "top" : "bottom";
+      const isTop = e.clientY < midpoint;
 
-      let finalToIndex = toIndex;
-      if (dropPosition === "bottom" && fromIndex > toIndex) finalToIndex++;
-      if (dropPosition === "top" && fromIndex < toIndex) finalToIndex--;
+      li.classList.remove("drag-over-top", "drag-over-bottom");
 
       const newSettings = [...allSettings];
       const [movedItem] = newSettings.splice(fromIndex, 1);
-      newSettings.splice(finalToIndex, 0, movedItem);
+
+      let targetIndex = newSettings.findIndex((p) => p.key === proj.key);
+      if (!isTop) targetIndex++;
+
+      newSettings.splice(targetIndex, 0, movedItem);
 
       await this.db.setProjectSettings(newSettings);
-      this.renderProjectSettings();
+      await this.renderProjectSettings();
     });
 
     return li;
@@ -671,5 +725,104 @@ export class SettingsManager {
     const errorMsg = document.getElementById("project-error-msg");
     errorMsg.textContent = message;
     errorMsg.classList.remove("hidden");
+  }
+
+  /**
+   * 設定データのインポートを実行し、必要に応じて権限の要求・削除を行います。
+   *
+   * @param {string} jsonText インポートするJSON文字列
+   * @param {string} mode "add" または "overwrite"
+   */
+  async handleSettingsImport(jsonText, mode = "add") {
+    try {
+      const currentSettings = await this.db.getSettings();
+      const processed = await this.db.processSettingsImport(jsonText, mode);
+      const newSettings = processed.settings || [];
+
+      // インポート後に必要となる権限オリジンのリスト
+      const requiredOrigins = new Set();
+      newSettings.forEach((h) => {
+        const origin = getPermissionOriginFromStoredHost(h.url);
+        if (origin && !isBuiltinHostOrigin(origin)) {
+          requiredOrigins.add(origin);
+        }
+      });
+
+      // 現在許可されている（任意）オリジンのリスト
+      const { origins: grantedOrigins = [] } =
+        await chrome.permissions.getAll();
+
+      // 新たに要求が必要なオリジン
+      const originsToRequest = [...requiredOrigins].filter(
+        (o) => !grantedOrigins.includes(o),
+      );
+
+      // 権限の順次要求
+      const finalSettings = [...newSettings];
+      for (const origin of originsToRequest) {
+        let granted = false;
+        try {
+          granted = await chrome.permissions.request({ origins: [origin] });
+        } catch (e) {
+          console.error(`Permission request failed for ${origin}`, e);
+        }
+
+        if (!granted) {
+          // 拒否された場合、そのオリジンを使用するホスト設定をインポート対象から除外する
+          for (let i = finalSettings.length - 1; i >= 0; i--) {
+            if (
+              getPermissionOriginFromStoredHost(finalSettings[i].url) === origin
+            ) {
+              finalSettings.splice(i, 1);
+            }
+          }
+        } else {
+          // 許可された場合、バックグラウンドに通知して既存タブにスクリプトを注入
+          chrome.runtime
+            .sendMessage({
+              type: "HOST_PERMISSION_GRANTED",
+              origin: origin,
+            })
+            .catch(() => {});
+        }
+      }
+
+      // 上書きモードの場合、不要になった権限の削除
+      if (mode === "overwrite") {
+        const currentOrigins = new Set();
+        currentSettings.forEach((h) => {
+          const origin = getPermissionOriginFromStoredHost(h.url);
+          if (origin && !isBuiltinHostOrigin(origin)) {
+            currentOrigins.add(origin);
+          }
+        });
+
+        for (const origin of currentOrigins) {
+          if (!requiredOrigins.has(origin)) {
+            try {
+              await chrome.permissions.remove({ origins: [origin] });
+            } catch (e) {}
+          }
+        }
+      }
+
+      // 最終的な設定を保存
+      processed.settings = finalSettings;
+
+      // 不要なプロジェクト設定のクリーンアップ (オプション: ホストが存在しないプロジェクトも維持する方針なら不要)
+      // 今回は、ホストが削除されてもプロジェクト設定（キーと色）は共通設定として維持する仕様とする。
+
+      await chrome.storage.local.set(processed);
+
+      // UIの更新
+      await this.renderHostSettings();
+      await this.renderProjectSettings();
+      this.updateMaxHistoryUI(await this.db.getMaxHistoryCount());
+
+      alert(chrome.i18n.getMessage("settingsImportSuccess"));
+    } catch (e) {
+      console.error("Settings import failed", e);
+      alert(chrome.i18n.getMessage("importError"));
+    }
   }
 }
