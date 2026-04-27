@@ -88,6 +88,18 @@ export class IssueRenderer {
         this._renderProjectGroups(hostIssues, projectSettings, otherCollapsed);
       }
     });
+
+    // 設定されていないホストの課題を抽出
+    const unconfiguredIssues = issues.filter((issue) => {
+      return !settings.some((host) => this._isIssueInHost(issue, host.url));
+    });
+
+    if (unconfiguredIssues.length > 0) {
+      this.listElement.appendChild(this._createUnconfiguredHeader());
+      unconfiguredIssues.forEach((issue) => {
+        this.listElement.appendChild(this._createIssueItem(issue, true));
+      });
+    }
   }
 
   /**
@@ -223,6 +235,30 @@ export class IssueRenderer {
   }
 
   /**
+   * "設定未登録ホスト"グループのヘッダーを作成します。
+   * @private
+   */
+  _createUnconfiguredHeader() {
+    const header = document.createElement("div");
+    header.className = "project-group-header unconfigured-header";
+    header.style.backgroundColor = "#7A869A22";
+    header.style.color = "#7A869A";
+    header.style.borderLeft = "4px solid #7A869A";
+
+    const icon = document.createElement("span");
+    icon.className = "material-symbols-outlined";
+    icon.textContent = "error_outline";
+    header.appendChild(icon);
+
+    const name = document.createElement("span");
+    name.textContent =
+      chrome.i18n.getMessage("unconfiguredHosts") || "Unconfigured Hosts";
+    header.appendChild(name);
+
+    return header;
+  }
+
+  /**
    * "その他"グループのヘッダーを作成します。
    * @private
    */
@@ -256,9 +292,9 @@ export class IssueRenderer {
    * 課題1件分のアイテム要素を作成します。
    * @private
    */
-  _createIssueItem(issue) {
+  _createIssueItem(issue, isDisabled = false) {
     const item = document.createElement("div");
-    item.className = "issue-item";
+    item.className = `issue-item ${isDisabled ? "disabled" : ""}`;
     item.title = issue.title;
 
     const indicators = document.createElement("div");

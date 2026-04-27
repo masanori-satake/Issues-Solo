@@ -212,6 +212,17 @@
   "other": {
     "message": "その他"
   },
+  "unconfiguredHosts": {
+    "message": "設定未登録ホスト"
+  },
+  "addHostConfirm": {
+    "message": "このホスト ($1) は設定されていません。追加しますか？",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
   "close": {
     "message": "閉じる"
   },

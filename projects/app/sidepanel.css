@@ -140,6 +140,11 @@ header {
   background-color: var(--hover-bg);
 }
 
+.issue-item.disabled {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
 .status-indicators {
   display: flex;
   flex-direction: column;
