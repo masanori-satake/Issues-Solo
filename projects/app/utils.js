@@ -157,6 +157,39 @@ export function getStatusWeight(status) {
 }
 
 /**
+ * URLが指定されたホスト設定に合致するか判定します。
+ *
+ * @param {string} urlString 判定対象のURL文字列
+ * @param {string} hostUrl 登録されているホスト設定のURL
+ * @returns {boolean}
+ */
+export function isUrlMatchHost(urlString, hostUrl) {
+  try {
+    const url = new URL(urlString);
+    const hostUrlLower = hostUrl.toLowerCase();
+    const issueHostname = url.hostname.toLowerCase();
+    const issuePathname = url.pathname.toLowerCase();
+
+    if (hostUrlLower.includes("/")) {
+      const [hostPart, ...pathParts] = hostUrlLower.split("/");
+      const pathPart = "/" + pathParts.join("/");
+      const isCorrectPath =
+        issuePathname === pathPart || issuePathname.startsWith(pathPart + "/");
+      return (
+        (issueHostname === hostPart ||
+          issueHostname.endsWith("." + hostPart)) &&
+        isCorrectPath
+      );
+    }
+    return (
+      issueHostname === hostUrlLower || issueHostname.endsWith("." + hostUrlLower)
+    );
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
  * ステータスの比較
  */
 export function compareStatus(a, b, direction) {

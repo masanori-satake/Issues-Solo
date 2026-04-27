@@ -2,6 +2,7 @@ import {
   compareIssueKeys,
   getPriorityWeight,
   compareStatus,
+  isUrlMatchHost,
   PRIORITY_MAP,
   STATUS_COLOR_MAP,
   OTHER_COLOR,
@@ -71,7 +72,7 @@ export class IssueRenderer {
     const hostGroups = visibleSettings
       .map((host) => {
         const hostIssues = issues.filter((issue) =>
-          this._isIssueInHost(issue, host.url),
+          isUrlMatchHost(issue.url, host.url),
         );
         return { host, issues: hostIssues };
       })
@@ -91,7 +92,7 @@ export class IssueRenderer {
 
     // 設定されていないホストの課題を抽出
     const unconfiguredIssues = issues.filter((issue) => {
-      return !settings.some((host) => this._isIssueInHost(issue, host.url));
+      return !settings.some((host) => isUrlMatchHost(issue.url, host.url));
     });
 
     if (unconfiguredIssues.length > 0) {
@@ -102,37 +103,6 @@ export class IssueRenderer {
     }
   }
 
-  /**
-   * URLが指定されたホスト設定に合致するか判定します。
-   * @private
-   */
-  _isIssueInHost(issue, hostUrl) {
-    try {
-      const url = new URL(issue.url);
-      const hostUrlLower = hostUrl.toLowerCase();
-      const issueHostname = url.hostname.toLowerCase();
-      const issuePathname = url.pathname.toLowerCase();
-
-      if (hostUrlLower.includes("/")) {
-        const [hostPart, ...pathParts] = hostUrlLower.split("/");
-        const pathPart = "/" + pathParts.join("/");
-        const isCorrectPath =
-          issuePathname === pathPart ||
-          issuePathname.startsWith(pathPart + "/");
-        return (
-          (issueHostname === hostPart ||
-            issueHostname.endsWith("." + hostPart)) &&
-          isCorrectPath
-        );
-      }
-      return (
-        issueHostname === hostUrlLower ||
-        issueHostname.endsWith("." + hostUrlLower)
-      );
-    } catch (e) {
-      return false;
-    }
-  }
 
   /**
    * ホストグループのヘッダーを作成します。
@@ -241,9 +211,9 @@ export class IssueRenderer {
   _createUnconfiguredHeader() {
     const header = document.createElement("div");
     header.className = "project-group-header unconfigured-header";
-    header.style.backgroundColor = "#7A869A22";
-    header.style.color = "#7A869A";
-    header.style.borderLeft = "4px solid #7A869A";
+    header.style.backgroundColor = OTHER_COLOR + "22";
+    header.style.color = OTHER_COLOR;
+    header.style.borderLeft = `4px solid ${OTHER_COLOR}`;
 
     const icon = document.createElement("span");
     icon.className = "material-symbols-outlined";

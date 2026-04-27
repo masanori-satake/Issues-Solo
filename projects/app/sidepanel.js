@@ -1,6 +1,7 @@
 import { IssuesDB } from "./db.js";
 import { IssueRenderer } from "./modules/issue-renderer.js";
 import { SettingsManager } from "./modules/settings-manager.js";
+import { isUrlMatchHost } from "./utils.js";
 
 /**
  * SidePanel クラスは、拡張機能のサイドパネル全体のライフサイクルと
@@ -330,7 +331,7 @@ class SidePanel {
     // ホスト設定がない場合は追加を促す
     const settings = await this.db.getSettings();
     const isConfigured = settings.some((host) =>
-      this.renderer._isIssueInHost(issue, host.url),
+      isUrlMatchHost(issue.url, host.url),
     );
 
     if (!isConfigured) {
@@ -343,9 +344,7 @@ class SidePanel {
           () => {
             this.settings.open();
             // 一般タブ（ホスト設定）を表示
-            const generalBtn = document.querySelector(
-              '.tab-btn[data-tab="general"]',
-            );
+            const generalBtn = document.querySelector('.tab-btn[data-tab="general"]');
             if (generalBtn) generalBtn.click();
             this.settings.openHostDialog({ name: "", url: host });
           },
