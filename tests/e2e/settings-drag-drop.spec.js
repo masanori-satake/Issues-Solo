@@ -54,13 +54,20 @@ test.describe("Settings Reordering", () => {
     const secondBox = await secondHost.boundingBox();
     const firstBox = await firstHost.boundingBox();
 
-    await sidePanel.mouse.move(secondBox.x + secondBox.width / 2, secondBox.y + secondBox.height / 2);
+    await sidePanel.mouse.move(
+      secondBox.x + secondBox.width / 2,
+      secondBox.y + secondBox.height / 2,
+    );
     await sidePanel.mouse.down();
     await sidePanel.waitForTimeout(200);
     // Move to the top half of the first host
-    await sidePanel.mouse.move(firstBox.x + firstBox.width / 2, firstBox.y + 10, {
-      steps: 20,
-    });
+    await sidePanel.mouse.move(
+      firstBox.x + firstBox.width / 2,
+      firstBox.y + 10,
+      {
+        steps: 20,
+      },
+    );
     await sidePanel.waitForTimeout(200);
     await sidePanel.mouse.up();
 
@@ -115,12 +122,19 @@ test.describe("Settings Reordering", () => {
     const secondBoxP = await secondProj.boundingBox();
     const firstBoxP = await firstProj.boundingBox();
 
-    await sidePanel.mouse.move(secondBoxP.x + secondBoxP.width / 2, secondBoxP.y + secondBoxP.height / 2);
+    await sidePanel.mouse.move(
+      secondBoxP.x + secondBoxP.width / 2,
+      secondBoxP.y + secondBoxP.height / 2,
+    );
     await sidePanel.mouse.down();
     await sidePanel.waitForTimeout(200);
-    await sidePanel.mouse.move(firstBoxP.x + firstBoxP.width / 2, firstBoxP.y + 10, {
-      steps: 20,
-    });
+    await sidePanel.mouse.move(
+      firstBoxP.x + firstBoxP.width / 2,
+      firstBoxP.y + 10,
+      {
+        steps: 20,
+      },
+    );
     await sidePanel.waitForTimeout(200);
     await sidePanel.mouse.up();
 
