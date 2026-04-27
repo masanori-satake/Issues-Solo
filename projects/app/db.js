@@ -331,6 +331,10 @@ export class IssuesDB {
         if (!issue.lastAccessed) {
           issue.lastAccessed = Date.now();
         }
+        // 他のブラウザや再インストール時での不整合を防ぐため、開閉状態をリセットする
+        issue.isOpened = false;
+        issue.tabId = null;
+
         store.put(issue);
       }
 
@@ -347,9 +351,30 @@ export class IssuesDB {
   async importSettings(jsonText, mode = "add") {
     try {
       const data = JSON.parse(jsonText);
+      const getNextId = (currentMaxId) => {
+        let nextId = Math.max(Date.now(), currentMaxId + 1);
+        return () => (nextId++).toString();
+      };
+
       if (mode === "overwrite") {
         const toSet = {};
-        if (data.settings) toSet.settings = data.settings;
+        if (data.settings) {
+          const maxId = data.settings.reduce(
+            (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
+            0,
+          );
+          const generateId = getNextId(maxId);
+          const seenIds = new Set();
+
+          toSet.settings = data.settings.map((s) => {
+            // IDの重複や欠落を修正する
+            if (!s.id || seenIds.has(s.id)) {
+              s.id = generateId();
+            }
+            seenIds.add(s.id);
+            return s;
+          });
+        }
         if (data.projectSettings) toSet.projectSettings = data.projectSettings;
         if (data.otherCollapsed !== undefined)
           toSet.otherCollapsed = data.otherCollapsed;
@@ -366,8 +391,24 @@ export class IssuesDB {
 
         const newSettings = [...currentSettings];
         if (data.settings) {
+          const maxIdInCurrent = currentSettings.reduce(
+            (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
+            0,
+          );
+          const maxIdInImport = data.settings.reduce(
+            (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
+            0,
+          );
+          const generateId = getNextId(Math.max(maxIdInCurrent, maxIdInImport));
+          const seenIds = new Set(newSettings.map((s) => s.id));
+
           for (const s of data.settings) {
             if (!newSettings.some((existing) => existing.url === s.url)) {
+              // IDの重複を避ける
+              if (!s.id || seenIds.has(s.id)) {
+                s.id = generateId();
+              }
+              seenIds.add(s.id);
               newSettings.push(s);
             }
           }

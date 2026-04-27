@@ -1,6 +1,7 @@
 import { IssuesDB } from "./db.js";
 import { IssueRenderer } from "./modules/issue-renderer.js";
 import { SettingsManager } from "./modules/settings-manager.js";
+import { isUrlMatchHost } from "./utils.js";
 
 /**
  * SidePanel クラスは、拡張機能のサイドパネル全体のライフサイクルと
@@ -327,6 +328,35 @@ class SidePanel {
    * @param {Object} issue 課題オブジェクト
    */
   async handleIssueClick(issue) {
+    // ホスト設定がない場合は追加を促す
+    const settings = await this.db.getSettings();
+    const isConfigured = settings.some((host) =>
+      isUrlMatchHost(issue.url, host.url),
+    );
+
+    if (!isConfigured) {
+      try {
+        const url = new URL(issue.url);
+        const host = url.hostname;
+        this.settings.showConfirm(
+          chrome.i18n.getMessage("confirm"),
+          chrome.i18n.getMessage("addHostConfirm", [host]),
+          () => {
+            this.settings.open();
+            // 一般タブ（ホスト設定）を表示
+            const generalBtn = document.querySelector(
+              '.tab-btn[data-tab="general"]',
+            );
+            if (generalBtn) generalBtn.click();
+            this.settings.openHostDialog({ name: "", url: host });
+          },
+        );
+      } catch (e) {
+        console.error("Invalid issue URL", e);
+      }
+      return;
+    }
+
     if (issue.isOpened && issue.tabId) {
       try {
         await chrome.tabs.update(issue.tabId, { active: true });

@@ -212,6 +212,17 @@
   "other": {
     "message": "Other"
   },
+  "unconfiguredHosts": {
+    "message": "Unconfigured Hosts"
+  },
+  "addHostConfirm": {
+    "message": "This host ($1) is not configured. Do you want to add it?",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
   "close": {
     "message": "Close"
   },

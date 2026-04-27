@@ -5,6 +5,7 @@ import {
   compareIssueKeys,
   getPriorityWeight,
   compareStatus,
+  isUrlMatchHost,
 } from "../../projects/app/utils.js";
 
 /**
@@ -76,5 +77,16 @@ describe("utils.js", () => {
       storedUrl: "myjira.atlassian.net",
       permissionOrigin: "https://myjira.atlassian.net/*",
     });
+  });
+
+  test("isUrlMatchHost", () => {
+    const issueUrl = "https://test.atlassian.net/browse/PROJ-1";
+
+    expect(isUrlMatchHost(issueUrl, "test.atlassian.net")).toBe(true);
+    expect(isUrlMatchHost(issueUrl, "other.atlassian.net")).toBe(false);
+
+    const issueUrlWithPath = "https://myjira.com/jira/browse/PROJ-1";
+    expect(isUrlMatchHost(issueUrlWithPath, "myjira.com/jira")).toBe(true);
+    expect(isUrlMatchHost(issueUrlWithPath, "myjira.com/other")).toBe(false);
   });
 });

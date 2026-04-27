@@ -2,6 +2,7 @@ import {
   compareIssueKeys,
   getPriorityWeight,
   compareStatus,
+  isUrlMatchHost,
   PRIORITY_MAP,
   STATUS_COLOR_MAP,
   OTHER_COLOR,
@@ -71,7 +72,7 @@ export class IssueRenderer {
     const hostGroups = visibleSettings
       .map((host) => {
         const hostIssues = issues.filter((issue) =>
-          this._isIssueInHost(issue, host.url),
+          isUrlMatchHost(issue.url, host.url),
         );
         return { host, issues: hostIssues };
       })
@@ -88,37 +89,17 @@ export class IssueRenderer {
         this._renderProjectGroups(hostIssues, projectSettings, otherCollapsed);
       }
     });
-  }
 
-  /**
-   * URLが指定されたホスト設定に合致するか判定します。
-   * @private
-   */
-  _isIssueInHost(issue, hostUrl) {
-    try {
-      const url = new URL(issue.url);
-      const hostUrlLower = hostUrl.toLowerCase();
-      const issueHostname = url.hostname.toLowerCase();
-      const issuePathname = url.pathname.toLowerCase();
+    // 設定されていないホストの課題を抽出
+    const unconfiguredIssues = issues.filter((issue) => {
+      return !settings.some((host) => isUrlMatchHost(issue.url, host.url));
+    });
 
-      if (hostUrlLower.includes("/")) {
-        const [hostPart, ...pathParts] = hostUrlLower.split("/");
-        const pathPart = "/" + pathParts.join("/");
-        const isCorrectPath =
-          issuePathname === pathPart ||
-          issuePathname.startsWith(pathPart + "/");
-        return (
-          (issueHostname === hostPart ||
-            issueHostname.endsWith("." + hostPart)) &&
-          isCorrectPath
-        );
-      }
-      return (
-        issueHostname === hostUrlLower ||
-        issueHostname.endsWith("." + hostUrlLower)
-      );
-    } catch (e) {
-      return false;
+    if (unconfiguredIssues.length > 0) {
+      this.listElement.appendChild(this._createUnconfiguredHeader());
+      unconfiguredIssues.forEach((issue) => {
+        this.listElement.appendChild(this._createIssueItem(issue, true));
+      });
     }
   }
 
@@ -223,6 +204,30 @@ export class IssueRenderer {
   }
 
   /**
+   * "設定未登録ホスト"グループのヘッダーを作成します。
+   * @private
+   */
+  _createUnconfiguredHeader() {
+    const header = document.createElement("div");
+    header.className = "project-group-header unconfigured-header";
+    header.style.backgroundColor = OTHER_COLOR + "22";
+    header.style.color = OTHER_COLOR;
+    header.style.borderLeft = `4px solid ${OTHER_COLOR}`;
+
+    const icon = document.createElement("span");
+    icon.className = "material-symbols-outlined";
+    icon.textContent = "error_outline";
+    header.appendChild(icon);
+
+    const name = document.createElement("span");
+    name.textContent =
+      chrome.i18n.getMessage("unconfiguredHosts") || "Unconfigured Hosts";
+    header.appendChild(name);
+
+    return header;
+  }
+
+  /**
    * "その他"グループのヘッダーを作成します。
    * @private
    */
@@ -256,9 +261,9 @@ export class IssueRenderer {
    * 課題1件分のアイテム要素を作成します。
    * @private
    */
-  _createIssueItem(issue) {
+  _createIssueItem(issue, isDisabled = false) {
     const item = document.createElement("div");
-    item.className = "issue-item";
+    item.className = `issue-item ${isDisabled ? "disabled" : ""}`;
     item.title = issue.title;
 
     const indicators = document.createElement("div");

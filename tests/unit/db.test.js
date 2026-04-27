@@ -195,6 +195,23 @@ describe("IssuesDB", () => {
     expect(count).toBe(3);
   });
 
+  test("importIssues - should sanitize isOpened and tabId", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => {
+      callback({ maxHistoryCount: 50 });
+    });
+    const ndjson = JSON.stringify({
+      url: "url1",
+      issueKey: "K1",
+      isOpened: true,
+      tabId: 999,
+    });
+
+    await db.importIssues(ndjson, "add");
+    const issues = await db.getAllIssues();
+    expect(issues[0].isOpened).toBe(false);
+    expect(issues[0].tabId).toBeNull();
+  });
+
   test("importIssues - overwrite mode", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
       callback({ maxHistoryCount: 50 });
@@ -249,7 +266,10 @@ describe("IssuesDB", () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
       if (keys.includes("projectSettings"))
         callback({ projectSettings: currentProjectSettings });
-      else if (keys.includes("settings")) callback({ settings: [] });
+      else if (keys.includes("settings"))
+        callback({
+          settings: [{ id: "1", name: "Old", url: "old.com", visible: true }],
+        });
       else callback({});
     });
     chrome.storage.local.set.mockImplementation(
@@ -257,7 +277,9 @@ describe("IssuesDB", () => {
     );
 
     const settingsData = {
-      settings: [{ id: "2", name: "New", url: "new.com", visible: true }], // 重複がなければ追加
+      settings: [
+        { id: "1", name: "New", url: "new.com", visible: true }, // IDが重複しているがURLが違うので追加、IDは振り直されるはず
+      ],
       projectSettings: [
         { key: "OLD", color: "#CHANGED" }, // 既存キーは無視（上書きしない）
         { key: "NEW", color: "#000000" }, // 新規キーは追加
@@ -277,6 +299,12 @@ describe("IssuesDB", () => {
       ),
     ).toBe(true);
     expect(updatedProjectSettings.some((p) => p.key === "NEW")).toBe(true);
+
+    const updatedSettings = setCall[0].settings;
+    expect(updatedSettings.length).toBe(2);
+    expect(updatedSettings[0].url).toBe("old.com");
+    expect(updatedSettings[1].url).toBe("new.com");
+    expect(updatedSettings[1].id).not.toBe("1"); // IDが振り直されていること
   });
 
   test("getOtherCollapsed - default and set", async () => {

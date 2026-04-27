@@ -434,7 +434,7 @@ export class SettingsManager {
     const nameInput = document.getElementById("host-name");
     const urlInput = document.getElementById("host-url");
 
-    if (host) {
+    if (host && host.id) {
       dialog.dataset.editId = host.id;
       titleEl.textContent = chrome.i18n.getMessage("editHostTitle");
       titleEl.dataset.i18n = "editHostTitle";
@@ -442,6 +442,15 @@ export class SettingsManager {
       confirmBtn.dataset.i18n = "update";
       nameInput.value = host.name;
       urlInput.value = host.url;
+    } else if (host) {
+      // IDがない場合は新規追加だが初期値あり
+      delete dialog.dataset.editId;
+      titleEl.textContent = chrome.i18n.getMessage("addHostTitle");
+      titleEl.dataset.i18n = "addHostTitle";
+      confirmBtn.textContent = chrome.i18n.getMessage("add");
+      confirmBtn.dataset.i18n = "add";
+      nameInput.value = host.name || "";
+      urlInput.value = host.url || "";
     } else {
       delete dialog.dataset.editId;
       titleEl.textContent = chrome.i18n.getMessage("addHostTitle");

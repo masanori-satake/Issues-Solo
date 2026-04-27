@@ -157,8 +157,11 @@ describe("IssueRenderer", () => {
     await renderer.render();
 
     const items = listElement.querySelectorAll(".issue-item");
-    expect(items.length).toBe(1);
+    // K1 は設定に合致し、K2 は未設定ホストとして表示されるため合計2件
+    expect(items.length).toBe(2);
     expect(items[0].querySelector(".issue-key").textContent).toBe("K1");
+    expect(items[1].classList.contains("disabled")).toBe(true);
+    expect(items[1].querySelector(".issue-key").textContent).toBe("K2");
   });
 
   test("should handle collapsed host", async () => {
@@ -234,5 +237,30 @@ describe("IssueRenderer", () => {
     expect(projectHeaders.length).toBe(2); // PROJA グループと other グループ
     expect(projectHeaders[0].textContent).toContain("PROJA");
     expect(projectHeaders[1].textContent).toContain("other");
+  });
+
+  test("should render unconfigured host issues with disabled style", async () => {
+    const issues = [
+      {
+        url: "https://unknown-host.atlassian.net/browse/K1",
+        issueKey: "K1",
+        title: "T1",
+      },
+    ];
+    db.getAllIssues.mockResolvedValue(issues);
+    db.getSettings.mockResolvedValue([
+      { id: "1", name: "Known", url: "known.atlassian.net", visible: true },
+    ]);
+
+    await renderer.render();
+
+    const unconfiguredHeader = listElement.querySelector(
+      ".unconfigured-header",
+    );
+    expect(unconfiguredHeader).toBeTruthy();
+    expect(unconfiguredHeader.textContent).toContain("unconfiguredHosts");
+
+    const item = listElement.querySelector(".issue-item");
+    expect(item.classList.contains("disabled")).toBe(true);
   });
 });
