@@ -49,13 +49,19 @@ test.describe("Settings Reordering", () => {
     await sidePanel.evaluate(
       () => (document.querySelector(".tab-content:not(.hidden)").scrollTop = 0),
     );
+    // Use dispatchEvent to trigger drag and drop more reliably in CI
     await secondHost.hover();
+    const secondBox = await secondHost.boundingBox();
+    const firstBox = await firstHost.boundingBox();
+
+    await sidePanel.mouse.move(secondBox.x + secondBox.width / 2, secondBox.y + secondBox.height / 2);
     await sidePanel.mouse.down();
-    // Move to the top half of the first host to trigger 'top' drop position
-    const box = await firstHost.boundingBox();
-    await sidePanel.mouse.move(box.x + box.width / 2, box.y + 10, {
-      steps: 5,
+    await sidePanel.waitForTimeout(200);
+    // Move to the top half of the first host
+    await sidePanel.mouse.move(firstBox.x + firstBox.width / 2, firstBox.y + 10, {
+      steps: 20,
     });
+    await sidePanel.waitForTimeout(200);
     await sidePanel.mouse.up();
 
     // Verify order changed
@@ -106,11 +112,16 @@ test.describe("Settings Reordering", () => {
       () => (document.querySelector(".tab-content:not(.hidden)").scrollTop = 0),
     );
     await secondProj.hover();
+    const secondBoxP = await secondProj.boundingBox();
+    const firstBoxP = await firstProj.boundingBox();
+
+    await sidePanel.mouse.move(secondBoxP.x + secondBoxP.width / 2, secondBoxP.y + secondBoxP.height / 2);
     await sidePanel.mouse.down();
-    const box = await firstProj.boundingBox();
-    await sidePanel.mouse.move(box.x + box.width / 2, box.y + 10, {
-      steps: 5,
+    await sidePanel.waitForTimeout(200);
+    await sidePanel.mouse.move(firstBoxP.x + firstBoxP.width / 2, firstBoxP.y + 10, {
+      steps: 20,
     });
+    await sidePanel.waitForTimeout(200);
     await sidePanel.mouse.up();
 
     // Verify order changed

@@ -103,6 +103,7 @@ export class IssueRenderer {
     }
   }
 
+
   /**
    * ホストグループのヘッダーを作成します。
    * @private

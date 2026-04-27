@@ -19,10 +19,7 @@ test.describe("Import and Interaction Flow", () => {
     return testInfo.annotations.find((a) => a.type === "sidePanel").description;
   }
 
-  test("should handle unconfigured host from imported history", async ({
-    context,
-    extensionId,
-  }, testInfo) => {
+  test("should handle unconfigured host from imported history", async ({ context, extensionId }, testInfo) => {
     const sidePanel = await getSidePanel(testInfo);
 
     // 1. 設定を空にする（初期設定の Atlassian.net も消す）
@@ -37,23 +34,23 @@ test.describe("Import and Interaction Flow", () => {
       title: "Imported Issue",
       lastAccessed: Date.now(),
       isOpened: true, // これはインポート時に false になるはず
-      tabId: 12345,
+      tabId: 12345
     });
 
     // クリップボードをモックしてインポートボタンをクリック
     await sidePanel.evaluate((text) => {
-      Object.defineProperty(navigator, "clipboard", {
+      Object.defineProperty(navigator, 'clipboard', {
         value: {
           readText: async () => text,
-          writeText: async () => {},
-        },
+          writeText: async () => {}
+        }
       });
     }, ndjson);
 
     await sidePanel.click("#settings-btn");
 
     // Playwright handle alert/confirm
-    sidePanel.on("dialog", (dialog) => dialog.accept());
+    sidePanel.on('dialog', dialog => dialog.accept());
 
     await sidePanel.click("#import-history-btn");
     await sidePanel.click("#close-settings");
@@ -70,17 +67,13 @@ test.describe("Import and Interaction Flow", () => {
     await issueItem.click();
     const confirmDialog = sidePanel.locator("#confirm-dialog");
     await expect(confirmDialog).toBeVisible();
-    await expect(sidePanel.locator("#confirm-message")).toContainText(
-      "imported-host.atlassian.net",
-    );
+    await expect(sidePanel.locator("#confirm-message")).toContainText("imported-host.atlassian.net");
 
     await sidePanel.click("#confirm-ok");
 
     // 設定パネルのホスト追加ダイアログが開いているはず
     await expect(sidePanel.locator("#host-dialog")).toBeVisible();
-    await expect(sidePanel.locator("#host-url")).toHaveValue(
-      "imported-host.atlassian.net",
-    );
+    await expect(sidePanel.locator("#host-url")).toHaveValue("imported-host.atlassian.net");
 
     // 5. ホストを追加して通常表示に戻ることを確認
     await sidePanel.fill("#host-name", "Imported Jira");
