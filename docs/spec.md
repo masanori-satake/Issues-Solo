@@ -17,6 +17,7 @@ JIRAの閲覧履歴をサイドパネルに一覧表示し、タブの生存確�
 ## 3. データ構造
 
 ### 3.1. 課題データ (IndexedDB)
+
 - `url`: string (KeyPath, e.g., "https://xxx.atlassian.net/browse/PROJ-1")
 - `issueKey`: string (e.g., "PROJ-123")
 - `title`: string (要約)
@@ -27,6 +28,7 @@ JIRAの閲覧履歴をサイドパネルに一覧表示し、タブの生存確�
 - `tabId`: number (紐付けられているタブのID)
 
 ### 3.2. ホスト設定 (chrome.storage.local)
+
 - `id`: string (タイムスタンプ)
 - `name`: string (表示名)
 - `url`: string (正規化されたホストURL, e.g., "xxx.atlassian.net")
@@ -34,6 +36,7 @@ JIRAの閲覧履歴をサイドパネルに一覧表示し、タブの生存確�
 - `isCollapsed`: boolean (サイドパネルでの折り畳み状態)
 
 ### 3.3. プロジェクト設定 (chrome.storage.local)
+
 - `key`: string (プロジェクトキー, e.g., "PROJ")
 - `color`: string (M3カラーコード)
 - `isCollapsed`: boolean (サイドパネルでの折り畳み状態)
@@ -41,6 +44,7 @@ JIRAの閲覧履歴をサイドパネルに一覧表示し、タブの生存確�
 ## 4. 主要機能の詳細仕様
 
 ### 4.1. 閲覧検知と情報抽出 (`content.js`)
+
 - **対応バージョン**: Jira Cloud版および Data Center版に対応。
 - **抽出ロジック**:
   - `issueKey`: URLパスから抽出 (`/browse/KEY` または `/issues/KEY`)。
@@ -49,6 +53,7 @@ JIRAの閲覧履歴をサイドパネルに一覧表示し、タブの生存確�
 - **SPA対応**: `MutationObserver` を用い、URL遷移や動的なDOM更新を検知して情報を再取得する。
 
 ### 4.2. 履歴管理 (`db.js`)
+
 - **上限設定**: デフォルト50件（20, 50, 100から選択可能）。上限を超えると `lastAccessed` が古いものから自動削除される。
 - **同期ロジック**: 拡張機能起動時やタブの開閉時に実在するタブとDBの状態を同期させる。
 - **インポート/エクスポート**:
@@ -56,6 +61,7 @@ JIRAの閲覧履歴をサイドパネルに一覧表示し、タブの生存確�
   - インポート時は常に `isOpened: false`, `tabId: null` として整合性を保つ。
 
 ### 4.3. 設定管理 (`settings-manager.js`)
+
 - **ホストの追加**: URL入力時にプロトコルの補完やパスの除去を行う。非Cloudドメインの場合は `chrome.permissions` を用いて任意権限を要求する。
 - **並べ替え**: ドラッグ＆ドロップによる手動並べ替えに対応。
 - **インポートモード**:
@@ -63,6 +69,7 @@ JIRAの閲覧履歴をサイドパネルに一覧表示し、タブの生存確�
   - `Overwrite`: 既存設定を削除し、インポートデータで上書きする。
 
 ### 4.4. UI/UX (`sidepanel.js`, `issue-renderer.js`)
+
 - **ソート**: 最終アクセス順、課題キー順、優先度順、ステータス順に対応。
 - **グルーピング**: ホスト別、プロジェクト別に階層表示。
 - **未登録ホスト**: 設定されていないドメインの履歴は「Unconfigured Hosts」としてグレースケールで表示され、クリック時に設定追加を促す。
