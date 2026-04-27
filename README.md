@@ -1,6 +1,6 @@
 # Issues-Solo
 
-[![version](https://img.shields.io/badge/version-0.13.5-blue)](manifest.json)
+[![version](https://img.shields.io/badge/version-0.13.6-blue)](manifest.json)
 [![Coverage](https://img.shields.io/badge/coverage-51%25-orange)](#)
 [![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](manifest.json)
@@ -10,7 +10,7 @@
 ## プロジェクト概要
 
 Issues-Soloは、プライバシーを最優先に設計された、JIRA専用の閲覧履歴管理ツールです。
-JIRAで多くのタスクを並行して進める際に、「どのタスクをいつ見たか」という文脈の喪失を防ぎ、スムーズな作業復帰をサポートします。
+JIRAで多くのタスクを並行して進める際に、「どのタスクをいつ見たか」という文脈の喪喪を防ぎ、スムーズな作業復帰をサポートします。
 
 設計思想や行動指針については [AGENTS.md](AGENTS.md) を参照してください。
 

@@ -4,7 +4,7 @@
 
 ## 開発の基本原則
 
-1. **Local-Only Data**: 収集したJIRAのタイトル、履歴、状態はすべてブラウザ内の `chrome.storage.local` または `IndexedDB` に保存し、外部サーバーへの送信は一切行わない。
+1. **Local-Only Data**: 収集したJIRAのタイトル、要約、履歴、各種状態はすべてブラウザ内の `chrome.storage.local` または `IndexedDB` に保存し、外部サーバーへの送信は一切行わない。
 1. **No-Library / Pure Vanilla JS**: 外部OSS（UIフレームワーク、ユーティリティライブラリ等）に依存せず、ブラウザ標準のAPIとPure JavaScriptのみで実装する。これにより、OSSのEOLリスクを排除し、脆弱性の影響を受けない長期間の安定動作を保証する。
 1. **Context First**: ユーザーの「タブを探す」「作業の文脈を思い出す」というコストを最小化することを目的とする。
 1. **Lightweight**: JIRAの重い挙動を妨げないよう、DOM監視は最小限の範囲（メインコンテンツエリア）に絞り、デバウンス処理を挟んで非同期で行う。

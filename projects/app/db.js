@@ -359,11 +359,16 @@ export class IssuesDB {
   }
 
   /**
-   * 設定データのインポート用にデータを処理し、保存します。
+   * 設定データのインポート用にデータを処理します。
+   *
+   * 背景：外部からインポートされるデータは、現在の設定とマージ（追加モード）
+   * または完全に置換（上書きモード）する必要があります。その際、設定IDの重複回避
+   * や、不足しているプロパティの補完などの整合性チェックを行います。
    *
    * @param {string} jsonText インポートするJSON文字列
-   * @param {string} mode "add" または "overwrite"
-   * @returns {Promise<Object>} 処理後の設定データ。エラー時は例外をスローします。
+   * @param {string} mode "add"（マージ） または "overwrite"（置換）
+   * @returns {Promise<Object>} 処理済みの設定データ（chrome.storageにそのまま保存可能な形式）
+   * @throws {Error} JSONのパースに失敗した場合などにスロー
    */
   async processSettingsImport(jsonText, mode = "add") {
     try {
@@ -373,9 +378,8 @@ export class IssuesDB {
         return () => (nextId++).toString();
       };
 
-      let toSet = {};
-
       if (mode === "overwrite") {
+        const toSet = {};
         if (data.settings) {
           const maxId = data.settings.reduce(
             (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
@@ -385,7 +389,7 @@ export class IssuesDB {
           const seenIds = new Set();
 
           toSet.settings = data.settings.map((s) => {
-            // IDの重複や欠落を修正する
+            // インポートデータ内のIDの重複や欠落を修正して一貫性を保つ
             if (!s.id || seenIds.has(s.id)) {
               s.id = generateId();
             }
@@ -398,54 +402,54 @@ export class IssuesDB {
           toSet.otherCollapsed = data.otherCollapsed;
         if (data.maxHistoryCount !== undefined)
           toSet.maxHistoryCount = data.maxHistoryCount;
-      } else {
-        // 追加モード
-        const currentSettings = await this.getSettings();
-        const currentProjectSettings = await this.getProjectSettings();
 
-        const newSettings = [...currentSettings];
-        if (data.settings) {
-          const maxIdInCurrent = currentSettings.reduce(
-            (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
-            0,
-          );
-          const maxIdInImport = data.settings.reduce(
-            (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
-            0,
-          );
-          const generateId = getNextId(Math.max(maxIdInCurrent, maxIdInImport));
-          const seenIds = new Set(newSettings.map((s) => s.id));
-
-          for (const s of data.settings) {
-            if (!newSettings.some((existing) => existing.url === s.url)) {
-              // IDの重複を避ける
-              if (!s.id || seenIds.has(s.id)) {
-                s.id = generateId();
-              }
-              seenIds.add(s.id);
-              newSettings.push(s);
-            }
-          }
-        }
-
-        const newProjectSettings = [...currentProjectSettings];
-        if (data.projectSettings) {
-          for (const ps of data.projectSettings) {
-            if (
-              !newProjectSettings.some((existing) => existing.key === ps.key)
-            ) {
-              newProjectSettings.push(ps);
-            }
-          }
-        }
-
-        toSet = {
-          settings: newSettings,
-          projectSettings: newProjectSettings,
-        };
+        return toSet;
       }
 
-      return toSet;
+      // 追加モード（デフォルト）
+      const currentSettings = await this.getSettings();
+      const currentProjectSettings = await this.getProjectSettings();
+
+      const newSettings = [...currentSettings];
+      if (data.settings) {
+        const maxIdInCurrent = currentSettings.reduce(
+          (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
+          0,
+        );
+        const maxIdInImport = data.settings.reduce(
+          (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
+          0,
+        );
+        const generateId = getNextId(Math.max(maxIdInCurrent, maxIdInImport));
+        const seenIds = new Set(newSettings.map((s) => s.id));
+
+        for (const s of data.settings) {
+          // すでに同じURLのホストが登録されている場合はスキップ
+          if (!newSettings.some((existing) => existing.url === s.url)) {
+            // IDが既存のものと重複する場合は新しく採番
+            if (!s.id || seenIds.has(s.id)) {
+              s.id = generateId();
+            }
+            seenIds.add(s.id);
+            newSettings.push(s);
+          }
+        }
+      }
+
+      const newProjectSettings = [...currentProjectSettings];
+      if (data.projectSettings) {
+        for (const ps of data.projectSettings) {
+          // すでに同じキーのプロジェクトが登録されている場合はスキップ
+          if (!newProjectSettings.some((existing) => existing.key === ps.key)) {
+            newProjectSettings.push(ps);
+          }
+        }
+      }
+
+      return {
+        settings: newSettings,
+        projectSettings: newProjectSettings,
+      };
     } catch (e) {
       console.error("Import processing failed", e);
       throw e;

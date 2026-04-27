@@ -214,6 +214,7 @@ export class SettingsManager {
 
       if (
         fromIndex === null ||
+        fromIndex === undefined ||
         fromIndex === -1 ||
         isNaN(fromIndex) ||
         fromIndex === index
@@ -368,6 +369,7 @@ export class SettingsManager {
 
       if (
         fromIndex === null ||
+        fromIndex === undefined ||
         fromIndex === -1 ||
         isNaN(fromIndex) ||
         fromIndex === index
