@@ -344,7 +344,9 @@ class SidePanel {
           () => {
             this.settings.open();
             // 一般タブ（ホスト設定）を表示
-            const generalBtn = document.querySelector('.tab-btn[data-tab="general"]');
+            const generalBtn = document.querySelector(
+              '.tab-btn[data-tab="general"]',
+            );
             if (generalBtn) generalBtn.click();
             this.settings.openHostDialog({ name: "", url: host });
           },

@@ -182,7 +182,8 @@ export function isUrlMatchHost(urlString, hostUrl) {
       );
     }
     return (
-      issueHostname === hostUrlLower || issueHostname.endsWith("." + hostUrlLower)
+      issueHostname === hostUrlLower ||
+      issueHostname.endsWith("." + hostUrlLower)
     );
   } catch (e) {
     return false;
