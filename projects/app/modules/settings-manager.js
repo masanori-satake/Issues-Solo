@@ -672,4 +672,99 @@ export class SettingsManager {
     errorMsg.textContent = message;
     errorMsg.classList.remove("hidden");
   }
+
+  /**
+   * 設定データのインポートを実行し、必要に応じて権限の要求・削除を行います。
+   *
+   * @param {string} jsonText インポートするJSON文字列
+   * @param {string} mode "add" または "overwrite"
+   */
+  async handleSettingsImport(jsonText, mode = "add") {
+    try {
+      const currentSettings = await this.db.getSettings();
+      const processed = await this.db.processSettingsImport(jsonText, mode);
+      const newSettings = processed.settings || [];
+
+      // インポート後に必要となる権限オリジンのリスト
+      const requiredOrigins = new Set();
+      newSettings.forEach((h) => {
+        const origin = getPermissionOriginFromStoredHost(h.url);
+        if (origin && !isBuiltinHostOrigin(origin)) {
+          requiredOrigins.add(origin);
+        }
+      });
+
+      // 現在許可されている（任意）オリジンのリスト
+      const { origins: grantedOrigins = [] } =
+        await chrome.permissions.getAll();
+
+      // 新たに要求が必要なオリジン
+      const originsToRequest = [...requiredOrigins].filter(
+        (o) => !grantedOrigins.includes(o),
+      );
+
+      // 権限の順次要求
+      const finalSettings = [...newSettings];
+      for (const origin of originsToRequest) {
+        let granted = false;
+        try {
+          granted = await chrome.permissions.request({ origins: [origin] });
+        } catch (e) {
+          console.error(`Permission request failed for ${origin}`, e);
+        }
+
+        if (!granted) {
+          // 拒否された場合、そのオリジンを使用するホスト設定をインポート対象から除外する
+          for (let i = finalSettings.length - 1; i >= 0; i--) {
+            if (
+              getPermissionOriginFromStoredHost(finalSettings[i].url) === origin
+            ) {
+              finalSettings.splice(i, 1);
+            }
+          }
+        } else {
+          // 許可された場合、バックグラウンドに通知して既存タブにスクリプトを注入
+          chrome.runtime
+            .sendMessage({
+              type: "HOST_PERMISSION_GRANTED",
+              origin: origin,
+            })
+            .catch(() => {});
+        }
+      }
+
+      // 上書きモードの場合、不要になった権限の削除
+      if (mode === "overwrite") {
+        const currentOrigins = new Set();
+        currentSettings.forEach((h) => {
+          const origin = getPermissionOriginFromStoredHost(h.url);
+          if (origin && !isBuiltinHostOrigin(origin)) {
+            currentOrigins.add(origin);
+          }
+        });
+
+        for (const origin of currentOrigins) {
+          if (!requiredOrigins.has(origin)) {
+            try {
+              await chrome.permissions.remove({ origins: [origin] });
+            } catch (e) {}
+          }
+        }
+      }
+
+      // 最終的な設定を保存
+      processed.settings = finalSettings;
+      await chrome.storage.local.set(processed);
+
+      // UIの更新
+      await this.renderHostSettings();
+      await this.renderProjectSettings();
+      this.updateMaxHistoryUI(await this.db.getMaxHistoryCount());
+
+      alert(chrome.i18n.getMessage("settingsImportSuccess"));
+    } catch (e) {
+      console.error("Settings import failed", e);
+      alert(chrome.i18n.getMessage("importError"));
+    }
+  }
 }
