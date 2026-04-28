@@ -223,7 +223,7 @@ export class SettingsManager {
 
       const dropTargetId = li.dataset.id;
       const rect = li.getBoundingClientRect();
-      const isTop = e.clientY < (rect.top + rect.height / 2);
+      const isTop = e.clientY < rect.top + rect.height / 2;
 
       if (dragType !== "host") return;
       e.preventDefault();
@@ -232,8 +232,13 @@ export class SettingsManager {
       // Determine source ID from all available captured metadata
       let sourceId = dragId || dataTransferId;
       if (!sourceId) {
-        const fromIdx = dataTransferIndex !== null ? dataTransferIndex : dragIndex;
-        if (typeof fromIdx === "number" && fromIdx >= 0 && fromIdx < allSettings.length) {
+        const fromIdx =
+          dataTransferIndex !== null ? dataTransferIndex : dragIndex;
+        if (
+          typeof fromIdx === "number" &&
+          fromIdx >= 0 &&
+          fromIdx < allSettings.length
+        ) {
           sourceId = allSettings[fromIdx].id;
         }
       }
@@ -385,14 +390,16 @@ export class SettingsManager {
       let dataTransferKey = null;
       let dataTransferIndex = null;
       if (e.dataTransfer) {
-        dataTransferKey = e.dataTransfer.getData("application/x-issues-solo-key");
+        dataTransferKey = e.dataTransfer.getData(
+          "application/x-issues-solo-key",
+        );
         const idxData = e.dataTransfer.getData("text/plain");
         if (idxData) dataTransferIndex = parseInt(idxData, 10);
       }
 
       const dropTargetKey = li.dataset.key;
       const rect = li.getBoundingClientRect();
-      const isTop = e.clientY < (rect.top + rect.height / 2);
+      const isTop = e.clientY < rect.top + rect.height / 2;
 
       if (dragType !== "project") return;
       e.preventDefault();
@@ -401,8 +408,13 @@ export class SettingsManager {
       // Determine source Key from all available captured metadata
       let sourceKey = dragKey || dataTransferKey;
       if (!sourceKey) {
-        const fromIdx = dataTransferIndex !== null ? dataTransferIndex : dragIndex;
-        if (typeof fromIdx === "number" && fromIdx >= 0 && fromIdx < allSettings.length) {
+        const fromIdx =
+          dataTransferIndex !== null ? dataTransferIndex : dragIndex;
+        if (
+          typeof fromIdx === "number" &&
+          fromIdx >= 0 &&
+          fromIdx < allSettings.length
+        ) {
           sourceKey = allSettings[fromIdx].key;
         }
       }
