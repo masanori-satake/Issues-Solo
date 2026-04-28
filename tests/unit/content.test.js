@@ -10,7 +10,7 @@ describe("content.js real logic extraction", () => {
 
   const contentJsCode = fs.readFileSync(
     path.resolve(__dirname, "../../projects/app/content.js"),
-    "utf8"
+    "utf8",
   );
 
   function setupDOM(url = "https://test.atlassian.net/browse/PROJ-1") {
@@ -23,9 +23,11 @@ describe("content.js real logic extraction", () => {
     global.chrome = {
       runtime: {
         id: "test-id",
-        sendMessage: jest.fn().mockReturnValue(Promise.resolve({ catch: jest.fn() })),
-        onMessage: { addListener: jest.fn() }
-      }
+        sendMessage: jest
+          .fn()
+          .mockReturnValue(Promise.resolve({ catch: jest.fn() })),
+        onMessage: { addListener: jest.fn() },
+      },
     };
 
     if (typeof global.TextEncoder === "undefined") {
@@ -37,9 +39,11 @@ describe("content.js real logic extraction", () => {
 
     // JSDOM elements don't have innerText by default, but content.js uses it.
     // We should use textContent or mock innerText.
-    Object.defineProperty(global.HTMLElement.prototype, 'innerText', {
-      get() { return this.textContent; },
-      configurable: true
+    Object.defineProperty(global.HTMLElement.prototype, "innerText", {
+      get() {
+        return this.textContent;
+      },
+      configurable: true,
     });
   }
 
@@ -59,8 +63,8 @@ describe("content.js real logic extraction", () => {
     expect(global.chrome.runtime.sendMessage).toHaveBeenCalledWith(
       expect.objectContaining({
         type: "ISSUE_UPDATED",
-        data: expect.objectContaining({ issueKey: "KAN-1" })
-      })
+        data: expect.objectContaining({ issueKey: "KAN-1" }),
+      }),
     );
   });
 
@@ -76,8 +80,8 @@ describe("content.js real logic extraction", () => {
 
     expect(global.chrome.runtime.sendMessage).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({ title: "Real Cloud Summary" })
-      })
+        data: expect.objectContaining({ title: "Real Cloud Summary" }),
+      }),
     );
   });
 
@@ -99,9 +103,9 @@ describe("content.js real logic extraction", () => {
           issueKey: "DC-123",
           title: "DC Summary",
           priority: "Highest",
-          status: "In Progress"
-        })
-      })
+          status: "In Progress",
+        }),
+      }),
     );
   });
 });
