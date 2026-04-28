@@ -207,13 +207,18 @@ export class SettingsManager {
     });
 
     li.addEventListener("drop", async (e) => {
-      if (this.draggingType !== "host") return;
+      // await の前に状態をキャプチャして race condition を防ぐ
+      const currentDraggingType = this.draggingType;
+      const currentDraggingId = this.draggingId;
+      const currentDraggingIndex = this.draggingIndex;
+
+      if (currentDraggingType !== "host") return;
       e.preventDefault();
 
       // 最新の設定を取得して競合や古いデータによる不整合を防ぐ
       const currentSettings = await this.db.getSettings();
 
-      let draggedId = this.draggingId;
+      let draggedId = currentDraggingId;
       if (e.dataTransfer) {
         const idData = e.dataTransfer.getData("application/x-issues-solo-id");
         if (idData) {
@@ -221,15 +226,8 @@ export class SettingsManager {
         } else {
           // IDが取得できない場合のフォールバック
           const indexData = e.dataTransfer.getData("text/plain");
-          const fromIdx = indexData
-            ? parseInt(indexData, 10)
-            : this.draggingIndex;
-          if (
-            fromIdx !== null &&
-            fromIdx !== undefined &&
-            fromIdx !== -1 &&
-            !isNaN(fromIdx)
-          ) {
+          const fromIdx = indexData ? parseInt(indexData, 10) : currentDraggingIndex;
+          if (fromIdx !== null && fromIdx !== undefined && fromIdx !== -1 && !isNaN(fromIdx)) {
             const item = allSettings[fromIdx];
             if (item) draggedId = item.id;
           }
@@ -379,27 +377,25 @@ export class SettingsManager {
     });
 
     li.addEventListener("drop", async (e) => {
-      if (this.draggingType !== "project") return;
+      // await の前に状態をキャプチャして race condition を防ぐ
+      const currentDraggingType = this.draggingType;
+      const currentDraggingProjectKey = this.draggingProjectKey;
+      const currentDraggingIndex = this.draggingIndex;
+
+      if (currentDraggingType !== "project") return;
       e.preventDefault();
 
       const currentSettings = await this.db.getProjectSettings();
 
-      let draggedKey = this.draggingProjectKey;
+      let draggedKey = currentDraggingProjectKey;
       if (e.dataTransfer) {
         const keyData = e.dataTransfer.getData("application/x-issues-solo-key");
         if (keyData) {
           draggedKey = keyData;
         } else {
           const indexData = e.dataTransfer.getData("text/plain");
-          const fromIdx = indexData
-            ? parseInt(indexData, 10)
-            : this.draggingIndex;
-          if (
-            fromIdx !== null &&
-            fromIdx !== undefined &&
-            fromIdx !== -1 &&
-            !isNaN(fromIdx)
-          ) {
+          const fromIdx = indexData ? parseInt(indexData, 10) : currentDraggingIndex;
+          if (fromIdx !== null && fromIdx !== undefined && fromIdx !== -1 && !isNaN(fromIdx)) {
             const item = allSettings[fromIdx];
             if (item) draggedKey = item.key;
           }
