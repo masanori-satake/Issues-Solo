@@ -163,7 +163,10 @@ export class SettingsManager {
       this.draggingId = host.id;
       if (e.dataTransfer) {
         e.dataTransfer.effectAllowed = "move";
+        // CI環境などでの互換性のため index を保持
         e.dataTransfer.setData("text/plain", index.toString());
+        // より堅牢な識別のために ID を保持
+        e.dataTransfer.setData("application/x-issues-solo-id", host.id);
       }
     });
 
@@ -195,43 +198,64 @@ export class SettingsManager {
       items.forEach((el) =>
         el.classList.remove("dragging", "drag-over-top", "drag-over-bottom"),
       );
-      this.draggingType = null;
-      this.draggingId = null;
-      this.draggingIndex = null;
+      // dropイベントの非同期処理に配慮し、短時間の猶予を持って状態をクリアする
+      setTimeout(() => {
+        this.draggingType = null;
+        this.draggingId = null;
+        this.draggingIndex = null;
+      }, 50);
     });
 
     li.addEventListener("drop", async (e) => {
-      if (this.draggingType !== "host") return;
-      e.preventDefault();
+      // Capture all event-related data synchronously before any await calls.
+      // The DataTransfer object and some other event properties may be cleared or inaccessible after an await.
+      const dragType = this.draggingType;
+      const dragId = this.draggingId;
+      const dragIndex = this.draggingIndex;
 
-      let fromIndex = -1;
+      let dataTransferId = null;
+      let dataTransferIndex = null;
       if (e.dataTransfer) {
-        const data = e.dataTransfer.getData("text/plain");
-        fromIndex = data ? parseInt(data) : this.draggingIndex;
-      } else {
-        fromIndex = this.draggingIndex;
+        dataTransferId = e.dataTransfer.getData("application/x-issues-solo-id");
+        const idxData = e.dataTransfer.getData("text/plain");
+        if (idxData) dataTransferIndex = parseInt(idxData, 10);
       }
 
-      if (
-        fromIndex === null ||
-        fromIndex === -1 ||
-        isNaN(fromIndex) ||
-        fromIndex === index
-      ) {
-        li.classList.remove("drag-over-top", "drag-over-bottom");
-        return;
-      }
-
+      const dropTargetId = li.dataset.id;
       const rect = li.getBoundingClientRect();
-      const midpoint = rect.top + rect.height / 2;
-      const isTop = e.clientY < midpoint;
+      const isTop = e.clientY < rect.top + rect.height / 2;
 
+      if (dragType !== "host") return;
+      e.preventDefault();
       li.classList.remove("drag-over-top", "drag-over-bottom");
 
-      const newSettings = [...allSettings];
+      // Determine source ID from all available captured metadata
+      let sourceId = dragId || dataTransferId;
+      if (!sourceId) {
+        const fromIdx =
+          dataTransferIndex !== null ? dataTransferIndex : dragIndex;
+        if (
+          typeof fromIdx === "number" &&
+          fromIdx >= 0 &&
+          fromIdx < allSettings.length
+        ) {
+          sourceId = allSettings[fromIdx].id;
+        }
+      }
+
+      if (!sourceId || sourceId === dropTargetId) return;
+
+      const currentSettings = await this.db.getSettings();
+
+      const fromIndex = currentSettings.findIndex((h) => h.id === sourceId);
+      const toIndex = currentSettings.findIndex((h) => h.id === dropTargetId);
+
+      if (fromIndex === -1 || toIndex === -1) return;
+
+      const newSettings = [...currentSettings];
       const [movedItem] = newSettings.splice(fromIndex, 1);
 
-      let targetIndex = newSettings.findIndex((h) => h.id === host.id);
+      let targetIndex = newSettings.findIndex((h) => h.id === dropTargetId);
       if (!isTop) targetIndex++;
 
       newSettings.splice(targetIndex, 0, movedItem);
@@ -318,6 +342,7 @@ export class SettingsManager {
       if (e.dataTransfer) {
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", index.toString());
+        e.dataTransfer.setData("application/x-issues-solo-key", proj.key);
       }
     });
 
@@ -349,43 +374,64 @@ export class SettingsManager {
       items.forEach((el) =>
         el.classList.remove("dragging", "drag-over-top", "drag-over-bottom"),
       );
-      this.draggingType = null;
-      this.draggingProjectKey = null;
-      this.draggingIndex = null;
+      setTimeout(() => {
+        this.draggingType = null;
+        this.draggingProjectKey = null;
+        this.draggingIndex = null;
+      }, 50);
     });
 
     li.addEventListener("drop", async (e) => {
-      if (this.draggingType !== "project") return;
-      e.preventDefault();
+      // Capture all event-related data synchronously before any await calls.
+      const dragType = this.draggingType;
+      const dragKey = this.draggingProjectKey;
+      const dragIndex = this.draggingIndex;
 
-      let fromIndex = -1;
+      let dataTransferKey = null;
+      let dataTransferIndex = null;
       if (e.dataTransfer) {
-        const data = e.dataTransfer.getData("text/plain");
-        fromIndex = data ? parseInt(data) : this.draggingIndex;
-      } else {
-        fromIndex = this.draggingIndex;
+        dataTransferKey = e.dataTransfer.getData(
+          "application/x-issues-solo-key",
+        );
+        const idxData = e.dataTransfer.getData("text/plain");
+        if (idxData) dataTransferIndex = parseInt(idxData, 10);
       }
 
-      if (
-        fromIndex === null ||
-        fromIndex === -1 ||
-        isNaN(fromIndex) ||
-        fromIndex === index
-      ) {
-        li.classList.remove("drag-over-top", "drag-over-bottom");
-        return;
-      }
-
+      const dropTargetKey = li.dataset.key;
       const rect = li.getBoundingClientRect();
-      const midpoint = rect.top + rect.height / 2;
-      const isTop = e.clientY < midpoint;
+      const isTop = e.clientY < rect.top + rect.height / 2;
 
+      if (dragType !== "project") return;
+      e.preventDefault();
       li.classList.remove("drag-over-top", "drag-over-bottom");
 
-      const newSettings = [...allSettings];
+      // Determine source Key from all available captured metadata
+      let sourceKey = dragKey || dataTransferKey;
+      if (!sourceKey) {
+        const fromIdx =
+          dataTransferIndex !== null ? dataTransferIndex : dragIndex;
+        if (
+          typeof fromIdx === "number" &&
+          fromIdx >= 0 &&
+          fromIdx < allSettings.length
+        ) {
+          sourceKey = allSettings[fromIdx].key;
+        }
+      }
+
+      if (!sourceKey || sourceKey === dropTargetKey) return;
+
+      const currentSettings = await this.db.getProjectSettings();
+
+      const fromIndex = currentSettings.findIndex((p) => p.key === sourceKey);
+      const toIndex = currentSettings.findIndex((p) => p.key === dropTargetKey);
+
+      if (fromIndex === -1 || toIndex === -1) return;
+
+      const newSettings = [...currentSettings];
       const [movedItem] = newSettings.splice(fromIndex, 1);
 
-      let targetIndex = newSettings.findIndex((p) => p.key === proj.key);
+      let targetIndex = newSettings.findIndex((p) => p.key === dropTargetKey);
       if (!isTop) targetIndex++;
 
       newSettings.splice(targetIndex, 0, movedItem);

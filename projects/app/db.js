@@ -266,7 +266,10 @@ export class IssuesDB {
   }
 
   /**
-   * 履歴の件数を制限数に収まるよう削除する
+   * 履歴の件数を上限数に収まるように古いものから削除します。
+   *
+   * @param {number} maxCount 保持する履歴の最大件数
+   * @returns {Promise<void>}
    */
   async pruneIssues(maxCount) {
     const db = await this.open();
@@ -280,7 +283,12 @@ export class IssuesDB {
   }
 
   /**
-   * トランザクション内で履歴上限を適用する（内部用）
+   * 指定されたオブジェクトストアに対して、履歴上限を適用します。
+   * 最終表示時刻（lastAccessed）が古い順に削除対象を決定します。
+   *
+   * @private
+   * @param {IDBObjectStore} store 対象のオブジェクトストア
+   * @param {number} maxCount 保持する最大件数
    */
   _applyMaxHistoryLimit(store, maxCount) {
     const countRequest = store.count();
@@ -301,7 +309,12 @@ export class IssuesDB {
   }
 
   /**
-   * 履歴データのインポート
+   * NDJSON形式のテキストから履歴データをインポートします。
+   * インポートされた課題は、一貫性のため「未読・タブ未紐付け」状態で保存されます。
+   *
+   * @param {string} ndjsonText インポートするNDJSON文字列
+   * @param {string} mode "add"（追加）または "overwrite"（全削除後に上書き）
+   * @returns {Promise<void>}
    */
   async importIssues(ndjsonText, mode = "add") {
     const lines = ndjsonText.trim().split("\n");
@@ -348,9 +361,14 @@ export class IssuesDB {
   /**
    * 設定データのインポート用にデータを処理します。
    *
+   * 背景：外部からインポートされるデータは、現在の設定とマージ（追加モード）
+   * または完全に置換（上書きモード）する必要があります。その際、設定IDの重複回避
+   * や、不足しているプロパティの補完などの整合性チェックを行います。
+   *
    * @param {string} jsonText インポートするJSON文字列
-   * @param {string} mode "add" または "overwrite"
-   * @returns {Promise<Object>} 処理後の設定データ
+   * @param {string} mode "add"（マージ） または "overwrite"（置換）
+   * @returns {Promise<Object>} 処理済みの設定データ（chrome.storageにそのまま保存可能な形式）
+   * @throws {Error} JSONのパースに失敗した場合などにスロー
    */
   async processSettingsImport(jsonText, mode = "add") {
     try {
@@ -371,7 +389,7 @@ export class IssuesDB {
           const seenIds = new Set();
 
           toSet.settings = data.settings.map((s) => {
-            // IDの重複や欠落を修正する
+            // インポートデータ内のIDの重複や欠落を修正して一貫性を保つ
             if (!s.id || seenIds.has(s.id)) {
               s.id = generateId();
             }
@@ -386,70 +404,53 @@ export class IssuesDB {
           toSet.maxHistoryCount = data.maxHistoryCount;
 
         return toSet;
-      } else {
-        // 追加モード
-        const currentSettings = await this.getSettings();
-        const currentProjectSettings = await this.getProjectSettings();
-
-        const newSettings = [...currentSettings];
-        if (data.settings) {
-          const maxIdInCurrent = currentSettings.reduce(
-            (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
-            0,
-          );
-          const maxIdInImport = data.settings.reduce(
-            (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
-            0,
-          );
-          const generateId = getNextId(Math.max(maxIdInCurrent, maxIdInImport));
-          const seenIds = new Set(newSettings.map((s) => s.id));
-
-          for (const s of data.settings) {
-            if (!newSettings.some((existing) => existing.url === s.url)) {
-              // IDの重複を避ける
-              if (!s.id || seenIds.has(s.id)) {
-                s.id = generateId();
-              }
-              seenIds.add(s.id);
-              newSettings.push(s);
-            }
-          }
-        }
-
-        const newProjectSettings = [...currentProjectSettings];
-        if (data.projectSettings) {
-          for (const ps of data.projectSettings) {
-            if (
-              !newProjectSettings.some((existing) => existing.key === ps.key)
-            ) {
-              newProjectSettings.push(ps);
-            }
-          }
-        }
-
-        return {
-          settings: newSettings,
-          projectSettings: newProjectSettings,
-        };
       }
-    } catch (e) {
-      console.error("Import processing failed", e);
-      throw e;
-    }
-  }
 
-  /**
-   * 設定データのインポート
-   * (レガシー互換および直接呼び出し用。内部的には processSettingsImport を使用することを推奨)
-   */
-  async importSettings(jsonText, mode = "add") {
-    try {
-      const toSet = await this.processSettingsImport(jsonText, mode);
-      return new Promise((resolve) => {
-        chrome.storage.local.set(toSet, () => resolve());
-      });
+      // 追加モード（デフォルト）
+      const currentSettings = await this.getSettings();
+      const currentProjectSettings = await this.getProjectSettings();
+
+      const newSettings = [...currentSettings];
+      if (data.settings) {
+        const maxIdInCurrent = currentSettings.reduce(
+          (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
+          0,
+        );
+        const maxIdInImport = data.settings.reduce(
+          (max, s) => Math.max(max, parseInt(s.id, 10) || 0),
+          0,
+        );
+        const generateId = getNextId(Math.max(maxIdInCurrent, maxIdInImport));
+        const seenIds = new Set(newSettings.map((s) => s.id));
+
+        for (const s of data.settings) {
+          // すでに同じURLのホストが登録されている場合はスキップ
+          if (!newSettings.some((existing) => existing.url === s.url)) {
+            // IDが既存のものと重複する場合は新しく採番
+            if (!s.id || seenIds.has(s.id)) {
+              s.id = generateId();
+            }
+            seenIds.add(s.id);
+            newSettings.push(s);
+          }
+        }
+      }
+
+      const newProjectSettings = [...currentProjectSettings];
+      if (data.projectSettings) {
+        for (const ps of data.projectSettings) {
+          // すでに同じキーのプロジェクトが登録されている場合はスキップ
+          if (!newProjectSettings.some((existing) => existing.key === ps.key)) {
+            newProjectSettings.push(ps);
+          }
+        }
+      }
+
+      return {
+        settings: newSettings,
+        projectSettings: newProjectSettings,
+      };
     } catch (e) {
-      console.error("Import failed", e);
       throw e;
     }
   }

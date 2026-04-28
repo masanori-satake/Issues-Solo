@@ -43,11 +43,23 @@ export const STATUS_COLOR_MAP = {
   Closed: "#36B37E",
 };
 
+/**
+ * 優先度の標準的な並び順（内部キー）
+ * ソートの重み付けに使用します。
+ */
 export const PRIORITY_ORDER = ["Highest", "High", "Medium", "Low", "Lowest"];
+
+/**
+ * 優先度の標準的な並び順（日本語表示名）
+ */
 export const PRIORITY_ORDER_JA = ["最高", "高", "中", "低", "最低"];
 
+/**
+ * ステータスの重み付け定義
+ * 数値が大きいほどソート順で上位（または完了に近い）とみなします。
+ */
 export const STATUS_ORDER_MAP = {
-  // 完了系 (最高)
+  // 完了系 (最高重み)
   Done: 3,
   完了: 3,
   Resolved: 3,
@@ -66,7 +78,16 @@ export const STATUS_ORDER_MAP = {
 };
 
 /**
- * ホスト入力の正規化
+ * ユーザー入力されたホスト情報を正規化します。
+ * プロトコルの補完、不要なパス（/browse/ 等）の除去を行い、
+ * 保存用のURL文字列と権限要求用のオリジンパターンを生成します。
+ *
+ * 背景：JiraのURLをブラウザからそのままコピーして貼り付けた場合でも
+ * 正しく動作するように、柔軟なパースを行います。
+ *
+ * @param {string} rawValue 入力文字列
+ * @returns {Object} { storedUrl, permissionOrigin }
+ * @throws {Error} 空入力や非HTTPSプロトコルの場合にスロー
  */
 export function normalizeHostInput(rawValue) {
   let candidate = rawValue.trim();
@@ -123,7 +144,14 @@ export function isBuiltinHostOrigin(origin) {
 }
 
 /**
- * 自然な順序でのIssue Keyソート (PROJ-2 < PROJ-10)
+ * 課題キー（Issue Key）を自然な順序で比較します (例: PROJ-2 < PROJ-10)。
+ *
+ * 背景：単純な文字列比較では "PROJ-10" < "PROJ-2" となってしまいますが、
+ * ユーザーにとって自然な、ハイフン以降の数値を考慮したソートを実現します。
+ *
+ * @param {string} a 課題キーA
+ * @param {string} b 課題キーB
+ * @returns {number} 比較結果
  */
 export function compareIssueKeys(a, b) {
   const partsA = a.split("-");
@@ -141,7 +169,10 @@ export function compareIssueKeys(a, b) {
 }
 
 /**
- * 優先度の重み取得
+ * 優先度（Priority）のソート用重みを取得します。
+ *
+ * @param {string} priority 優先度名
+ * @returns {number} 重み（値が小さいほど高優先度）
  */
 export function getPriorityWeight(priority) {
   let idx = PRIORITY_ORDER.indexOf(priority);
@@ -150,14 +181,22 @@ export function getPriorityWeight(priority) {
 }
 
 /**
- * ステータスの重み取得
+ * ステータス（Status）のソート用重みを取得します。
+ *
+ * @param {string} status ステータス名
+ * @returns {number} 重み
  */
 export function getStatusWeight(status) {
   return STATUS_ORDER_MAP[status] || 0;
 }
 
 /**
- * URLが指定されたホスト設定に合致するか判定します。
+ * 特定のURLが、設定されたJiraホスト（ドメインおよびコンテキストパス）に
+ * 合致するかどうかを判定します。
+ *
+ * 背景：Cloud版（xxx.atlassian.net）だけでなく、
+ * サブパス配下で運用されるData Center版（jira.example.com/jira）にも
+ * 対応するためにパスの比較を含んでいます。
  *
  * @param {string} urlString 判定対象のURL文字列
  * @param {string} hostUrl 登録されているホスト設定のURL

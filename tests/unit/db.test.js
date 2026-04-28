@@ -236,7 +236,7 @@ describe("IssuesDB", () => {
     expect(count).toBe(2);
   });
 
-  test("importSettings - overwrite mode", async () => {
+  test("processSettingsImport - overwrite mode", async () => {
     const settingsData = {
       settings: [
         { id: "1", name: "New Jira", url: "new.jira.com", visible: true },
@@ -245,22 +245,20 @@ describe("IssuesDB", () => {
       maxHistoryCount: 100,
     };
 
-    chrome.storage.local.set.mockImplementation(
-      (obj, callback) => callback && callback(),
+    const toSet = await db.processSettingsImport(
+      JSON.stringify(settingsData),
+      "overwrite",
     );
-
-    await db.importSettings(JSON.stringify(settingsData), "overwrite");
-    expect(chrome.storage.local.set).toHaveBeenCalledWith(
+    expect(toSet).toEqual(
       expect.objectContaining({
         settings: settingsData.settings,
         projectSettings: settingsData.projectSettings,
         maxHistoryCount: 100,
       }),
-      expect.any(Function),
     );
   });
 
-  test("importSettings - add mode", async () => {
+  test("processSettingsImport - add mode", async () => {
     // 追加モードでは、既存の設定は維持され、新しい設定のみが追加される
     const currentProjectSettings = [{ key: "OLD", color: "#FFFFFF" }];
     chrome.storage.local.get.mockImplementation((keys, callback) => {
@@ -272,9 +270,6 @@ describe("IssuesDB", () => {
         });
       else callback({});
     });
-    chrome.storage.local.set.mockImplementation(
-      (obj, callback) => callback && callback(),
-    );
 
     const settingsData = {
       settings: [
@@ -286,12 +281,12 @@ describe("IssuesDB", () => {
       ],
     };
 
-    await db.importSettings(JSON.stringify(settingsData), "add");
-
-    const setCall = chrome.storage.local.set.mock.calls.find(
-      (call) => call[0].projectSettings,
+    const toSet = await db.processSettingsImport(
+      JSON.stringify(settingsData),
+      "add",
     );
-    const updatedProjectSettings = setCall[0].projectSettings;
+
+    const updatedProjectSettings = toSet.projectSettings;
     expect(updatedProjectSettings.length).toBe(2);
     expect(
       updatedProjectSettings.some(
@@ -300,11 +295,24 @@ describe("IssuesDB", () => {
     ).toBe(true);
     expect(updatedProjectSettings.some((p) => p.key === "NEW")).toBe(true);
 
-    const updatedSettings = setCall[0].settings;
+    const updatedSettings = toSet.settings;
     expect(updatedSettings.length).toBe(2);
     expect(updatedSettings[0].url).toBe("old.com");
     expect(updatedSettings[1].url).toBe("new.com");
     expect(updatedSettings[1].id).not.toBe("1"); // IDが振り直されていること
+  });
+
+  test("processSettingsImport - handle missing fields in overwrite mode", async () => {
+    const settingsData = { maxHistoryCount: 20 };
+    const toSet = await db.processSettingsImport(
+      JSON.stringify(settingsData),
+      "overwrite",
+    );
+    expect(toSet).toEqual({ maxHistoryCount: 20 });
+  });
+
+  test("processSettingsImport - invalid json", async () => {
+    await expect(db.processSettingsImport("invalid")).rejects.toThrow();
   });
 
   test("getOtherCollapsed - default and set", async () => {
@@ -361,19 +369,6 @@ describe("IssuesDB", () => {
     );
   });
 
-  test("importSettings - handle missing fields in overwrite mode", async () => {
-    const settingsData = { maxHistoryCount: 20 };
-    await db.importSettings(JSON.stringify(settingsData), "overwrite");
-    expect(chrome.storage.local.set).toHaveBeenCalledWith(
-      { maxHistoryCount: 20 },
-      expect.any(Function),
-    );
-  });
-
-  test("importSettings - invalid json", async () => {
-    await expect(db.importSettings("invalid")).rejects.toThrow();
-  });
-
   test("upsertIssue - update existing issue", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) =>
       callback({ maxHistoryCount: 50 }),
@@ -404,5 +399,50 @@ describe("IssuesDB", () => {
     const database1 = await db.open();
     const database2 = await db.open();
     expect(database1).toBe(database2);
+  });
+
+  test("pruneIssues with extreme number of items", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => {
+      callback({ maxHistoryCount: 5 });
+    });
+
+    // Create 10 issues with increasing lastAccessed timestamps
+    for (let i = 0; i < 10; i++) {
+      // Manual IndexedDB put to control timestamps precisely if needed,
+      // but upsertIssue sets Date.now(), so we need to wait a bit or mock Date.now()
+      const issue = {
+        url: `url${i}`,
+        issueKey: `K${i}`,
+        lastAccessed: 1000 + i,
+      };
+      const database = await db.open();
+      await new Promise((resolve, reject) => {
+        const transaction = database.transaction(["issues"], "readwrite");
+        const store = transaction.objectStore("issues");
+        store.put(issue);
+        transaction.oncomplete = resolve;
+        transaction.onerror = reject;
+      });
+    }
+
+    await db.pruneIssues(5);
+    const count = await db.getIssueCount();
+    expect(count).toBe(5);
+
+    const issues = await db.getAllIssues();
+    // getAllIssues returns sorted by lastAccessed desc
+    expect(issues[0].issueKey).toBe("K9"); // Most recent should be first
+  });
+
+  test("handle storage quota error during upsert", async () => {
+    const database = await db.open();
+    jest.spyOn(database, "transaction").mockImplementation(() => {
+      throw new Error("QuotaExceededError");
+    });
+
+    await expect(db.upsertIssue({ url: "url", issueKey: "K" })).rejects.toThrow(
+      "QuotaExceededError",
+    );
+    jest.restoreAllMocks();
   });
 });
