@@ -198,71 +198,64 @@ export class SettingsManager {
       items.forEach((el) =>
         el.classList.remove("dragging", "drag-over-top", "drag-over-bottom"),
       );
-      // dropイベントが確実に処理されるように少し遅延させてクリアする
+      // dropイベントの非同期処理に配慮し、短時間の猶予を持って状態をクリアする
       setTimeout(() => {
         this.draggingType = null;
         this.draggingId = null;
         this.draggingIndex = null;
-      }, 100);
+      }, 50);
     });
 
     li.addEventListener("drop", async (e) => {
-      // await の前に状態をキャプチャして race condition を防ぐ
-      const currentDraggingType = this.draggingType;
-      const currentDraggingId = this.draggingId;
-      const currentDraggingIndex = this.draggingIndex;
+      // Capture all event-related data synchronously before any await calls.
+      // The DataTransfer object and some other event properties may be cleared or inaccessible after an await.
+      const dragType = this.draggingType;
+      const dragId = this.draggingId;
+      const dragIndex = this.draggingIndex;
 
-      if (currentDraggingType !== "host") return;
-      e.preventDefault();
-
-      // 最新の設定を取得して競合や古いデータによる不整合を防ぐ
-      const currentSettings = await this.db.getSettings();
-
-      let draggedId = currentDraggingId;
+      let dataTransferId = null;
+      let dataTransferIndex = null;
       if (e.dataTransfer) {
-        const idData = e.dataTransfer.getData("application/x-issues-solo-id");
-        if (idData) {
-          draggedId = idData;
-        } else {
-          // IDが取得できない場合のフォールバック
-          const indexData = e.dataTransfer.getData("text/plain");
-          const fromIdx = indexData
-            ? parseInt(indexData, 10)
-            : currentDraggingIndex;
-          if (
-            fromIdx !== null &&
-            fromIdx !== undefined &&
-            fromIdx !== -1 &&
-            !isNaN(fromIdx)
-          ) {
-            const item = allSettings[fromIdx];
-            if (item) draggedId = item.id;
-          }
+        dataTransferId = e.dataTransfer.getData("application/x-issues-solo-id");
+        const idxData = e.dataTransfer.getData("text/plain");
+        if (idxData) dataTransferIndex = parseInt(idxData, 10);
+      }
+
+      const dropTargetId = li.dataset.id;
+      const rect = li.getBoundingClientRect();
+      const isTop = e.clientY < (rect.top + rect.height / 2);
+
+      if (dragType !== "host") return;
+      e.preventDefault();
+      li.classList.remove("drag-over-top", "drag-over-bottom");
+
+      // Determine source ID from all available captured metadata
+      let sourceId = dragId || dataTransferId;
+      if (!sourceId) {
+        const fromIdx = dataTransferIndex !== null ? dataTransferIndex : dragIndex;
+        if (typeof fromIdx === "number" && fromIdx >= 0 && fromIdx < allSettings.length) {
+          sourceId = allSettings[fromIdx].id;
         }
       }
 
-      if (!draggedId || draggedId === host.id) {
-        li.classList.remove("drag-over-top", "drag-over-bottom");
-        return;
-      }
+      if (!sourceId || sourceId === dropTargetId) return;
 
-      const rect = li.getBoundingClientRect();
-      const midpoint = rect.top + rect.height / 2;
-      const isTop = e.clientY < midpoint;
+      const currentSettings = await this.db.getSettings();
 
-      li.classList.remove("drag-over-top", "drag-over-bottom");
+      const fromIndex = currentSettings.findIndex((h) => h.id === sourceId);
+      const toIndex = currentSettings.findIndex((h) => h.id === dropTargetId);
 
-      const fromIndex = currentSettings.findIndex((h) => h.id === draggedId);
-      if (fromIndex === -1) return;
+      if (fromIndex === -1 || toIndex === -1) return;
 
-      const [movedItem] = currentSettings.splice(fromIndex, 1);
+      const newSettings = [...currentSettings];
+      const [movedItem] = newSettings.splice(fromIndex, 1);
 
-      let targetIndex = currentSettings.findIndex((h) => h.id === host.id);
+      let targetIndex = newSettings.findIndex((h) => h.id === dropTargetId);
       if (!isTop) targetIndex++;
 
-      currentSettings.splice(targetIndex, 0, movedItem);
+      newSettings.splice(targetIndex, 0, movedItem);
 
-      await this.db.setSettings(currentSettings);
+      await this.db.setSettings(newSettings);
       await this.renderHostSettings();
     });
 
@@ -380,64 +373,58 @@ export class SettingsManager {
         this.draggingType = null;
         this.draggingProjectKey = null;
         this.draggingIndex = null;
-      }, 100);
+      }, 50);
     });
 
     li.addEventListener("drop", async (e) => {
-      // await の前に状態をキャプチャして race condition を防ぐ
-      const currentDraggingType = this.draggingType;
-      const currentDraggingProjectKey = this.draggingProjectKey;
-      const currentDraggingIndex = this.draggingIndex;
+      // Capture all event-related data synchronously before any await calls.
+      const dragType = this.draggingType;
+      const dragKey = this.draggingProjectKey;
+      const dragIndex = this.draggingIndex;
 
-      if (currentDraggingType !== "project") return;
-      e.preventDefault();
-
-      const currentSettings = await this.db.getProjectSettings();
-
-      let draggedKey = currentDraggingProjectKey;
+      let dataTransferKey = null;
+      let dataTransferIndex = null;
       if (e.dataTransfer) {
-        const keyData = e.dataTransfer.getData("application/x-issues-solo-key");
-        if (keyData) {
-          draggedKey = keyData;
-        } else {
-          const indexData = e.dataTransfer.getData("text/plain");
-          const fromIdx = indexData
-            ? parseInt(indexData, 10)
-            : currentDraggingIndex;
-          if (
-            fromIdx !== null &&
-            fromIdx !== undefined &&
-            fromIdx !== -1 &&
-            !isNaN(fromIdx)
-          ) {
-            const item = allSettings[fromIdx];
-            if (item) draggedKey = item.key;
-          }
+        dataTransferKey = e.dataTransfer.getData("application/x-issues-solo-key");
+        const idxData = e.dataTransfer.getData("text/plain");
+        if (idxData) dataTransferIndex = parseInt(idxData, 10);
+      }
+
+      const dropTargetKey = li.dataset.key;
+      const rect = li.getBoundingClientRect();
+      const isTop = e.clientY < (rect.top + rect.height / 2);
+
+      if (dragType !== "project") return;
+      e.preventDefault();
+      li.classList.remove("drag-over-top", "drag-over-bottom");
+
+      // Determine source Key from all available captured metadata
+      let sourceKey = dragKey || dataTransferKey;
+      if (!sourceKey) {
+        const fromIdx = dataTransferIndex !== null ? dataTransferIndex : dragIndex;
+        if (typeof fromIdx === "number" && fromIdx >= 0 && fromIdx < allSettings.length) {
+          sourceKey = allSettings[fromIdx].key;
         }
       }
 
-      if (!draggedKey || draggedKey === proj.key) {
-        li.classList.remove("drag-over-top", "drag-over-bottom");
-        return;
-      }
+      if (!sourceKey || sourceKey === dropTargetKey) return;
 
-      const rect = li.getBoundingClientRect();
-      const midpoint = rect.top + rect.height / 2;
-      const isTop = e.clientY < midpoint;
+      const currentSettings = await this.db.getProjectSettings();
 
-      li.classList.remove("drag-over-top", "drag-over-bottom");
+      const fromIndex = currentSettings.findIndex((p) => p.key === sourceKey);
+      const toIndex = currentSettings.findIndex((p) => p.key === dropTargetKey);
 
-      const fromIndex = currentSettings.findIndex((p) => p.key === draggedKey);
-      if (fromIndex === -1) return;
+      if (fromIndex === -1 || toIndex === -1) return;
 
-      const [movedItem] = currentSettings.splice(fromIndex, 1);
+      const newSettings = [...currentSettings];
+      const [movedItem] = newSettings.splice(fromIndex, 1);
 
-      let targetIndex = currentSettings.findIndex((p) => p.key === proj.key);
+      let targetIndex = newSettings.findIndex((p) => p.key === dropTargetKey);
       if (!isTop) targetIndex++;
 
-      currentSettings.splice(targetIndex, 0, movedItem);
+      newSettings.splice(targetIndex, 0, movedItem);
 
-      await this.db.setProjectSettings(currentSettings);
+      await this.db.setProjectSettings(newSettings);
       await this.renderProjectSettings();
     });
 
