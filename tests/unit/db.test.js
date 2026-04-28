@@ -410,7 +410,11 @@ describe("IssuesDB", () => {
     for (let i = 0; i < 10; i++) {
       // Manual IndexedDB put to control timestamps precisely if needed,
       // but upsertIssue sets Date.now(), so we need to wait a bit or mock Date.now()
-      const issue = { url: `url${i}`, issueKey: `K${i}`, lastAccessed: 1000 + i };
+      const issue = {
+        url: `url${i}`,
+        issueKey: `K${i}`,
+        lastAccessed: 1000 + i,
+      };
       const database = await db.open();
       await new Promise((resolve, reject) => {
         const transaction = database.transaction(["issues"], "readwrite");
@@ -436,7 +440,9 @@ describe("IssuesDB", () => {
       throw new Error("QuotaExceededError");
     });
 
-    await expect(db.upsertIssue({ url: "url", issueKey: "K" })).rejects.toThrow("QuotaExceededError");
+    await expect(db.upsertIssue({ url: "url", issueKey: "K" })).rejects.toThrow(
+      "QuotaExceededError",
+    );
     jest.restoreAllMocks();
   });
 });

@@ -226,8 +226,15 @@ export class SettingsManager {
         } else {
           // IDが取得できない場合のフォールバック
           const indexData = e.dataTransfer.getData("text/plain");
-          const fromIdx = indexData ? parseInt(indexData, 10) : currentDraggingIndex;
-          if (fromIdx !== null && fromIdx !== undefined && fromIdx !== -1 && !isNaN(fromIdx)) {
+          const fromIdx = indexData
+            ? parseInt(indexData, 10)
+            : currentDraggingIndex;
+          if (
+            fromIdx !== null &&
+            fromIdx !== undefined &&
+            fromIdx !== -1 &&
+            !isNaN(fromIdx)
+          ) {
             const item = allSettings[fromIdx];
             if (item) draggedId = item.id;
           }
@@ -394,8 +401,15 @@ export class SettingsManager {
           draggedKey = keyData;
         } else {
           const indexData = e.dataTransfer.getData("text/plain");
-          const fromIdx = indexData ? parseInt(indexData, 10) : currentDraggingIndex;
-          if (fromIdx !== null && fromIdx !== undefined && fromIdx !== -1 && !isNaN(fromIdx)) {
+          const fromIdx = indexData
+            ? parseInt(indexData, 10)
+            : currentDraggingIndex;
+          if (
+            fromIdx !== null &&
+            fromIdx !== undefined &&
+            fromIdx !== -1 &&
+            !isNaN(fromIdx)
+          ) {
             const item = allSettings[fromIdx];
             if (item) draggedKey = item.key;
           }
