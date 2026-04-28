@@ -163,7 +163,10 @@ export class SettingsManager {
       this.draggingId = host.id;
       if (e.dataTransfer) {
         e.dataTransfer.effectAllowed = "move";
+        // CI環境などでの互換性のため index を保持
         e.dataTransfer.setData("text/plain", index.toString());
+        // より堅牢な識別のために ID を保持
+        e.dataTransfer.setData("application/x-issues-solo-id", host.id);
       }
     });
 
@@ -195,30 +198,38 @@ export class SettingsManager {
       items.forEach((el) =>
         el.classList.remove("dragging", "drag-over-top", "drag-over-bottom"),
       );
-      this.draggingType = null;
-      this.draggingId = null;
-      this.draggingIndex = null;
+      // dropイベントが確実に処理されるように少し遅延させてクリアする
+      setTimeout(() => {
+        this.draggingType = null;
+        this.draggingId = null;
+        this.draggingIndex = null;
+      }, 100);
     });
 
     li.addEventListener("drop", async (e) => {
       if (this.draggingType !== "host") return;
       e.preventDefault();
 
-      let fromIndex = -1;
+      // 最新の設定を取得して競合や古いデータによる不整合を防ぐ
+      const currentSettings = await this.db.getSettings();
+
+      let draggedId = this.draggingId;
       if (e.dataTransfer) {
-        const data = e.dataTransfer.getData("text/plain");
-        fromIndex = data ? parseInt(data) : this.draggingIndex;
-      } else {
-        fromIndex = this.draggingIndex;
+        const idData = e.dataTransfer.getData("application/x-issues-solo-id");
+        if (idData) {
+          draggedId = idData;
+        } else {
+          // IDが取得できない場合のフォールバック
+          const indexData = e.dataTransfer.getData("text/plain");
+          const fromIdx = indexData ? parseInt(indexData, 10) : this.draggingIndex;
+          if (fromIdx !== null && fromIdx !== undefined && fromIdx !== -1 && !isNaN(fromIdx)) {
+            const item = allSettings[fromIdx];
+            if (item) draggedId = item.id;
+          }
+        }
       }
 
-      if (
-        fromIndex === null ||
-        fromIndex === undefined ||
-        fromIndex === -1 ||
-        isNaN(fromIndex) ||
-        fromIndex === index
-      ) {
+      if (!draggedId || draggedId === host.id) {
         li.classList.remove("drag-over-top", "drag-over-bottom");
         return;
       }
@@ -229,15 +240,17 @@ export class SettingsManager {
 
       li.classList.remove("drag-over-top", "drag-over-bottom");
 
-      const newSettings = [...allSettings];
-      const [movedItem] = newSettings.splice(fromIndex, 1);
+      const fromIndex = currentSettings.findIndex((h) => h.id === draggedId);
+      if (fromIndex === -1) return;
 
-      let targetIndex = newSettings.findIndex((h) => h.id === host.id);
+      const [movedItem] = currentSettings.splice(fromIndex, 1);
+
+      let targetIndex = currentSettings.findIndex((h) => h.id === host.id);
       if (!isTop) targetIndex++;
 
-      newSettings.splice(targetIndex, 0, movedItem);
+      currentSettings.splice(targetIndex, 0, movedItem);
 
-      await this.db.setSettings(newSettings);
+      await this.db.setSettings(currentSettings);
       await this.renderHostSettings();
     });
 
@@ -319,6 +332,7 @@ export class SettingsManager {
       if (e.dataTransfer) {
         e.dataTransfer.effectAllowed = "move";
         e.dataTransfer.setData("text/plain", index.toString());
+        e.dataTransfer.setData("application/x-issues-solo-key", proj.key);
       }
     });
 
@@ -350,30 +364,35 @@ export class SettingsManager {
       items.forEach((el) =>
         el.classList.remove("dragging", "drag-over-top", "drag-over-bottom"),
       );
-      this.draggingType = null;
-      this.draggingProjectKey = null;
-      this.draggingIndex = null;
+      setTimeout(() => {
+        this.draggingType = null;
+        this.draggingProjectKey = null;
+        this.draggingIndex = null;
+      }, 100);
     });
 
     li.addEventListener("drop", async (e) => {
       if (this.draggingType !== "project") return;
       e.preventDefault();
 
-      let fromIndex = -1;
+      const currentSettings = await this.db.getProjectSettings();
+
+      let draggedKey = this.draggingProjectKey;
       if (e.dataTransfer) {
-        const data = e.dataTransfer.getData("text/plain");
-        fromIndex = data ? parseInt(data) : this.draggingIndex;
-      } else {
-        fromIndex = this.draggingIndex;
+        const keyData = e.dataTransfer.getData("application/x-issues-solo-key");
+        if (keyData) {
+          draggedKey = keyData;
+        } else {
+          const indexData = e.dataTransfer.getData("text/plain");
+          const fromIdx = indexData ? parseInt(indexData, 10) : this.draggingIndex;
+          if (fromIdx !== null && fromIdx !== undefined && fromIdx !== -1 && !isNaN(fromIdx)) {
+            const item = allSettings[fromIdx];
+            if (item) draggedKey = item.key;
+          }
+        }
       }
 
-      if (
-        fromIndex === null ||
-        fromIndex === undefined ||
-        fromIndex === -1 ||
-        isNaN(fromIndex) ||
-        fromIndex === index
-      ) {
+      if (!draggedKey || draggedKey === proj.key) {
         li.classList.remove("drag-over-top", "drag-over-bottom");
         return;
       }
@@ -384,15 +403,17 @@ export class SettingsManager {
 
       li.classList.remove("drag-over-top", "drag-over-bottom");
 
-      const newSettings = [...allSettings];
-      const [movedItem] = newSettings.splice(fromIndex, 1);
+      const fromIndex = currentSettings.findIndex((p) => p.key === draggedKey);
+      if (fromIndex === -1) return;
 
-      let targetIndex = newSettings.findIndex((p) => p.key === proj.key);
+      const [movedItem] = currentSettings.splice(fromIndex, 1);
+
+      let targetIndex = currentSettings.findIndex((p) => p.key === proj.key);
       if (!isTop) targetIndex++;
 
-      newSettings.splice(targetIndex, 0, movedItem);
+      currentSettings.splice(targetIndex, 0, movedItem);
 
-      await this.db.setProjectSettings(newSettings);
+      await this.db.setProjectSettings(currentSettings);
       await this.renderProjectSettings();
     });
 

@@ -257,6 +257,9 @@ describe("SettingsManager", () => {
       .mockReturnValue({ top: 100, height: 50 });
     secondItem.dispatchEvent(dropEvent);
 
+    // Wait for async drop handler
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
     expect(db.setSettings).toHaveBeenCalled();
     const newSettings = db.setSettings.mock.calls[0][0];
     expect(newSettings[0].name).toBe("Host 2");
@@ -291,6 +294,9 @@ describe("SettingsManager", () => {
       .fn()
       .mockReturnValue({ top: 100, height: 50 });
     secondItem.dispatchEvent(dropEvent);
+
+    // Wait for async drop handler
+    await new Promise((resolve) => setTimeout(resolve, 0));
 
     expect(db.setProjectSettings).toHaveBeenCalled();
     const newSettings = db.setProjectSettings.mock.calls[0][0];

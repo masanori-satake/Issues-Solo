@@ -451,7 +451,6 @@ export class IssuesDB {
         projectSettings: newProjectSettings,
       };
     } catch (e) {
-      console.error("Import processing failed", e);
       throw e;
     }
   }
