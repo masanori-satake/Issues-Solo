@@ -16,11 +16,13 @@ export class IssueRenderer {
    * @param {HTMLElement} listElement リストを表示するコンテナ要素
    * @param {Object} db IssuesDB インスタンス
    * @param {Function} onIssueClick 課題クリック時のコールバック
+   * @param {Set<string>} loadingUrls 読み込み中の課題URLのセット
    */
-  constructor(listElement, db, onIssueClick) {
+  constructor(listElement, db, onIssueClick, loadingUrls = new Set()) {
     this.listElement = listElement;
     this.db = db;
     this.onIssueClick = onIssueClick;
+    this.loadingUrls = loadingUrls;
   }
 
   /**
@@ -98,7 +100,10 @@ export class IssueRenderer {
     if (unconfiguredIssues.length > 0) {
       this.listElement.appendChild(this._createUnconfiguredHeader());
       unconfiguredIssues.forEach((issue) => {
-        this.listElement.appendChild(this._createIssueItem(issue, true));
+        const isLoading = this.loadingUrls.has(issue.url);
+        this.listElement.appendChild(
+          this._createIssueItem(issue, true, isLoading),
+        );
       });
     }
   }
@@ -154,7 +159,10 @@ export class IssueRenderer {
         );
         if (!proj.isCollapsed) {
           projIssues.forEach((issue) => {
-            this.listElement.appendChild(this._createIssueItem(issue));
+            const isLoading = this.loadingUrls.has(issue.url);
+            this.listElement.appendChild(
+              this._createIssueItem(issue, isLoading, isLoading),
+            );
           });
         }
       }
@@ -164,7 +172,10 @@ export class IssueRenderer {
       this.listElement.appendChild(this._createOtherHeader(otherCollapsed));
       if (!otherCollapsed) {
         remainingIssues.forEach((issue) => {
-          this.listElement.appendChild(this._createIssueItem(issue));
+          const isLoading = this.loadingUrls.has(issue.url);
+          this.listElement.appendChild(
+            this._createIssueItem(issue, isLoading, isLoading),
+          );
         });
       }
     }
@@ -261,9 +272,11 @@ export class IssueRenderer {
    * 課題1件分のアイテム要素を作成します。
    * @private
    */
-  _createIssueItem(issue, isDisabled = false) {
+  _createIssueItem(issue, isDisabled = false, isLoading = false) {
     const item = document.createElement("div");
-    item.className = `issue-item ${isDisabled ? "disabled" : ""}`;
+    item.className = `issue-item ${isDisabled ? "disabled" : ""} ${
+      isLoading ? "loading-state" : ""
+    }`;
     item.title = issue.title;
 
     const indicators = document.createElement("div");

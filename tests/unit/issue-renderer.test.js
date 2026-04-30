@@ -263,4 +263,25 @@ describe("IssueRenderer", () => {
     const item = listElement.querySelector(".issue-item");
     expect(item.classList.contains("disabled")).toBe(true);
   });
+
+  test("should render items in loadingUrls with loading-state class", async () => {
+    const issues = [
+      {
+        url: "https://h1.atlassian.net/browse/K1",
+        issueKey: "K1",
+        title: "T1",
+      },
+    ];
+    db.getAllIssues.mockResolvedValue(issues);
+    db.getSettings.mockResolvedValue([
+      { id: "1", name: "H1", url: "h1.atlassian.net", visible: true },
+    ]);
+
+    const loadingUrls = new Set(["https://h1.atlassian.net/browse/K1"]);
+    renderer = new IssueRenderer(listElement, db, onIssueClick, loadingUrls);
+    await renderer.render();
+
+    const item = listElement.querySelector(".issue-item");
+    expect(item.classList.contains("loading-state")).toBe(true);
+  });
 });

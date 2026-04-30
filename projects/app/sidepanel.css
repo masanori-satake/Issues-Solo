@@ -145,6 +145,12 @@ header {
   filter: grayscale(1);
 }
 
+.issue-item.loading-state {
+  opacity: 0.5;
+  filter: grayscale(1);
+  pointer-events: none;
+}
+
 .status-indicators {
   display: flex;
   flex-direction: column;

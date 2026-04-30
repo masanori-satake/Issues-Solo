@@ -10,10 +10,12 @@ import { isUrlMatchHost } from "./utils.js";
 class SidePanel {
   constructor() {
     this.db = new IssuesDB();
+    this.loadingUrls = new Set();
     this.renderer = new IssueRenderer(
       document.getElementById("issue-list"),
       this.db,
       this.handleIssueClick.bind(this),
+      this.loadingUrls,
     );
     this.settings = new SettingsManager(this.db, this.renderer);
 
@@ -298,8 +300,19 @@ class SidePanel {
     });
 
     // メッセージ受信
-    chrome.runtime.onMessage.addListener((message) => {
-      if (message.type === "DB_UPDATED") this.renderer.render();
+    chrome.runtime.onMessage.addListener(async (message) => {
+      if (message.type === "DB_UPDATED") {
+        if (this.loadingUrls.size > 0) {
+          const issues = await this.db.getAllIssues();
+          for (const url of this.loadingUrls) {
+            const issue = issues.find((i) => i.url === url);
+            if (issue && issue.isOpened) {
+              this.loadingUrls.delete(url);
+            }
+          }
+        }
+        this.renderer.render();
+      }
     });
 
     // ストレージ変更監視
@@ -327,6 +340,10 @@ class SidePanel {
    * @param {Object} issue 課題オブジェクト
    */
   async handleIssueClick(issue) {
+    if (this.loadingUrls.has(issue.url)) {
+      return;
+    }
+
     // ホスト設定がない場合は追加を促す
     const settings = await this.db.getSettings();
     const isConfigured = settings.some((host) =>
@@ -362,12 +379,39 @@ class SidePanel {
         const tab = await chrome.tabs.get(issue.tabId);
         await chrome.windows.update(tab.windowId, { focused: true });
       } catch (e) {
+        this._startLoading(issue.url);
         chrome.tabs.create({ url: issue.url });
       }
     } else {
+      this._startLoading(issue.url);
       chrome.tabs.create({ url: issue.url });
     }
 
+    await this._updateLastAccessed(issue);
+  }
+
+  /**
+   * 指定したURLの読み込み状態を開始します。
+   * 5秒後に自動的に解除されます。
+   * @private
+   * @param {string} url
+   */
+  _startLoading(url) {
+    this.loadingUrls.add(url);
+    this.renderer.render();
+    setTimeout(() => {
+      if (this.loadingUrls.has(url)) {
+        this.loadingUrls.delete(url);
+        this.renderer.render();
+      }
+    }, 5000);
+  }
+
+  /**
+   * 課題クリック時の動作（共通）。
+   * @private
+   */
+  async _updateLastAccessed(issue) {
     const sortSettings = await this.db.getSortSettings();
     if (sortSettings.type === "lastAccessed") {
       await this.db.upsertIssue({ ...issue, lastAccessed: Date.now() });
