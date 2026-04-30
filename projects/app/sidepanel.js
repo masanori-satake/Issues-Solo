@@ -10,10 +10,12 @@ import { isUrlMatchHost } from "./utils.js";
 class SidePanel {
   constructor() {
     this.db = new IssuesDB();
+    this.loadingUrls = new Set();
     this.renderer = new IssueRenderer(
       document.getElementById("issue-list"),
       this.db,
       this.handleIssueClick.bind(this),
+      this.loadingUrls,
     );
     this.settings = new SettingsManager(this.db, this.renderer);
 
@@ -299,7 +301,9 @@ class SidePanel {
 
     // メッセージ受信
     chrome.runtime.onMessage.addListener((message) => {
-      if (message.type === "DB_UPDATED") this.renderer.render();
+      if (message.type === "DB_UPDATED") {
+        this.handleDbUpdated();
+      }
     });
 
     // ストレージ変更監視
@@ -327,6 +331,11 @@ class SidePanel {
    * @param {Object} issue 課題オブジェクト
    */
   async handleIssueClick(issue) {
+    // すでに読み込み中の場合は、重複して開かないようにガードする
+    if (this.loadingUrls.has(issue.url)) {
+      return;
+    }
+
     // ホスト設定がない場合は追加を促す
     const settings = await this.db.getSettings();
     const isConfigured = settings.some((host) =>
@@ -357,21 +366,79 @@ class SidePanel {
     }
 
     if (issue.isOpened && issue.tabId) {
+      // すでに開いているタブがある場合は、そのタブをアクティブにする
       try {
         await chrome.tabs.update(issue.tabId, { active: true });
         const tab = await chrome.tabs.get(issue.tabId);
         await chrome.windows.update(tab.windowId, { focused: true });
       } catch (e) {
+        // タブが閉じられているなどの理由で失敗した場合は、新規タブで開く
+        this._startLoading(issue.url);
         chrome.tabs.create({ url: issue.url });
       }
     } else {
+      // 開いていない場合は、新規タブで開く。同時に読み込み中状態にする。
+      this._startLoading(issue.url);
       chrome.tabs.create({ url: issue.url });
     }
 
+    // 最終アクセス時刻の更新。
+    // _startLoading 内でも renderer.render() を呼んでいるが、
+    // ここで upsertIssue を行うとDB_UPDATEDメッセージが飛び、
+    // handleDbUpdated を通じて最新の opened 状態を含めた再描画が行われる。
+    await this._updateLastAccessed(issue);
+  }
+
+  /**
+   * データベース更新メッセージ受信時の処理を行います。
+   * 読み込み中状態のURLが「開いている」状態に変わったかを確認し、必要に応じて解除します。
+   * @private
+   */
+  async handleDbUpdated() {
+    if (this.loadingUrls.size > 0) {
+      const issues = await this.db.getAllIssues();
+      for (const url of this.loadingUrls) {
+        const issue = issues.find((i) => i.url === url);
+        // タブが開かれ、content.js から background.js 経由で DB が更新されると
+        // isOpened が true になるため、それを検知して読み込み中を解除する。
+        if (issue && issue.isOpened) {
+          this.loadingUrls.delete(url);
+        }
+      }
+    }
+    await this.renderer.render();
+  }
+
+  /**
+   * 指定したURLの読み込み状態を開始します。
+   * 5秒後に自動的に解除されます。
+   * @private
+   * @param {string} url
+   */
+  _startLoading(url) {
+    this.loadingUrls.add(url);
+    // 即座に見た目を反映させる
+    this.renderer.render();
+
+    // ネットワークエラーや読み込み失敗に備え、一定時間で強制解除する。
+    setTimeout(() => {
+      if (this.loadingUrls.has(url)) {
+        this.loadingUrls.delete(url);
+        this.renderer.render();
+      }
+    }, 5000);
+  }
+
+  /**
+   * 課題クリック時の動作（共通）。
+   * @private
+   */
+  async _updateLastAccessed(issue) {
     const sortSettings = await this.db.getSortSettings();
     if (sortSettings.type === "lastAccessed") {
+      // upsertIssue は background.js で DB_UPDATED メッセージを送信する。
       await this.db.upsertIssue({ ...issue, lastAccessed: Date.now() });
-      await this.renderer.render();
+      // render() は handleDbUpdated で呼ばれるためここでは明示的に呼ばない
     }
   }
 

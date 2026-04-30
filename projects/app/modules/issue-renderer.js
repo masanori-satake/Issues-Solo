@@ -16,11 +16,13 @@ export class IssueRenderer {
    * @param {HTMLElement} listElement リストを表示するコンテナ要素
    * @param {Object} db IssuesDB インスタンス
    * @param {Function} onIssueClick 課題クリック時のコールバック
+   * @param {Set<string>} loadingUrls 読み込み中の課題URLのセット
    */
-  constructor(listElement, db, onIssueClick) {
+  constructor(listElement, db, onIssueClick, loadingUrls = new Set()) {
     this.listElement = listElement;
     this.db = db;
     this.onIssueClick = onIssueClick;
+    this.loadingUrls = loadingUrls;
   }
 
   /**
@@ -98,7 +100,11 @@ export class IssueRenderer {
     if (unconfiguredIssues.length > 0) {
       this.listElement.appendChild(this._createUnconfiguredHeader());
       unconfiguredIssues.forEach((issue) => {
-        this.listElement.appendChild(this._createIssueItem(issue, true));
+        // 設定未登録ホストの課題は常に disabled 状態（不透明度0.5、グレースケール）にする。
+        const isLoading = this.loadingUrls.has(issue.url);
+        this.listElement.appendChild(
+          this._createIssueItem(issue, true, isLoading),
+        );
       });
     }
   }
@@ -154,7 +160,11 @@ export class IssueRenderer {
         );
         if (!proj.isCollapsed) {
           projIssues.forEach((issue) => {
-            this.listElement.appendChild(this._createIssueItem(issue));
+            // クリック後、読み込み中（loading-state）は disabled スタイルも同時に適用する。
+            const isLoading = this.loadingUrls.has(issue.url);
+            this.listElement.appendChild(
+              this._createIssueItem(issue, isLoading, isLoading),
+            );
           });
         }
       }
@@ -164,7 +174,11 @@ export class IssueRenderer {
       this.listElement.appendChild(this._createOtherHeader(otherCollapsed));
       if (!otherCollapsed) {
         remainingIssues.forEach((issue) => {
-          this.listElement.appendChild(this._createIssueItem(issue));
+          // その他グループの課題も、読み込み中は disabled スタイルと loading-state を適用。
+          const isLoading = this.loadingUrls.has(issue.url);
+          this.listElement.appendChild(
+            this._createIssueItem(issue, isLoading, isLoading),
+          );
         });
       }
     }
@@ -260,10 +274,16 @@ export class IssueRenderer {
   /**
    * 課題1件分のアイテム要素を作成します。
    * @private
+   * @param {Object} issue 課題オブジェクト
+   * @param {boolean} isDisabled 無効化（見た目のみ）の状態か
+   * @param {boolean} isLoading 読み込み中（操作不可）の状態か
    */
-  _createIssueItem(issue, isDisabled = false) {
+  _createIssueItem(issue, isDisabled = false, isLoading = false) {
     const item = document.createElement("div");
-    item.className = `issue-item ${isDisabled ? "disabled" : ""}`;
+    // loading-state は pointer-events: none を含み、物理的な操作を無効化する。
+    item.className = `issue-item ${isDisabled ? "disabled" : ""} ${
+      isLoading ? "loading-state" : ""
+    }`;
     item.title = issue.title;
 
     const indicators = document.createElement("div");
