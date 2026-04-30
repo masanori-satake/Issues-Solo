@@ -17,17 +17,7 @@ def sync_version():
 
         print(f"Syncing version {version}...")
 
-        # 2. Update metadata.json (Single Source of Truth for extension name)
-        metadata_path = "projects/app/metadata.json"
-        new_ext_name = f"Issues-Solo v{version}"
-        metadata = {"extName": new_ext_name}
-
-        with open(metadata_path, "w", encoding="utf-8") as f:
-            json.dump(metadata, f, indent=2, ensure_ascii=False)
-            f.write("\n")
-        print(f"  Updated {metadata_path}")
-
-        # 3. Update manifest.json
+        # 2. Update manifest.json
         manifest_path = "projects/app/manifest.json"
         with open(manifest_path, "r", encoding="utf-8") as f:
             manifest = json.load(f)
@@ -39,24 +29,7 @@ def sync_version():
                 f.write("\n")
             print(f"  Updated {manifest_path}")
 
-        # 4. Update extName in all messages.json files from metadata.json
-        locales_dir = "projects/app/_locales"
-        for lang in os.listdir(locales_dir):
-            msg_path = os.path.join(locales_dir, lang, "messages.json")
-            if os.path.exists(msg_path):
-                with open(msg_path, "r", encoding="utf-8") as f:
-                    messages = json.load(f)
-
-                if messages.get("extName", {}).get("message") != new_ext_name:
-                    if "extName" not in messages:
-                        messages["extName"] = {}
-                    messages["extName"]["message"] = new_ext_name
-                    with open(msg_path, "w", encoding="utf-8") as f:
-                        json.dump(messages, f, indent=2, ensure_ascii=False)
-                        f.write("\n")
-                    print(f"  Updated {msg_path}")
-
-        # 5. Update README.md badge
+        # 3. Update README.md badge
         readme_path = "README.md"
         with open(readme_path, "r", encoding="utf-8") as f:
             readme_content = f.read()

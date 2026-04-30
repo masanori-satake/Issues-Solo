@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "Issues-Solo v0.13.10"
+    "message": "Issues-Solo"
   },
   "extDescription": {
     "message": "Local-only Chrome extension to manage JIRA browsing history."
