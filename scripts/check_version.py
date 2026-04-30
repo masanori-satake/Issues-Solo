@@ -32,12 +32,16 @@ def check_version_consistency():
             if os.path.exists(msg_path):
                 with open(msg_path, "r", encoding="utf-8") as f:
                     messages = json.load(f)
-                    ext_name = messages.get("extName", {}).get("message", "")
-                    # Extract version from "Issues-Solo vX.Y.Z"
-                    match = re.search(r"v([\d\.]+)", ext_name)
-                    messages_versions[f"messages.json ({lang})"] = (
-                        match.group(1) if match else None
-                    )
+                    ext_name_msg = messages.get("extName", {}).get("message")
+                    if ext_name_msg:
+                        # Extract version from "Issues-Solo vX.Y.Z"
+                        match = re.search(r"v([\d\.]+)", ext_name_msg)
+                        messages_versions[f"messages.json ({lang})"] = (
+                            match.group(1) if match else None
+                        )
+                    else:
+                        # All messages.json MUST have extName with version now
+                        messages_versions[f"messages.json ({lang})"] = None
 
         # README.md (Badge)
         with open("README.md", "r") as f:
