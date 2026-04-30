@@ -59,16 +59,16 @@ test.describe("Settings Reordering", () => {
       secondBox.y + secondBox.height / 2,
     );
     await sidePanel.mouse.down();
-    await sidePanel.waitForTimeout(200);
+    await sidePanel.waitForTimeout(500); // Wait for drag state to be recognized
     // Move to the top half of the first host
     await sidePanel.mouse.move(
       firstBox.x + firstBox.width / 2,
       firstBox.y + 10,
       {
-        steps: 20,
+        steps: 30, // More steps for smoother drag registration
       },
     );
-    await sidePanel.waitForTimeout(200);
+    await sidePanel.waitForTimeout(500); // Wait for drop state to be stable
     await sidePanel.mouse.up();
 
     // Verify order changed
@@ -127,15 +127,15 @@ test.describe("Settings Reordering", () => {
       secondBoxP.y + secondBoxP.height / 2,
     );
     await sidePanel.mouse.down();
-    await sidePanel.waitForTimeout(200);
+    await sidePanel.waitForTimeout(500);
     await sidePanel.mouse.move(
       firstBoxP.x + firstBoxP.width / 2,
       firstBoxP.y + 10,
       {
-        steps: 20,
+        steps: 30,
       },
     );
-    await sidePanel.waitForTimeout(200);
+    await sidePanel.waitForTimeout(500);
     await sidePanel.mouse.up();
 
     // Verify order changed
