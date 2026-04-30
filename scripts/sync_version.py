@@ -3,6 +3,7 @@ import re
 import os
 import sys
 
+
 def sync_version():
     try:
         # 1. Read version from package.json
@@ -55,7 +56,7 @@ def sync_version():
         new_readme_content = re.sub(
             r"\[!\[version\]\(https://img.shields.io/badge/version-[\d\.]+-blue\)\]",
             f"[![version](https://img.shields.io/badge/version-{version}-blue)]",
-            readme_content
+            readme_content,
         )
 
         if new_readme_content != readme_content:
@@ -69,6 +70,7 @@ def sync_version():
     except Exception as e:
         print(f"Error syncing version: {e}")
         return False
+
 
 if __name__ == "__main__":
     if not sync_version():
