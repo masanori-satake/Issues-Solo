@@ -1,19 +1,20 @@
 import json
 import sys
 import re
+import os
 
 
 def check_version_consistency():
     try:
+        # package.json (Base Version)
+        with open("package.json", "r") as f:
+            package = json.load(f)
+            base_version = package.get("version")
+
         # manifest.json
         with open("projects/app/manifest.json", "r") as f:
             manifest = json.load(f)
             manifest_version = manifest.get("version")
-
-        # package.json
-        with open("package.json", "r") as f:
-            package = json.load(f)
-            package_version = package.get("version")
 
         # package-lock.json
         with open("package-lock.json", "r") as f:
@@ -23,10 +24,38 @@ def check_version_consistency():
                 package_lock.get("packages", {}).get("", {}).get("version")
             )
 
+        # metadata.json (SSoT for extension name)
+        metadata_version = None
+        metadata_path = "projects/app/metadata.json"
+        if os.path.exists(metadata_path):
+            with open(metadata_path, "r", encoding="utf-8") as f:
+                metadata = json.load(f)
+                ext_name = metadata.get("extName", "")
+                match = re.search(r"v([\d\.]+)", ext_name)
+                metadata_version = match.group(1) if match else None
+
+        # messages.json (extName in all locales)
+        locales_dir = "projects/app/_locales"
+        messages_versions = {}
+        for lang in os.listdir(locales_dir):
+            msg_path = os.path.join(locales_dir, lang, "messages.json")
+            if os.path.exists(msg_path):
+                with open(msg_path, "r", encoding="utf-8") as f:
+                    messages = json.load(f)
+                    ext_name_msg = messages.get("extName", {}).get("message")
+                    if ext_name_msg:
+                        match = re.search(r"v([\d\.]+)", ext_name_msg)
+                        messages_versions[f"messages.json ({lang})"] = (
+                            match.group(1) if match else None
+                        )
+                    else:
+                        messages_versions[f"messages.json ({lang})"] = None
+
         # README.md (Badge)
+        readme_version = None
         with open("README.md", "r") as f:
             readme_content = f.read()
-            # Extract version from [![version](https://img.shields.io/badge/version-X.Y.Z-blue)](manifest.json)
+            # [![version](https://img.shields.io/badge/version-X.Y.Z-blue)](manifest.json)
             readme_match = re.search(
                 r"\[!\[version\]\(https://img.shields.io/badge/version-([\d\.]+)-blue\)\]",
                 readme_content,
@@ -35,14 +64,15 @@ def check_version_consistency():
 
         versions = {
             "manifest.json": manifest_version,
-            "package.json": package_version,
+            "package.json": base_version,
             "package-lock.json (root)": package_lock_version,
             'package-lock.json (packages[""])': package_lock_root_version,
             "README.md (badge)": readme_version,
+            "metadata.json": metadata_version,
         }
+        versions.update(messages_versions)
 
         mismatch = False
-        base_version = package_version
 
         print("Checking versions...")
         for name, version in versions.items():
