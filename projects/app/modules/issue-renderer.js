@@ -100,6 +100,7 @@ export class IssueRenderer {
     if (unconfiguredIssues.length > 0) {
       this.listElement.appendChild(this._createUnconfiguredHeader());
       unconfiguredIssues.forEach((issue) => {
+        // 設定未登録ホストの課題は常に disabled 状態（不透明度0.5、グレースケール）にする。
         const isLoading = this.loadingUrls.has(issue.url);
         this.listElement.appendChild(
           this._createIssueItem(issue, true, isLoading),
@@ -159,6 +160,7 @@ export class IssueRenderer {
         );
         if (!proj.isCollapsed) {
           projIssues.forEach((issue) => {
+            // クリック後、読み込み中（loading-state）は disabled スタイルも同時に適用する。
             const isLoading = this.loadingUrls.has(issue.url);
             this.listElement.appendChild(
               this._createIssueItem(issue, isLoading, isLoading),
@@ -172,6 +174,7 @@ export class IssueRenderer {
       this.listElement.appendChild(this._createOtherHeader(otherCollapsed));
       if (!otherCollapsed) {
         remainingIssues.forEach((issue) => {
+          // その他グループの課題も、読み込み中は disabled スタイルと loading-state を適用。
           const isLoading = this.loadingUrls.has(issue.url);
           this.listElement.appendChild(
             this._createIssueItem(issue, isLoading, isLoading),
@@ -271,9 +274,13 @@ export class IssueRenderer {
   /**
    * 課題1件分のアイテム要素を作成します。
    * @private
+   * @param {Object} issue 課題オブジェクト
+   * @param {boolean} isDisabled 無効化（見た目のみ）の状態か
+   * @param {boolean} isLoading 読み込み中（操作不可）の状態か
    */
   _createIssueItem(issue, isDisabled = false, isLoading = false) {
     const item = document.createElement("div");
+    // loading-state は pointer-events: none を含み、物理的な操作を無効化する。
     item.className = `issue-item ${isDisabled ? "disabled" : ""} ${
       isLoading ? "loading-state" : ""
     }`;
