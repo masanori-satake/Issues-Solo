@@ -1,6 +1,6 @@
 {
    "extName": {
-     "message": "Issues-Solo v0.13.10"
+     "message": "Issues-Solo"
    },
   "extDescription": {
     "message": "JIRA閲覧履歴を管理するローカル完結型Chrome拡張機能"

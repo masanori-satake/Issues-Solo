@@ -87,7 +87,6 @@ def check_project_cleanliness():
         "utils.js",
         "LICENSE",
         "MaterialSymbolsOutlined.woff2",
-        "metadata.json",
     }
     app_allowed_dirs = {"_locales", "assets", "modules"}
     app_success = check_directory_cleanliness(

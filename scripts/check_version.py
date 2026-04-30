@@ -1,7 +1,6 @@
 import json
 import sys
 import re
-import os
 
 
 def check_version_consistency():
@@ -24,33 +23,6 @@ def check_version_consistency():
                 package_lock.get("packages", {}).get("", {}).get("version")
             )
 
-        # metadata.json (SSoT for extension name)
-        metadata_version = None
-        metadata_path = "projects/app/metadata.json"
-        if os.path.exists(metadata_path):
-            with open(metadata_path, "r", encoding="utf-8") as f:
-                metadata = json.load(f)
-                ext_name = metadata.get("extName", "")
-                match = re.search(r"v([\d\.]+)", ext_name)
-                metadata_version = match.group(1) if match else None
-
-        # messages.json (extName in all locales)
-        locales_dir = "projects/app/_locales"
-        messages_versions = {}
-        for lang in os.listdir(locales_dir):
-            msg_path = os.path.join(locales_dir, lang, "messages.json")
-            if os.path.exists(msg_path):
-                with open(msg_path, "r", encoding="utf-8") as f:
-                    messages = json.load(f)
-                    ext_name_msg = messages.get("extName", {}).get("message")
-                    if ext_name_msg:
-                        match = re.search(r"v([\d\.]+)", ext_name_msg)
-                        messages_versions[f"messages.json ({lang})"] = (
-                            match.group(1) if match else None
-                        )
-                    else:
-                        messages_versions[f"messages.json ({lang})"] = None
-
         # README.md (Badge)
         readme_version = None
         with open("README.md", "r") as f:
@@ -68,9 +40,7 @@ def check_version_consistency():
             "package-lock.json (root)": package_lock_version,
             'package-lock.json (packages[""])': package_lock_root_version,
             "README.md (badge)": readme_version,
-            "metadata.json": metadata_version,
         }
-        versions.update(messages_versions)
 
         mismatch = False
 
