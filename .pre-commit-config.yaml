@@ -22,7 +22,6 @@ repos:
         exclude: SECURITY\.md
         additional_dependencies:
           - mdformat-gfm
-          - mdformat-tables
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.12
