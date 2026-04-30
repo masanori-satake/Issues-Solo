@@ -1,6 +1,7 @@
 import json
 import sys
 import re
+import os
 
 
 def check_version_consistency():
@@ -23,6 +24,21 @@ def check_version_consistency():
                 package_lock.get("packages", {}).get("", {}).get("version")
             )
 
+        # messages.json (extName)
+        locales_dir = "projects/app/_locales"
+        messages_versions = {}
+        for lang in os.listdir(locales_dir):
+            msg_path = os.path.join(locales_dir, lang, "messages.json")
+            if os.path.exists(msg_path):
+                with open(msg_path, "r", encoding="utf-8") as f:
+                    messages = json.load(f)
+                    ext_name = messages.get("extName", {}).get("message", "")
+                    # Extract version from "Issues-Solo vX.Y.Z"
+                    match = re.search(r"v([\d\.]+)", ext_name)
+                    messages_versions[f"messages.json ({lang})"] = (
+                        match.group(1) if match else None
+                    )
+
         # README.md (Badge)
         with open("README.md", "r") as f:
             readme_content = f.read()
@@ -40,6 +56,7 @@ def check_version_consistency():
             'package-lock.json (packages[""])': package_lock_root_version,
             "README.md (badge)": readme_version,
         }
+        versions.update(messages_versions)
 
         mismatch = False
         base_version = package_version

@@ -1,17 +1,9 @@
 {
   "extName": {
-    "message": "Issues-Solo"
+    "message": "Issues-Solo v0.13.9"
   },
   "extDescription": {
     "message": "Local-only Chrome extension to manage JIRA browsing history."
-  },
-  "sidePanelTitle": {
-    "message": "Issues-Solo v$1",
-    "placeholders": {
-      "1": {
-        "content": "$1"
-      }
-    }
   },
   "actionTitle": {
     "message": "Open Issues-Solo"

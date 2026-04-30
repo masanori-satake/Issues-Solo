@@ -40,9 +40,6 @@ class SidePanel {
       document.documentElement.lang = uiLang.split("-")[0];
     }
 
-    const version = chrome.runtime.getManifest().version;
-    document.title = chrome.i18n.getMessage("sidePanelTitle", [version]);
-
     const selectors = [
       "[data-i18n]",
       "[data-i18n-title]",
