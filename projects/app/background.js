@@ -1,4 +1,5 @@
 import { IssuesDB } from "./db.js";
+import { ISSUE_KEY_REGEX } from "./utils.js";
 
 const db = new IssuesDB();
 const BUILTIN_HOST_PATTERNS = ["https://*.atlassian.net/*"];
@@ -61,7 +62,7 @@ async function handleClearTabAssociation(tabId) {
  * @returns {boolean}
  */
 function isIssuePageUrl(url) {
-  return /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/.test(url);
+  return ISSUE_KEY_REGEX.test(url);
 }
 
 function escapeRegExp(text) {

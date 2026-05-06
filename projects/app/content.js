@@ -24,6 +24,11 @@
    * @returns {string|null} 抽出された課題キー、見つからない場合は null
    */
   const getIssueKey = () => {
+    // content.jsはESモジュールではないため、utils.jsをimportできない。
+    // そのため、ここではあえて同じ正規表現をハードコードするか、
+    // あるいは共通化を諦める必要がある。
+    // プロジェクトの方針として「No-Library / Pure Vanilla JS」があり、
+    // content.jsは manifest.json で読み込まれるため、モジュール化されていない。
     const match = window.location.pathname.match(
       /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/,
     );

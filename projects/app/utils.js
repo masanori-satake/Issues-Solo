@@ -144,6 +144,32 @@ export function isBuiltinHostOrigin(origin) {
 }
 
 /**
+ * JiraのURLから課題キーを抽出するための正規表現です。
+ * 1. /browse/KEY-123 (標準的な個別課題表示)
+ * 2. /issues/KEY-123 (リストビューや新UIでの表示)
+ *
+ * 正規表現の解説:
+ * - \/(?:browse|issues)\/ : "browse" または "issues" というディレクトリ名にマッチ
+ * - ([A-Z0-9]+-[0-9]+) : プロジェクトキー（英数字）+ ハイフン + 課題番号（数字）をキャプチャ
+ */
+export const ISSUE_KEY_REGEX = /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/;
+
+/**
+ * 指定されたURLから課題キー（例: KAN-1）を抽出します。
+ * @param {string} urlString 抽出対象のURL文字列
+ * @returns {string|null} 抽出された課題キー、見つからない場合は null
+ */
+export function extractIssueKeyFromUrl(urlString) {
+  try {
+    const url = new URL(urlString);
+    const match = url.pathname.match(ISSUE_KEY_REGEX);
+    return match ? match[1] : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+/**
  * 課題キー（Issue Key）を自然な順序で比較します (例: PROJ-2 < PROJ-10)。
  *
  * 背景：単純な文字列比較では "PROJ-10" < "PROJ-2" となってしまいますが、
