@@ -1,7 +1,7 @@
 import { IssuesDB } from "./db.js";
 import { IssueRenderer } from "./modules/issue-renderer.js";
 import { SettingsManager } from "./modules/settings-manager.js";
-import { isUrlMatchHost } from "./utils.js";
+import { isUrlMatchHost, extractIssueKeyFromUrl } from "./utils.js";
 
 /**
  * SidePanel クラスは、拡張機能のサイドパネル全体のライフサイクルと
@@ -325,6 +325,7 @@ class SidePanel {
 
   /**
    * 課題クリック時の動作。タブ切り替えまたは新規作成を行います。
+   * 重複を避けるため、同じ課題キーを開いている既存のタブがあればそれをアクティブにします。
    * @param {Object} issue 課題オブジェクト
    */
   async handleIssueClick(issue) {
@@ -362,27 +363,83 @@ class SidePanel {
       return;
     }
 
-    if (issue.isOpened && issue.tabId) {
-      // すでに開いているタブがある場合は、そのタブをアクティブにする
+    // 重複して開かないよう、既存のタブから同じ課題キーを持つものを探す。
+    // JiraのURLは /browse/KEY-1 や /issues/KEY-1 など複数の形式があるため、
+    // 課題キー（ISSUE_KEY）に基づいて判定を行う。
+    const issueKey = extractIssueKeyFromUrl(issue.url);
+    let targetTab = null;
+
+    if (issueKey) {
+      // 現在クリックされたIssueに対応するホスト設定を特定する
+      const targetHost = settings.find((host) =>
+        isUrlMatchHost(issue.url, host.url),
+      );
+
+      // パフォーマンスとプライバシーのため、全タブではなくIssueに関連する可能性のあるタブに絞って検索する
+      const tabs = await chrome.tabs.query({
+        url: ["*://*.atlassian.net/*", "*://*/*"],
+      });
+
+      const matchingTabs = tabs
+        .filter((t) => {
+          // 1. 課題キーが一致すること
+          const k = extractIssueKeyFromUrl(t.url);
+          if (k !== issueKey) return false;
+
+          // 2. ホスト設定が一致すること（異なるJiraインスタンスで同じキーを持つ別課題への誤遷移を防ぐ）
+          // ホスト設定が見つからない（未設定ホスト）の場合は、ホスト名の一致で判定する。
+          if (targetHost) {
+            return isUrlMatchHost(t.url, targetHost.url);
+          } else {
+            try {
+              return new URL(t.url).hostname === new URL(issue.url).hostname;
+            } catch (e) {
+              return false;
+            }
+          }
+        })
+        .sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+
+      if (matchingTabs.length > 0) {
+        targetTab = matchingTabs[0];
+      }
+    }
+
+    if (targetTab) {
+      // 既存のタブをアクティブにする
       try {
-        await chrome.tabs.update(issue.tabId, { active: true });
-        const tab = await chrome.tabs.get(issue.tabId);
-        await chrome.windows.update(tab.windowId, { focused: true });
+        await chrome.tabs.update(targetTab.id, { active: true });
+        await chrome.windows.update(targetTab.windowId, { focused: true });
+
+        // タブグループに入っていて折りたたまれている場合は、ユーザーが見えるように展開する。
+        // chrome.tabGroups API が利用可能であることを確認してから実行する。
+        if (
+          chrome.tabGroups &&
+          targetTab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE
+        ) {
+          try {
+            const group = await chrome.tabGroups.get(targetTab.groupId);
+            if (group.collapsed) {
+              await chrome.tabGroups.update(targetTab.groupId, {
+                collapsed: false,
+              });
+            }
+          } catch (groupError) {
+            console.warn("Failed to update tab group state:", groupError);
+          }
+        }
       } catch (e) {
-        // タブが閉じられているなどの理由で失敗した場合は、新規タブで開く
+        // 何らかの理由で失敗した場合は新規タブで開く
         this._startLoading(issue.url);
         chrome.tabs.create({ url: issue.url });
       }
     } else {
-      // 開いていない場合は、新規タブで開く。同時に読み込み中状態にする。
+      // 既存タブが見つからない場合は、新規タブで開く
       this._startLoading(issue.url);
       chrome.tabs.create({ url: issue.url });
     }
 
     // 最終アクセス時刻の更新。
-    // _startLoading 内でも renderer.render() を呼んでいるが、
-    // ここで upsertIssue を行うとDB_UPDATEDメッセージが飛び、
-    // handleDbUpdated を通じて最新の opened 状態を含めた再描画が行われる。
     await this._updateLastAccessed(issue);
   }
 

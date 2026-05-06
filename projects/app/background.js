@@ -1,4 +1,5 @@
 import { IssuesDB } from "./db.js";
+import { extractIssueKeyFromUrl } from "./utils.js";
 
 const db = new IssuesDB();
 const BUILTIN_HOST_PATTERNS = ["https://*.atlassian.net/*"];
@@ -61,7 +62,8 @@ async function handleClearTabAssociation(tabId) {
  * @returns {boolean}
  */
 function isIssuePageUrl(url) {
-  return /\/(?:browse|issues)\/([A-Z0-9]+-[0-9]+)/.test(url);
+  // 単なる正規表現のテストではなく、実際に課題キーが抽出できる（＝正しいパス構造を持つ）かを確認する。
+  return extractIssueKeyFromUrl(url) !== null;
 }
 
 function escapeRegExp(text) {
