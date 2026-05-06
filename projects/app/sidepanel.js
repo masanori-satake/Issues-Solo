@@ -363,16 +363,40 @@ class SidePanel {
       return;
     }
 
-    // 重複して開かないよう、既存のタブから同じ課題キーを持つものを探す
+    // 重複して開かないよう、既存のタブから同じ課題キーを持つものを探す。
+    // JiraのURLは /browse/KEY-1 や /issues/KEY-1 など複数の形式があるため、
+    // 課題キー（ISSUE_KEY）に基づいて判定を行う。
     const issueKey = extractIssueKeyFromUrl(issue.url);
     let targetTab = null;
 
     if (issueKey) {
-      const tabs = await chrome.tabs.query({});
+      // 現在クリックされたIssueに対応するホスト設定を特定する
+      const targetHost = settings.find((host) =>
+        isUrlMatchHost(issue.url, host.url),
+      );
+
+      // パフォーマンスとプライバシーのため、全タブではなくIssueに関連する可能性のあるタブに絞って検索する
+      const tabs = await chrome.tabs.query({
+        url: ["*://*.atlassian.net/*", "*://*/*"],
+      });
+
       const matchingTabs = tabs
         .filter((t) => {
+          // 1. 課題キーが一致すること
           const k = extractIssueKeyFromUrl(t.url);
-          return k === issueKey;
+          if (k !== issueKey) return false;
+
+          // 2. ホスト設定が一致すること（異なるJiraインスタンスで同じキーを持つ別課題への誤遷移を防ぐ）
+          // ホスト設定が見つからない（未設定ホスト）の場合は、ホスト名の一致で判定する。
+          if (targetHost) {
+            return isUrlMatchHost(t.url, targetHost.url);
+          } else {
+            try {
+              return new URL(t.url).hostname === new URL(issue.url).hostname;
+            } catch (e) {
+              return false;
+            }
+          }
         })
         .sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
 
@@ -387,13 +411,21 @@ class SidePanel {
         await chrome.tabs.update(targetTab.id, { active: true });
         await chrome.windows.update(targetTab.windowId, { focused: true });
 
-        // タブグループに入っていて折りたたまれている場合は展開する
-        if (targetTab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
-          const group = await chrome.tabGroups.get(targetTab.groupId);
-          if (group.collapsed) {
-            await chrome.tabGroups.update(targetTab.groupId, {
-              collapsed: false,
-            });
+        // タブグループに入っていて折りたたまれている場合は、ユーザーが見えるように展開する。
+        // chrome.tabGroups API が利用可能であることを確認してから実行する。
+        if (
+          chrome.tabGroups &&
+          targetTab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE
+        ) {
+          try {
+            const group = await chrome.tabGroups.get(targetTab.groupId);
+            if (group.collapsed) {
+              await chrome.tabGroups.update(targetTab.groupId, {
+                collapsed: false,
+              });
+            }
+          } catch (groupError) {
+            console.warn("Failed to update tab group state:", groupError);
           }
         }
       } catch (e) {
