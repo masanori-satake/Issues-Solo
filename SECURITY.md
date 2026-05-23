@@ -5,7 +5,7 @@ We currently provide security updates for the following versions.
 
 | Version | Supported |
 | ------- | --------- |
-| 1.x     | ✅        |
+| 1.0.x   | ✅        |
 | < 1.0.0 | ❌        |
 
 ## Reporting a Vulnerability
@@ -46,7 +46,7 @@ This software is a personal open-source project and is provided "AS IS" without 
 
 | バージョン | サポート |
 | ---------- | -------- |
-| 1.x        | ✅       |
+| 1.0.x      | ✅       |
 | < 1.0.0    | ❌       |
 
 ## 脆弱性の報告方法
