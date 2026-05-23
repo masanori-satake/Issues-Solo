@@ -23,7 +23,7 @@ body:
     attributes:
       label: "Version / バージョン"
       description: "Check in 'Settings > About' / 「設定 > About」から確認できます"
-      placeholder: "v0.12.2"
+      placeholder: "v1.0.0"
     validations:
       required: true
   - type: input
