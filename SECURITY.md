@@ -5,7 +5,7 @@ We currently provide security updates for the following versions.
 
 | Version | Supported |
 | ------- | --------- |
-| 1.0.x   | ✅        |
+| 1.x     | ✅        |
 | < 1.0.0 | ❌        |
 
 ## Reporting a Vulnerability
