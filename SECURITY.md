@@ -46,7 +46,7 @@ This software is a personal open-source project and is provided "AS IS" without 
 
 | バージョン | サポート |
 | ---------- | -------- |
-| 1.0.x      | ✅       |
+| 1.x        | ✅       |
 | < 1.0.0    | ❌       |
 
 ## 脆弱性の報告方法
