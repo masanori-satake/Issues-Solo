@@ -5,8 +5,8 @@ We currently provide security updates for the following versions.
 
 | Version | Supported |
 | ------- | --------- |
-| 0.12.x  | ✅        |
-| < 0.12.0| ❌        |
+| 1.0.x   | ✅        |
+| < 1.0.0 | ❌        |
 
 ## Reporting a Vulnerability
 If you discover a security vulnerability, please report it by creating a new issue using the **Bug Report** template.
@@ -46,8 +46,8 @@ This software is a personal open-source project and is provided "AS IS" without 
 
 | バージョン | サポート |
 | ---------- | -------- |
-| 0.12.x     | ✅       |
-| < 0.12.0   | ❌       |
+| 1.0.x      | ✅       |
+| < 1.0.0    | ❌       |
 
 ## 脆弱性の報告方法
 セキュリティ上の脆弱性を発見された場合は、**不具合報告（Bug Report）テンプレート**を使用してIssueを作成し、報告してください。
