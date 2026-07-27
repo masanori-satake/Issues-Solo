@@ -41,7 +41,7 @@ def check_directory_cleanliness(path, allowed_files, allowed_dirs, recursive=Fal
     """
     try:
         items = os.listdir(path)
-    except Exception as e:
+    except OSError as e:
         print(f"Error listing directory {path}: {e}")
         return False
 

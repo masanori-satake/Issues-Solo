@@ -21,11 +21,7 @@ def is_english_or_japanese(text):
         return True
 
     # Fallback: if it's mostly printable ASCII, it's probably fine
-    printable_ascii = all(ord(c) < 128 for c in text)
-    if printable_ascii:
-        return True
-
-    return False
+    return all(ord(c) < 128 for c in text)
 
 
 def check_language():

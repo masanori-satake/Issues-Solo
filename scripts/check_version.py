@@ -59,7 +59,7 @@ def check_version_consistency():
 
         print(f"\nVersion consistency check passed: {base_version}")
         return True
-    except Exception as e:
+    except (OSError, json.JSONDecodeError) as e:
         print(f"Error checking versions: {e}")
         return False
 

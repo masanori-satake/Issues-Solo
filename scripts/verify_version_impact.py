@@ -9,7 +9,7 @@ def get_current_version():
         with open("package.json", "r") as f:
             data = json.load(f)
             return data.get("version")
-    except Exception as e:
+    except (OSError, json.JSONDecodeError) as e:
         print(f"Error reading current version: {e}")
         return None
 
@@ -36,10 +36,10 @@ def get_base_version():
             )
             data = json.loads(result.stdout)
             return data.get("version")
-        except Exception:
+        except (subprocess.CalledProcessError, json.JSONDecodeError):
             print("Warning: Could not fetch base version from main branch.")
             return None
-    except Exception as e:
+    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
         print(f"Warning: Error fetching base version: {e}")
         return None
 
@@ -66,8 +66,8 @@ def get_changed_files():
         files = result.stdout.splitlines()
         if files:
             return files
-    except Exception:
-        pass
+    except subprocess.CalledProcessError:
+        print("Warning: 'git diff origin/main...HEAD' failed, trying next method.")
 
     try:
         result = subprocess.run(
@@ -79,8 +79,8 @@ def get_changed_files():
         files = result.stdout.splitlines()
         if files:
             return files
-    except Exception:
-        pass
+    except subprocess.CalledProcessError:
+        print("Warning: 'git diff main...HEAD' failed, trying next method.")
 
     # If triple-dot fails or returns nothing, try double-dot or just compare with main
     try:
@@ -91,7 +91,7 @@ def get_changed_files():
             check=True,
         )
         return result.stdout.splitlines()
-    except Exception as e:
+    except subprocess.CalledProcessError as e:
         print(f"Error getting changed files: {e}")
         return []
 

@@ -23,9 +23,8 @@ def generate_icons(output_dir=None, bg_color=None):
         svg_content = f.read()
 
     if bg_color:
+        import xml.etree.ElementTree as ET
         try:
-            import xml.etree.ElementTree as ET
-
             # Register namespace to avoid 'ns0' prefixes in output
             ET.register_namespace("", "http://www.w3.org/2000/svg")
             root = ET.fromstring(svg_content)
@@ -33,8 +32,7 @@ def generate_icons(output_dir=None, bg_color=None):
             # Find the background rect (512x512)
             found = False
             for rect in root.iter():
-                if rect.tag.endswith("rect"):
-                    if rect.get("width") == "512" and rect.get("height") == "512":
+                if rect.tag.endswith("rect") and rect.get("width") == "512" and rect.get("height") == "512":
                         rect.set("fill", bg_color)
                         found = True
                         break
@@ -50,7 +48,7 @@ def generate_icons(output_dir=None, bg_color=None):
                 )
                 raise ValueError("Background rect not found")
 
-        except Exception:
+        except (ET.ParseError, ValueError):
             # Fallback to regex if XML parsing fails or target not found
             pattern = (
                 r'(<rect\s+[^>]*fill=["\'])([^"\']+)(["\'][^>]*width=["\']512["\'][^>]*height=["\']512["\'])|'
@@ -77,7 +75,7 @@ def generate_icons(output_dir=None, bg_color=None):
                     )
 
     try:
-        from playwright.sync_api import sync_playwright
+        from playwright.sync_api import sync_playwright, Error as PlaywrightError
 
         print("Playwright found. Generating icons...")
     except ImportError:
@@ -92,7 +90,7 @@ def generate_icons(output_dir=None, bg_color=None):
     with sync_playwright() as p:
         try:
             browser = p.chromium.launch()
-        except Exception as e:
+        except PlaywrightError as e:
             print(f"Error: Failed to launch browser: {e}")
             print(
                 "Hint: Try running 'playwright install chromium' or 'npx playwright install chromium'."
@@ -148,6 +146,6 @@ if __name__ == "__main__":
     color = sys.argv[2] if len(sys.argv) > 2 else None
 
     if generate_icons(target_dir, color):
-        exit(0)
+        sys.exit(0)
     else:
-        exit(1)
+        sys.exit(1)

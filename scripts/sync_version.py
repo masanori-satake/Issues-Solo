@@ -48,7 +48,7 @@ def sync_version():
         print("Version synchronization complete.")
         return True
 
-    except Exception as e:
+    except (OSError, json.JSONDecodeError) as e:
         print(f"Error syncing version: {e}")
         return False
 

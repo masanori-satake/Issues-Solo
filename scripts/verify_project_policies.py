@@ -85,7 +85,7 @@ def verify_no_external_libraries():
                                     f"Error: External resource link found in {file_path}: {href}"
                                 )
                                 passed = False
-                except Exception as e:
+                except OSError as e:
                     print(f"Warning: Could not read {file_path}: {e}")
 
     if passed:
