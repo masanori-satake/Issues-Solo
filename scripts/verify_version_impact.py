@@ -27,7 +27,9 @@ def get_base_version():
         return data.get("version")
     except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
         # If origin/main is not available or parsing fails, try main
-        print(f"Warning: Failed to get version from origin/main: {e}. Trying main branch.")
+        print(
+            f"Warning: Failed to get version from origin/main: {e}. Trying main branch."
+        )
         try:
             result = subprocess.run(
                 ["git", "show", "main:package.json"],
