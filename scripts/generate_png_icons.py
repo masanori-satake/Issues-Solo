@@ -24,6 +24,7 @@ def generate_icons(output_dir=None, bg_color=None):
 
     if bg_color:
         import xml.etree.ElementTree as ET
+
         try:
             # Register namespace to avoid 'ns0' prefixes in output
             ET.register_namespace("", "http://www.w3.org/2000/svg")
@@ -32,10 +33,14 @@ def generate_icons(output_dir=None, bg_color=None):
             # Find the background rect (512x512)
             found = False
             for rect in root.iter():
-                if rect.tag.endswith("rect") and rect.get("width") == "512" and rect.get("height") == "512":
-                        rect.set("fill", bg_color)
-                        found = True
-                        break
+                if (
+                    rect.tag.endswith("rect")
+                    and rect.get("width") == "512"
+                    and rect.get("height") == "512"
+                ):
+                    rect.set("fill", bg_color)
+                    found = True
+                    break
 
             if found:
                 svg_content = ET.tostring(root, encoding="unicode")
@@ -75,7 +80,8 @@ def generate_icons(output_dir=None, bg_color=None):
                     )
 
     try:
-        from playwright.sync_api import sync_playwright, Error as PlaywrightError
+        from playwright.sync_api import Error as PlaywrightError
+        from playwright.sync_api import sync_playwright
 
         print("Playwright found. Generating icons...")
     except ImportError:
