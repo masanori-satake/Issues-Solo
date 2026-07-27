@@ -1,6 +1,7 @@
 import json
-import zipfile
 import os
+import sys
+import zipfile
 
 
 def build_extension():
@@ -42,11 +43,11 @@ def build_extension():
         print(f"Successfully built {zip_filename}")
         return True
 
-    except Exception as e:
+    except (OSError, json.JSONDecodeError) as e:
         print(f"Error during build: {e}")
         return False
 
 
 if __name__ == "__main__":
     if not build_extension():
-        exit(1)
+        sys.exit(1)

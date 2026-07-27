@@ -17,7 +17,7 @@ def audit_dependencies():
 
         print("OSS dependency audit passed: No production dependencies found.")
         return True
-    except Exception as e:
+    except (OSError, json.JSONDecodeError) as e:
         print(f"Error auditing dependencies: {e}")
         return False
 
