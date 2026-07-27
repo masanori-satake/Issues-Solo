@@ -1,7 +1,7 @@
 import json
-import sys
-import subprocess
 import re
+import subprocess
+import sys
 
 
 def get_current_version():

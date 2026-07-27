@@ -1,5 +1,5 @@
-import sys
 import re
+import sys
 
 
 def is_english_or_japanese(text):

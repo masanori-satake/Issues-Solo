@@ -1,6 +1,6 @@
 import json
-import sys
 import re
+import sys
 
 
 def check_version_consistency():

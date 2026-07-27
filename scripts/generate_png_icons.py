@@ -1,6 +1,6 @@
 import os
-import sys
 import re
+import sys
 
 
 def generate_icons(output_dir=None, bg_color=None):

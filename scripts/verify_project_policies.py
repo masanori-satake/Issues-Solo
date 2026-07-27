@@ -1,7 +1,7 @@
-import sys
-import os
 import json
+import os
 import re
+import sys
 
 
 def verify_no_external_libraries():
