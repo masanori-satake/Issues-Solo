@@ -25,8 +25,9 @@ def get_base_version():
         )
         data = json.loads(result.stdout)
         return data.get("version")
-    except subprocess.CalledProcessError:
-        # If origin/main is not available (e.g. local run), try main
+    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
+        # If origin/main is not available or parsing fails, try main
+        print(f"Warning: Failed to get version from origin/main: {e}. Trying main branch.")
         try:
             result = subprocess.run(
                 ["git", "show", "main:package.json"],
@@ -39,9 +40,6 @@ def get_base_version():
         except (subprocess.CalledProcessError, json.JSONDecodeError):
             print("Warning: Could not fetch base version from main branch.")
             return None
-    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
-        print(f"Warning: Error fetching base version: {e}")
-        return None
 
 
 def parse_version(v):
