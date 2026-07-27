@@ -61,7 +61,7 @@ jobs:
       run: python3 scripts/verify_project_policies.py
 
     - name: 3. PRコメント使用言語確認 (PR Language Check)
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && github.actor != 'pre-commit-ci[bot]'
       env:
         PR_TITLE: ${{ github.event.pull_request.title }}
         PR_BODY: ${{ github.event.pull_request.body }}
