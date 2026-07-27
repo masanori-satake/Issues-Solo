@@ -25,7 +25,7 @@
   },
   "overrides": {
     "@tootallnate/once": "^3.0.1",
-    "brace-expansion": "1.1.16",
+    "brace-expansion": "5.0.8",
     "form-data": "4.0.6",
     "js-yaml": "3.15.0"
   }
