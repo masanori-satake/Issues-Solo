@@ -34,20 +34,9 @@
 
 body {
   font-family:
-    "Roboto",
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    Oxygen,
-    Ubuntu,
-    Cantarell,
-    "Noto Sans CJK JP",
-    "Noto Color Emoji",
-    "Segoe UI Emoji",
-    "Open Sans",
-    "Helvetica Neue",
-    sans-serif;
+    "Roboto", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Oxygen, Ubuntu, Cantarell, "Noto Sans CJK JP", "Noto Color Emoji",
+    "Segoe UI Emoji", "Open Sans", "Helvetica Neue", sans-serif;
   margin: 0;
   padding: 0;
   background-color: var(--bg-color);
