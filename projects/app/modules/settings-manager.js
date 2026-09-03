@@ -28,6 +28,7 @@ export class SettingsManager {
       hostDialog: document.getElementById("host-dialog"),
       projectDialog: document.getElementById("project-dialog"),
       confirmDialog: document.getElementById("confirm-dialog"),
+      importDialog: document.getElementById("import-dialog"),
     };
   }
 
@@ -981,7 +982,73 @@ export class SettingsManager {
       alert(chrome.i18n.getMessage("settingsImportSuccess"));
     } catch (e) {
       console.error("Settings import failed", e);
-      alert(chrome.i18n.getMessage("importError"));
+      throw e;
     }
+  }
+
+  /**
+   * インポートダイアログを開きます。
+   * @param {"history" | "settings"} type インポートの種別
+   * @param {Function} onConfirm 確認ボタン押下時のコールバック (text) => Promise<void>
+   */
+  openImportDialog(type, onConfirm) {
+    const dialog =
+      this.elements.importDialog || document.getElementById("import-dialog");
+    const titleEl = document.getElementById("import-dialog-title");
+    const textarea = document.getElementById("import-textarea");
+    const errorMsg = document.getElementById("import-error-msg");
+    const confirmBtn = document.getElementById("confirm-import");
+    const cancelBtn = document.getElementById("cancel-import");
+
+    if (type === "history") {
+      titleEl.textContent =
+        chrome.i18n.getMessage("importHistoryTitle") || "Import History";
+    } else {
+      titleEl.textContent =
+        chrome.i18n.getMessage("importSettingsTitle") || "Import Settings";
+    }
+
+    textarea.value = "";
+    errorMsg.classList.add("hidden");
+    errorMsg.textContent = "";
+
+    if (!textarea.dataset.listenerAdded) {
+      textarea.addEventListener("input", () => {
+        errorMsg.classList.add("hidden");
+      });
+      textarea.dataset.listenerAdded = "true";
+    }
+
+    dialog.classList.remove("hidden");
+    textarea.focus();
+
+    const cleanup = () => {
+      dialog.classList.add("hidden");
+      confirmBtn.removeEventListener("click", handleConfirm);
+      cancelBtn.removeEventListener("click", handleCancel);
+    };
+
+    const handleConfirm = async () => {
+      const text = textarea.value.trim();
+      if (!text) {
+        errorMsg.textContent = chrome.i18n.getMessage("importError");
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+      try {
+        await onConfirm(text);
+        cleanup();
+      } catch (err) {
+        errorMsg.textContent = chrome.i18n.getMessage("importError");
+        errorMsg.classList.remove("hidden");
+      }
+    };
+
+    const handleCancel = () => {
+      cleanup();
+    };
+
+    confirmBtn.addEventListener("click", handleConfirm);
+    cancelBtn.addEventListener("click", handleCancel);
   }
 }

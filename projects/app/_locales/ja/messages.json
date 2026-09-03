@@ -198,7 +198,19 @@
     "message": "履歴データをインポートしました"
   },
   "importError": {
-    "message": "インポートに失敗しました。クリップボードに正しいデータがあるか確認してください。"
+    "message": "インポートに失敗しました。正しいデータが入力されているか確認してください。"
+  },
+  "importDialogTitle": {
+    "message": "データインポート"
+  },
+  "importHistoryTitle": {
+    "message": "履歴データのインポート"
+  },
+  "importSettingsTitle": {
+    "message": "設定データのインポート"
+  },
+  "importPlaceholder": {
+    "message": "インポートするデータをここに貼り付けてください..."
   },
   "settingsExportSuccess": {
     "message": "設定データをクリップボードにコピーしました (JSON形式)"

@@ -368,6 +368,37 @@
       </div>
     </div>
 
+    <div id="import-dialog" class="overlay hidden">
+      <div class="dialog dialog-wide">
+        <h3 id="import-dialog-title" data-i18n="importDialogTitle">
+          Import Data
+        </h3>
+        <div class="input-field">
+          <label
+            for="import-textarea"
+            id="import-dialog-label"
+            data-i18n="pasteImportPrompt"
+            >Paste data to import:</label
+          >
+          <textarea
+            id="import-textarea"
+            rows="6"
+            data-i18n-placeholder="importPlaceholder"
+            placeholder="Paste data here..."
+          ></textarea>
+          <div id="import-error-msg" class="error-msg hidden"></div>
+        </div>
+        <div class="dialog-actions">
+          <button id="cancel-import" class="text-btn" data-i18n="cancel">
+            Cancel
+          </button>
+          <button id="confirm-import" class="text-btn" data-i18n="ok">
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+
     <script type="module" src="sidepanel.js"></script>
   </body>
 </html>

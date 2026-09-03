@@ -104,6 +104,13 @@ class SidePanel {
       if (e.target === settingsPanel) this.settings.close();
     });
 
+    const importDialog = document.getElementById("import-dialog");
+    if (importDialog) {
+      importDialog.addEventListener("click", (e) => {
+        if (e.target === importDialog) importDialog.classList.add("hidden");
+      });
+    }
+
     // タブ切り替え
     document.querySelectorAll(".tab-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -185,31 +192,15 @@ class SidePanel {
 
     document
       .getElementById("import-history-btn")
-      .addEventListener("click", async () => {
-        try {
-          let text = "";
-          try {
-            text = await navigator.clipboard.readText();
-          } catch (e) {
-            text = "";
-          }
-          if (!text || !text.trim()) {
-            text = prompt(
-              chrome.i18n.getMessage("pasteImportPrompt") ||
-                "Paste data to import:",
-            );
-          }
-          if (!text || !text.trim()) return;
-
+      .addEventListener("click", () => {
+        this.settings.openImportDialog("history", async (text) => {
           const mode = document.querySelector(
             'input[name="history-import-mode"]:checked',
           ).value;
           await this.db.importIssues(text, mode);
           await this.renderer.render();
           alert(chrome.i18n.getMessage("historyImportSuccess"));
-        } catch (err) {
-          alert(chrome.i18n.getMessage("importError"));
-        }
+        });
       });
 
     document
@@ -239,30 +230,14 @@ class SidePanel {
 
     document
       .getElementById("import-settings-btn")
-      .addEventListener("click", async () => {
-        try {
-          let text = "";
-          try {
-            text = await navigator.clipboard.readText();
-          } catch (e) {
-            text = "";
-          }
-          if (!text || !text.trim()) {
-            text = prompt(
-              chrome.i18n.getMessage("pasteImportPrompt") ||
-                "Paste data to import:",
-            );
-          }
-          if (!text || !text.trim()) return;
-
+      .addEventListener("click", () => {
+        this.settings.openImportDialog("settings", async (text) => {
           const mode = document.querySelector(
             'input[name="settings-import-mode"]:checked',
           ).value;
           await this.settings.handleSettingsImport(text, mode);
           await this.renderer.render();
-        } catch (err) {
-          alert(chrome.i18n.getMessage("importError"));
-        }
+        });
       });
 
     document

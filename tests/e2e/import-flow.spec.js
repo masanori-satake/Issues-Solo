@@ -62,6 +62,8 @@ test.describe("Import and Interaction Flow", () => {
     });
 
     await sidePanel.click("#import-history-btn");
+    await sidePanel.fill("#import-textarea", ndjson);
+    await sidePanel.click("#confirm-import");
     await sidePanel.click("#close-settings");
 
     // 3. 未設定ホストとして表示されていることを確認
