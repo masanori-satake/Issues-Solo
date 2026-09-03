@@ -34,8 +34,20 @@
 
 body {
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-    Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    Roboto,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Noto Sans CJK JP",
+    "Noto Color Emoji",
+    "Segoe UI Emoji",
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif;
   margin: 0;
   padding: 0;
   background-color: var(--bg-color);
@@ -44,7 +56,7 @@ body {
 }
 
 header {
-  padding: 8px 16px;
+  padding: 4px 16px;
   background-color: var(--header-bg);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
@@ -56,7 +68,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 32px;
+  min-height: 48px;
 }
 
 .sort-button-group {
@@ -71,15 +83,15 @@ header {
   border: none;
   display: flex;
   align-items: center;
+  justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
   padding: 4px 6px;
   cursor: pointer;
   color: var(--secondary-text);
   transition: all 0.2s;
   gap: 2px;
-}
-
-.sort-btn:hover {
-  background-color: rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
 }
 
 .sort-btn.active {
@@ -108,12 +120,13 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
+  min-width: 48px;
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
   transition: background-color 0.2s;
   color: var(--secondary-text);
-}
-
-.icon-btn:hover {
-  background-color: rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
 }
 
 .icon-btn svg {
@@ -129,16 +142,14 @@ header {
 .issue-item {
   display: flex;
   padding: 10px 16px;
+  min-height: 48px;
+  box-sizing: border-box;
   border-bottom: 1px solid var(--border-color);
   cursor: pointer;
   transition: background-color 0.2s;
   align-items: center;
   gap: 12px;
   overflow: hidden;
-}
-
-.issue-item:hover {
-  background-color: var(--hover-bg);
 }
 
 .issue-item.disabled {
@@ -243,6 +254,8 @@ header {
 .host-group-header {
   background-color: #0061a4; /* Material 3 Blue - Jira-like */
   padding: 6px 16px;
+  min-height: 48px;
+  box-sizing: border-box;
   font-size: 11px;
   font-weight: bold;
   color: #ffffff;
@@ -259,12 +272,10 @@ header {
   user-select: none;
 }
 
-.host-group-header.clickable:hover {
-  background-color: #004a7d;
-}
-
 .project-group-header {
   padding: 6px 16px;
+  min-height: 48px;
+  box-sizing: border-box;
   font-size: 12px;
   font-weight: bold;
   border-bottom: 1px solid var(--border-color);
@@ -273,10 +284,6 @@ header {
   gap: 4px;
   cursor: pointer;
   user-select: none;
-}
-
-.project-group-header:hover {
-  filter: brightness(0.95);
 }
 
 .collapse-glyph {
@@ -305,6 +312,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow-y: auto;
 }
 
 .hidden {
@@ -315,11 +323,11 @@ header {
   background-color: var(--bg-color);
   width: 90%;
   max-width: 320px;
-  max-height: 80%;
+  max-height: 90vh;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -329,6 +337,7 @@ header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 48px;
 }
 
 .settings-title {
@@ -348,6 +357,8 @@ header {
   background: none;
   border: none;
   padding: 8px;
+  min-width: 48px;
+  min-height: 48px;
   cursor: pointer;
   color: var(--secondary-text);
   border-bottom: 2px solid transparent;
@@ -355,6 +366,7 @@ header {
   align-items: center;
   justify-content: center;
   transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .tab-btn svg {
@@ -409,6 +421,7 @@ section:last-child {
 .settings-item input[type="range"] {
   width: 100%;
   margin: 0;
+  min-height: 32px;
 }
 
 .range-labels {
@@ -441,7 +454,9 @@ section:last-child {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 8px;
+  padding: 8px 12px;
+  min-height: 48px;
+  box-sizing: border-box;
   border: 1px solid var(--border-color);
   border-radius: 20px; /* 角丸形状 */
   background-color: #fff;
@@ -452,18 +467,10 @@ section:last-child {
   transition: background-color 0.2s;
 }
 
-.management-btn:hover {
-  background-color: var(--hover-bg);
-}
-
 .management-btn.danger {
   color: #b3261e;
   border-color: #f2b8b5;
   background-color: #fffbfe;
-}
-
-.management-btn.danger:hover {
-  background-color: #f9dedc;
 }
 
 .management-btn svg {
@@ -505,16 +512,18 @@ section:last-child {
   align-items: center;
   gap: 4px;
   font-size: 13px;
+  min-height: 32px;
   cursor: pointer;
   color: var(--text-color);
 }
 
 /* Host List */
 .host-list-container {
-  height: calc(48px * 2.5);
+  max-height: 30vh;
+  min-height: 96px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  overflow-y: scroll;
+  overflow-y: auto;
 }
 
 #host-list {
@@ -556,12 +565,50 @@ section:last-child {
   color: #ccc;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 32px;
 }
 
 .drag-handle svg {
   width: 16px;
   height: 16px;
   fill: currentColor;
+}
+
+.reorder-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.reorder-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  color: var(--secondary-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.reorder-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.reorder-btn svg,
+.reorder-btn .material-symbols-outlined {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .host-info {
@@ -584,6 +631,11 @@ section:last-child {
 .visibility-toggle {
   cursor: pointer;
   color: var(--secondary-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
 }
 
 .visibility-toggle svg {
@@ -602,10 +654,11 @@ section:last-child {
 }
 
 .project-list-container {
-  height: calc(48px * 5.5); /* n.5 items height (assuming 48px per item) */
+  max-height: 35vh;
+  min-height: 96px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  overflow-y: scroll; /* Always show scrollbar */
+  overflow-y: auto;
 }
 
 #project-list {
@@ -654,15 +707,17 @@ section:last-child {
 
 .color-picker {
   display: flex;
-  gap: 4px;
+  gap: 8px;
+  align-items: center;
 }
 
 .color-option {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   cursor: pointer;
   border: 2px solid transparent;
+  box-sizing: border-box;
 }
 
 .color-option.selected {
@@ -690,6 +745,10 @@ section:last-child {
   color: #de350b;
   display: flex;
   align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  box-sizing: border-box;
 }
 
 .delete-btn svg {
@@ -705,8 +764,10 @@ section:last-child {
 }
 
 .fab-btn {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   border-radius: 12px;
   background-color: #d1e4ff;
   color: #001d36;
@@ -716,6 +777,7 @@ section:last-child {
   align-items: center;
   justify-content: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
 }
 
 .fab-btn:disabled {
@@ -741,6 +803,9 @@ section:last-child {
   border-radius: 16px;
   width: 80%;
   max-width: 280px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-sizing: border-box;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
@@ -763,6 +828,7 @@ section:last-child {
 .input-field input {
   width: 100%;
   padding: 8px;
+  min-height: 48px;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   box-sizing: border-box;
@@ -778,22 +844,20 @@ section:last-child {
   background: none;
   border: none;
   padding: 8px 16px;
+  min-height: 48px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   font-weight: bold;
   color: #0052cc;
   border-radius: 4px;
-}
-
-.text-btn:hover {
-  background-color: rgba(0, 82, 204, 0.05);
+  box-sizing: border-box;
 }
 
 .text-btn.danger {
   color: #de350b;
-}
-
-.text-btn.danger:hover {
-  background-color: rgba(222, 53, 11, 0.05);
 }
 
 .about-container {
@@ -859,4 +923,84 @@ section:last-child {
   padding: 40px 20px;
   text-align: center;
   color: var(--secondary-text);
+}
+
+/* Hover, Active, Focus States */
+@media (hover: hover) {
+  .sort-btn:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .icon-btn:hover {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+
+  .issue-item:hover {
+    background-color: var(--hover-bg);
+  }
+
+  .host-group-header.clickable:hover {
+    background-color: #004a7d;
+  }
+
+  .project-group-header:hover {
+    filter: brightness(0.95);
+  }
+
+  .management-btn:hover {
+    background-color: var(--hover-bg);
+  }
+
+  .management-btn.danger:hover {
+    background-color: #f9dedc;
+  }
+
+  .text-btn:hover {
+    background-color: rgba(0, 82, 204, 0.05);
+  }
+
+  .text-btn.danger:hover {
+    background-color: rgba(222, 53, 11, 0.05);
+  }
+
+  .fab-btn:hover {
+    filter: brightness(0.95);
+  }
+
+  .reorder-btn:not(:disabled):hover {
+    background-color: rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* Touch feedback and focus states */
+.sort-btn:active,
+.icon-btn:active,
+.tab-btn:active,
+.management-btn:active,
+.text-btn:active,
+.fab-btn:active,
+.delete-btn:active,
+.visibility-toggle:active,
+.reorder-btn:not(:disabled):active {
+  opacity: 0.7;
+  transform: scale(0.96);
+}
+
+.issue-item:active {
+  background-color: #e8ecef;
+}
+
+button:focus-visible,
+.sort-btn:focus-visible,
+.icon-btn:focus-visible,
+.tab-btn:focus-visible,
+.management-btn:focus-visible,
+.text-btn:focus-visible,
+.fab-btn:focus-visible,
+.color-option:focus-visible,
+.delete-btn:focus-visible,
+.visibility-toggle:focus-visible,
+.issue-item:focus-visible {
+  outline: 2px solid #0052cc;
+  outline-offset: 2px;
 }

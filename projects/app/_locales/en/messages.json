@@ -59,6 +59,9 @@
   "pasteImport": {
     "message": "Paste (Import)"
   },
+  "pasteImportPrompt": {
+    "message": "Paste data to import:"
+  },
   "importSettings": {
     "message": "Import Settings"
   },
@@ -222,6 +225,12 @@
         "content": "$1"
       }
     }
+  },
+  "moveUp": {
+    "message": "Move Up"
+  },
+  "moveDown": {
+    "message": "Move Down"
   },
   "close": {
     "message": "Close"

@@ -266,6 +266,44 @@ describe("SettingsManager", () => {
     expect(newSettings[1].name).toBe("Host 1");
   });
 
+  test("should move host via move buttons", async () => {
+    const mockSettings = [
+      { id: "1", name: "Host 1", url: "host1.net", visible: true },
+      { id: "2", name: "Host 2", url: "host2.net", visible: true },
+    ];
+    db.getSettings.mockResolvedValue(mockSettings);
+
+    await manager.renderHostSettings();
+    const items = document.querySelectorAll(".host-item");
+    const downBtn = items[0].querySelector(".down-btn");
+
+    await downBtn.click();
+
+    expect(db.setSettings).toHaveBeenCalled();
+    const newSettings = db.setSettings.mock.calls[0][0];
+    expect(newSettings[0].name).toBe("Host 2");
+    expect(newSettings[1].name).toBe("Host 1");
+  });
+
+  test("should move project via move buttons", async () => {
+    const mockProj = [
+      { key: "PROJ1", color: "#0061A4" },
+      { key: "PROJ2", color: "#0061A4" },
+    ];
+    db.getProjectSettings.mockResolvedValue(mockProj);
+
+    await manager.renderProjectSettings();
+    const items = document.querySelectorAll(".project-item");
+    const downBtn = items[0].querySelector(".down-btn");
+
+    await downBtn.click();
+
+    expect(db.setProjectSettings).toHaveBeenCalled();
+    const newSettings = db.setProjectSettings.mock.calls[0][0];
+    expect(newSettings[0].key).toBe("PROJ2");
+    expect(newSettings[1].key).toBe("PROJ1");
+  });
+
   test("should reorder projects via drag and drop", async () => {
     const mockProj = [
       { key: "PROJ1", color: "#0061A4" },
