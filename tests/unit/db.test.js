@@ -231,7 +231,9 @@ describe("IssuesDB", () => {
     });
     const ndjson =
       '{"url": "url1", "issueKey": "K1"}\nINVALID\n{"url": "url2", "issueKey": "K2"}';
-    await expect(db.importIssues(ndjson, "add")).rejects.toThrow("Invalid NDJSON data");
+    await expect(db.importIssues(ndjson, "add")).rejects.toThrow(
+      "Invalid NDJSON data",
+    );
     const count = await db.getIssueCount();
     expect(count).toBe(0);
   });
@@ -242,7 +244,9 @@ describe("IssuesDB", () => {
     });
     const ndjson =
       '{"url": "url1", "issueKey": "K1"}\n{"issueKey": "K2"}\n{"url": "url3", "issueKey": "K3"}';
-    await expect(db.importIssues(ndjson, "add")).rejects.toThrow("Invalid NDJSON data");
+    await expect(db.importIssues(ndjson, "add")).rejects.toThrow(
+      "Invalid NDJSON data",
+    );
     const count = await db.getIssueCount();
     expect(count).toBe(0);
   });
@@ -324,7 +328,9 @@ describe("IssuesDB", () => {
 
   test("processSettingsImport - invalid json or malformed structure", async () => {
     await expect(db.processSettingsImport("invalid")).rejects.toThrow();
-    await expect(db.processSettingsImport("[]")).rejects.toThrow("Invalid settings JSON");
+    await expect(db.processSettingsImport("[]")).rejects.toThrow(
+      "Invalid settings JSON",
+    );
     await expect(
       db.processSettingsImport(JSON.stringify({ settings: "not-an-array" })),
     ).rejects.toThrow("Invalid settings JSON");
