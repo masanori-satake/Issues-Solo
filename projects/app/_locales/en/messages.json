@@ -226,6 +226,12 @@
       }
     }
   },
+  "moveUp": {
+    "message": "Move Up"
+  },
+  "moveDown": {
+    "message": "Move Down"
+  },
   "close": {
     "message": "Close"
   },

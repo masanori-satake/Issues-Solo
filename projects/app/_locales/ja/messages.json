@@ -226,6 +226,12 @@
       }
     }
   },
+  "moveUp": {
+    "message": "上へ移動"
+  },
+  "moveDown": {
+    "message": "下へ移動"
+  },
   "close": {
     "message": "閉じる"
   },

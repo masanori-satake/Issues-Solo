@@ -80,6 +80,43 @@ export class SettingsManager {
     dragIcon.textContent = "drag_indicator";
     dragHandle.appendChild(dragIcon);
 
+    // 並べ替えボタン（↑ / ↓）
+    const reorderBtns = document.createElement("div");
+    reorderBtns.className = "reorder-btns";
+
+    const upBtn = document.createElement("button");
+    upBtn.className = "reorder-btn up-btn";
+    upBtn.title = chrome.i18n.getMessage("moveUp") || "Move Up";
+    upBtn.disabled = index === 0;
+    const upIcon = document.createElement("span");
+    upIcon.className = "material-symbols-outlined";
+    upIcon.textContent = "arrow_upward";
+    upBtn.appendChild(upIcon);
+    upBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (index > 0) {
+        await this.moveHost(index, index - 1);
+      }
+    });
+
+    const downBtn = document.createElement("button");
+    downBtn.className = "reorder-btn down-btn";
+    downBtn.title = chrome.i18n.getMessage("moveDown") || "Move Down";
+    downBtn.disabled = index === allSettings.length - 1;
+    const downIcon = document.createElement("span");
+    downIcon.className = "material-symbols-outlined";
+    downIcon.textContent = "arrow_downward";
+    downBtn.appendChild(downIcon);
+    downBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (index < allSettings.length - 1) {
+        await this.moveHost(index, index + 1);
+      }
+    });
+
+    reorderBtns.appendChild(upBtn);
+    reorderBtns.appendChild(downBtn);
+
     // ホスト情報
     // XSS対策のため innerHTML は使用せず、textContent を使用して要素を構築します。
     const info = document.createElement("div");
@@ -151,6 +188,7 @@ export class SettingsManager {
     });
 
     li.appendChild(dragHandle);
+    li.appendChild(reorderBtns);
     li.appendChild(info);
     li.appendChild(toggle);
     li.appendChild(deleteBtn);
@@ -294,6 +332,42 @@ export class SettingsManager {
     dragIcon.textContent = "drag_indicator";
     dragHandle.appendChild(dragIcon);
 
+    const reorderBtns = document.createElement("div");
+    reorderBtns.className = "reorder-btns";
+
+    const upBtn = document.createElement("button");
+    upBtn.className = "reorder-btn up-btn";
+    upBtn.title = chrome.i18n.getMessage("moveUp") || "Move Up";
+    upBtn.disabled = index === 0;
+    const upIcon = document.createElement("span");
+    upIcon.className = "material-symbols-outlined";
+    upIcon.textContent = "arrow_upward";
+    upBtn.appendChild(upIcon);
+    upBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (index > 0) {
+        await this.moveProject(index, index - 1);
+      }
+    });
+
+    const downBtn = document.createElement("button");
+    downBtn.className = "reorder-btn down-btn";
+    downBtn.title = chrome.i18n.getMessage("moveDown") || "Move Down";
+    downBtn.disabled = index === allSettings.length - 1;
+    const downIcon = document.createElement("span");
+    downIcon.className = "material-symbols-outlined";
+    downIcon.textContent = "arrow_downward";
+    downBtn.appendChild(downIcon);
+    downBtn.addEventListener("click", async (e) => {
+      e.stopPropagation();
+      if (index < allSettings.length - 1) {
+        await this.moveProject(index, index + 1);
+      }
+    });
+
+    reorderBtns.appendChild(upBtn);
+    reorderBtns.appendChild(downBtn);
+
     const keyLabel = document.createElement("span");
     keyLabel.className = "project-key-label";
     keyLabel.textContent = proj.key;
@@ -330,6 +404,7 @@ export class SettingsManager {
     });
 
     li.appendChild(dragHandle);
+    li.appendChild(reorderBtns);
     li.appendChild(keyLabel);
     li.appendChild(colorPicker);
     li.appendChild(deleteBtn);
@@ -441,6 +516,44 @@ export class SettingsManager {
     });
 
     return li;
+  }
+
+  /**
+   * ホストの表示順序を移動します。
+   */
+  async moveHost(fromIndex, toIndex) {
+    const settings = await this.db.getSettings();
+    if (
+      fromIndex < 0 ||
+      fromIndex >= settings.length ||
+      toIndex < 0 ||
+      toIndex >= settings.length
+    ) {
+      return;
+    }
+    const [moved] = settings.splice(fromIndex, 1);
+    settings.splice(toIndex, 0, moved);
+    await this.db.setSettings(settings);
+    await this.renderHostSettings();
+  }
+
+  /**
+   * プロジェクトの表示順序を移動します。
+   */
+  async moveProject(fromIndex, toIndex) {
+    const settings = await this.db.getProjectSettings();
+    if (
+      fromIndex < 0 ||
+      fromIndex >= settings.length ||
+      toIndex < 0 ||
+      toIndex >= settings.length
+    ) {
+      return;
+    }
+    const [moved] = settings.splice(fromIndex, 1);
+    settings.splice(toIndex, 0, moved);
+    await this.db.setProjectSettings(settings);
+    await this.renderProjectSettings();
   }
 
   /**
