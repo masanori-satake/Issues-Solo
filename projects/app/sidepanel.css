@@ -323,7 +323,8 @@ header {
   background-color: var(--bg-color);
   width: 90%;
   max-width: 320px;
-  max-height: 90vh;
+  /* ChromeOSの仮想キーボード表示時は、動的ビューポートの90%に収める。 */
+  max-height: 90dvh;
   border-radius: 16px;
   display: flex;
   flex-direction: column;
