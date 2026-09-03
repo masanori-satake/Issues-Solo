@@ -1064,11 +1064,15 @@ export class SettingsManager {
       confirmBtn.disabled = true;
       try {
         await onConfirm(text);
-        cleanup();
+        if (this.importDialogCleanup === cleanup) {
+          cleanup();
+        }
       } catch (err) {
-        confirmBtn.disabled = false;
-        errorMsg.textContent = chrome.i18n.getMessage("importError");
-        errorMsg.classList.remove("hidden");
+        if (this.importDialogCleanup === cleanup) {
+          confirmBtn.disabled = false;
+          errorMsg.textContent = chrome.i18n.getMessage("importError");
+          errorMsg.classList.remove("hidden");
+        }
       }
     };
 

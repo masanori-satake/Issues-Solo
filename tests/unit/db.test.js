@@ -251,6 +251,23 @@ describe("IssuesDB", () => {
     expect(count).toBe(0);
   });
 
+  test("importIssues - missing or non-string issueKey should reject entire import", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => {
+      callback({ maxHistoryCount: 50 });
+    });
+
+    for (const issueKey of [undefined, 123, null]) {
+      const issue = { url: "url1" };
+      if (issueKey !== undefined) issue.issueKey = issueKey;
+
+      await expect(
+        db.importIssues(JSON.stringify(issue), "add"),
+      ).rejects.toThrow("Invalid NDJSON data");
+    }
+
+    expect(await db.getIssueCount()).toBe(0);
+  });
+
   test("processSettingsImport - overwrite mode", async () => {
     const settingsData = {
       settings: [
@@ -351,6 +368,34 @@ describe("IssuesDB", () => {
     await expect(
       db.processSettingsImport(JSON.stringify({ maxHistoryCount: -5 })),
     ).rejects.toThrow("Invalid settings JSON");
+  });
+
+  test("processSettingsImport - rejects incomplete setting elements", async () => {
+    const invalidSettings = [
+      { visible: true },
+      { name: 123, visible: true },
+      { name: "Jira" },
+      { name: "Jira", visible: "true" },
+    ];
+    const invalidProjectSettings = [
+      { color: "#0061A4" },
+      { key: 123, color: "#0061A4" },
+      { key: "PROJ" },
+      { key: "PROJ", color: 123 },
+    ];
+
+    for (const setting of invalidSettings) {
+      await expect(
+        db.processSettingsImport(JSON.stringify({ settings: [setting] })),
+      ).rejects.toThrow("Invalid settings JSON");
+    }
+    for (const projectSetting of invalidProjectSettings) {
+      await expect(
+        db.processSettingsImport(
+          JSON.stringify({ projectSettings: [projectSetting] }),
+        ),
+      ).rejects.toThrow("Invalid settings JSON");
+    }
   });
 
   test("processSettingsImport - add mode includes otherCollapsed and maxHistoryCount", async () => {

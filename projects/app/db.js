@@ -336,7 +336,8 @@ export class IssuesDB {
         typeof parsed !== "object" ||
         Array.isArray(parsed) ||
         !parsed.url ||
-        typeof parsed.url !== "string"
+        typeof parsed.url !== "string" ||
+        typeof parsed.issueKey !== "string"
       ) {
         throw new Error("Invalid NDJSON data");
       }
@@ -409,7 +410,12 @@ export class IssuesDB {
         if (
           !Array.isArray(data.settings) ||
           !data.settings.every(
-            (s) => s && typeof s === "object" && !Array.isArray(s),
+            (s) =>
+              s &&
+              typeof s === "object" &&
+              !Array.isArray(s) &&
+              typeof s.name === "string" &&
+              typeof s.visible === "boolean",
           )
         ) {
           throw new Error("Invalid settings JSON");
@@ -420,7 +426,12 @@ export class IssuesDB {
         if (
           !Array.isArray(data.projectSettings) ||
           !data.projectSettings.every(
-            (ps) => ps && typeof ps === "object" && !Array.isArray(ps),
+            (ps) =>
+              ps &&
+              typeof ps === "object" &&
+              !Array.isArray(ps) &&
+              typeof ps.key === "string" &&
+              typeof ps.color === "string",
           )
         ) {
           throw new Error("Invalid settings JSON");
