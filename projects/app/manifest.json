@@ -9,8 +9,7 @@
     "tabs",
     "tabGroups",
     "storage",
-    "scripting",
-    "clipboardRead"
+    "scripting"
   ],
   "host_permissions": [
     "https://*.atlassian.net/*"

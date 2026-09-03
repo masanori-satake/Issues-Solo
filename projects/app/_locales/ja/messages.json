@@ -59,6 +59,9 @@
   "pasteImport": {
     "message": "貼り付け (Import)"
   },
+  "pasteImportPrompt": {
+    "message": "インポートするデータを貼り付けてください:"
+  },
   "importSettings": {
     "message": "インポート設定"
   },

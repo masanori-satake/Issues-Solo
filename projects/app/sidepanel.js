@@ -187,7 +187,20 @@ class SidePanel {
       .getElementById("import-history-btn")
       .addEventListener("click", async () => {
         try {
-          const text = await navigator.clipboard.readText();
+          let text = "";
+          try {
+            text = await navigator.clipboard.readText();
+          } catch (e) {
+            text = "";
+          }
+          if (!text || !text.trim()) {
+            text = prompt(
+              chrome.i18n.getMessage("pasteImportPrompt") ||
+                "Paste data to import:",
+            );
+          }
+          if (!text || !text.trim()) return;
+
           const mode = document.querySelector(
             'input[name="history-import-mode"]:checked',
           ).value;
@@ -228,7 +241,20 @@ class SidePanel {
       .getElementById("import-settings-btn")
       .addEventListener("click", async () => {
         try {
-          const text = await navigator.clipboard.readText();
+          let text = "";
+          try {
+            text = await navigator.clipboard.readText();
+          } catch (e) {
+            text = "";
+          }
+          if (!text || !text.trim()) {
+            text = prompt(
+              chrome.i18n.getMessage("pasteImportPrompt") ||
+                "Paste data to import:",
+            );
+          }
+          if (!text || !text.trim()) return;
+
           const mode = document.querySelector(
             'input[name="settings-import-mode"]:checked',
           ).value;
