@@ -225,15 +225,26 @@ describe("IssuesDB", () => {
     expect(issues[0].issueKey).toBe("K2");
   });
 
-  test("importIssues - invalid json handling", async () => {
+  test("importIssues - invalid json in line should reject entire import", async () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
       callback({ maxHistoryCount: 50 });
     });
     const ndjson =
       '{"url": "url1", "issueKey": "K1"}\nINVALID\n{"url": "url2", "issueKey": "K2"}';
-    await db.importIssues(ndjson, "add");
+    await expect(db.importIssues(ndjson, "add")).rejects.toThrow("Invalid NDJSON data");
     const count = await db.getIssueCount();
-    expect(count).toBe(2);
+    expect(count).toBe(0);
+  });
+
+  test("importIssues - invalid line missing url should reject entire import", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => {
+      callback({ maxHistoryCount: 50 });
+    });
+    const ndjson =
+      '{"url": "url1", "issueKey": "K1"}\n{"issueKey": "K2"}\n{"url": "url3", "issueKey": "K3"}';
+    await expect(db.importIssues(ndjson, "add")).rejects.toThrow("Invalid NDJSON data");
+    const count = await db.getIssueCount();
+    expect(count).toBe(0);
   });
 
   test("processSettingsImport - overwrite mode", async () => {
@@ -311,8 +322,50 @@ describe("IssuesDB", () => {
     expect(toSet).toEqual({ maxHistoryCount: 20 });
   });
 
-  test("processSettingsImport - invalid json", async () => {
+  test("processSettingsImport - invalid json or malformed structure", async () => {
     await expect(db.processSettingsImport("invalid")).rejects.toThrow();
+    await expect(db.processSettingsImport("[]")).rejects.toThrow("Invalid settings JSON");
+    await expect(
+      db.processSettingsImport(JSON.stringify({ settings: "not-an-array" })),
+    ).rejects.toThrow("Invalid settings JSON");
+    await expect(
+      db.processSettingsImport(JSON.stringify({ settings: [123] })),
+    ).rejects.toThrow("Invalid settings JSON");
+    await expect(
+      db.processSettingsImport(
+        JSON.stringify({ projectSettings: "not-an-array" }),
+      ),
+    ).rejects.toThrow("Invalid settings JSON");
+    await expect(
+      db.processSettingsImport(JSON.stringify({ otherCollapsed: "invalid" })),
+    ).rejects.toThrow("Invalid settings JSON");
+    await expect(
+      db.processSettingsImport(JSON.stringify({ maxHistoryCount: 12.5 })),
+    ).rejects.toThrow("Invalid settings JSON");
+    await expect(
+      db.processSettingsImport(JSON.stringify({ maxHistoryCount: -5 })),
+    ).rejects.toThrow("Invalid settings JSON");
+  });
+
+  test("processSettingsImport - add mode includes otherCollapsed and maxHistoryCount", async () => {
+    chrome.storage.local.get.mockImplementation((keys, callback) => {
+      if (keys.includes("projectSettings")) callback({ projectSettings: [] });
+      else if (keys.includes("settings")) callback({ settings: [] });
+      else callback({});
+    });
+
+    const settingsData = {
+      otherCollapsed: true,
+      maxHistoryCount: 100,
+    };
+
+    const toSet = await db.processSettingsImport(
+      JSON.stringify(settingsData),
+      "add",
+    );
+
+    expect(toSet.otherCollapsed).toBe(true);
+    expect(toSet.maxHistoryCount).toBe(100);
   });
 
   test("getOtherCollapsed - default and set", async () => {

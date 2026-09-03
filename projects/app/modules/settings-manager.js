@@ -987,11 +987,29 @@ export class SettingsManager {
   }
 
   /**
+   * インポートダイアログを閉じて、イベントリスナーのクリーンアップを行います。
+   */
+  closeImportDialog() {
+    if (this.importDialogCleanup) {
+      this.importDialogCleanup();
+      this.importDialogCleanup = null;
+    } else {
+      const dialog =
+        this.elements.importDialog || document.getElementById("import-dialog");
+      if (dialog) {
+        dialog.classList.add("hidden");
+      }
+    }
+  }
+
+  /**
    * インポートダイアログを開きます。
    * @param {"history" | "settings"} type インポートの種別
    * @param {Function} onConfirm 確認ボタン押下時のコールバック (text) => Promise<void>
    */
   openImportDialog(type, onConfirm) {
+    this.closeImportDialog();
+
     const dialog =
       this.elements.importDialog || document.getElementById("import-dialog");
     const titleEl = document.getElementById("import-dialog-title");
@@ -1011,6 +1029,7 @@ export class SettingsManager {
     textarea.value = "";
     errorMsg.classList.add("hidden");
     errorMsg.textContent = "";
+    confirmBtn.disabled = false;
 
     if (!textarea.dataset.listenerAdded) {
       textarea.addEventListener("input", () => {
@@ -1023,10 +1042,16 @@ export class SettingsManager {
     textarea.focus();
 
     const cleanup = () => {
+      confirmBtn.disabled = false;
       dialog.classList.add("hidden");
       confirmBtn.removeEventListener("click", handleConfirm);
       cancelBtn.removeEventListener("click", handleCancel);
+      if (this.importDialogCleanup === cleanup) {
+        this.importDialogCleanup = null;
+      }
     };
+
+    this.importDialogCleanup = cleanup;
 
     const handleConfirm = async () => {
       const text = textarea.value.trim();
@@ -1035,10 +1060,13 @@ export class SettingsManager {
         errorMsg.classList.remove("hidden");
         return;
       }
+
+      confirmBtn.disabled = true;
       try {
         await onConfirm(text);
         cleanup();
       } catch (err) {
+        confirmBtn.disabled = false;
         errorMsg.textContent = chrome.i18n.getMessage("importError");
         errorMsg.classList.remove("hidden");
       }

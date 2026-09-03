@@ -317,16 +317,32 @@ export class IssuesDB {
    * @returns {Promise<void>}
    */
   async importIssues(ndjsonText, mode = "add") {
-    const lines = ndjsonText.trim().split("\n");
-    const issues = lines
-      .map((line) => {
-        try {
-          return JSON.parse(line);
-        } catch (e) {
-          return null;
-        }
-      })
-      .filter((i) => i && i.url);
+    const lines = ndjsonText.split("\n");
+    const issues = [];
+
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line) continue;
+
+      let parsed;
+      try {
+        parsed = JSON.parse(line);
+      } catch (e) {
+        throw new Error("Invalid NDJSON data");
+      }
+
+      if (
+        !parsed ||
+        typeof parsed !== "object" ||
+        Array.isArray(parsed) ||
+        !parsed.url ||
+        typeof parsed.url !== "string"
+      ) {
+        throw new Error("Invalid NDJSON data");
+      }
+
+      issues.push(parsed);
+    }
 
     if (issues.length === 0) {
       throw new Error("Invalid NDJSON data");
@@ -380,6 +396,7 @@ export class IssuesDB {
       if (
         !data ||
         typeof data !== "object" ||
+        Array.isArray(data) ||
         (!data.settings &&
           !data.projectSettings &&
           data.otherCollapsed === undefined &&
@@ -387,6 +404,43 @@ export class IssuesDB {
       ) {
         throw new Error("Invalid settings JSON");
       }
+
+      if (data.settings !== undefined) {
+        if (
+          !Array.isArray(data.settings) ||
+          !data.settings.every(
+            (s) => s && typeof s === "object" && !Array.isArray(s),
+          )
+        ) {
+          throw new Error("Invalid settings JSON");
+        }
+      }
+
+      if (data.projectSettings !== undefined) {
+        if (
+          !Array.isArray(data.projectSettings) ||
+          !data.projectSettings.every(
+            (ps) => ps && typeof ps === "object" && !Array.isArray(ps),
+          )
+        ) {
+          throw new Error("Invalid settings JSON");
+        }
+      }
+
+      if (
+        data.otherCollapsed !== undefined &&
+        typeof data.otherCollapsed !== "boolean"
+      ) {
+        throw new Error("Invalid settings JSON");
+      }
+
+      if (
+        data.maxHistoryCount !== undefined &&
+        (!Number.isInteger(data.maxHistoryCount) || data.maxHistoryCount <= 0)
+      ) {
+        throw new Error("Invalid settings JSON");
+      }
+
       const getNextId = (currentMaxId) => {
         let nextId = Math.max(Date.now(), currentMaxId + 1);
         return () => (nextId++).toString();
@@ -460,10 +514,18 @@ export class IssuesDB {
         }
       }
 
-      return {
+      const result = {
         settings: newSettings,
         projectSettings: newProjectSettings,
       };
+      if (data.otherCollapsed !== undefined) {
+        result.otherCollapsed = data.otherCollapsed;
+      }
+      if (data.maxHistoryCount !== undefined) {
+        result.maxHistoryCount = data.maxHistoryCount;
+      }
+
+      return result;
     } catch (e) {
       throw e;
     }
