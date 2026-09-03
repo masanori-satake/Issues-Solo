@@ -400,8 +400,7 @@ describe("SettingsManager", () => {
 
     manager.openImportDialog("history", onConfirm);
     const confirmBtn = document.getElementById("confirm-import");
-    document.getElementById("import-textarea").value =
-      '{"url":"https://test.com"}';
+    document.getElementById("import-textarea").value = '{"url":"https://test.com"}';
 
     // First click
     confirmBtn.click();
