@@ -809,6 +809,10 @@ section:last-child {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+.dialog.dialog-wide {
+  max-width: 320px;
+}
+
 .dialog h3 {
   margin-top: 0;
   font-size: 18px;
@@ -832,6 +836,18 @@ section:last-child {
   border: 1px solid var(--border-color);
   border-radius: 4px;
   box-sizing: border-box;
+}
+
+.input-field textarea {
+  width: 100%;
+  padding: 8px;
+  min-height: 120px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 12px;
+  resize: vertical;
 }
 
 .dialog-actions {

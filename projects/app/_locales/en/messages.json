@@ -198,7 +198,19 @@
     "message": "History data imported"
   },
   "importError": {
-    "message": "Import failed. Please make sure the correct data is on the clipboard."
+    "message": "Import failed. Please make sure the input data is correct."
+  },
+  "importDialogTitle": {
+    "message": "Import Data"
+  },
+  "importHistoryTitle": {
+    "message": "Import History Data"
+  },
+  "importSettingsTitle": {
+    "message": "Import Settings Data"
+  },
+  "importPlaceholder": {
+    "message": "Paste data to import here..."
   },
   "settingsExportSuccess": {
     "message": "Settings data copied to clipboard (JSON format)"

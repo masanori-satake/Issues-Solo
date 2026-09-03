@@ -328,6 +328,10 @@ export class IssuesDB {
       })
       .filter((i) => i && i.url);
 
+    if (issues.length === 0) {
+      throw new Error("Invalid NDJSON data");
+    }
+
     const db = await this.open();
     const maxCount = await this.getMaxHistoryCount();
 
@@ -373,6 +377,16 @@ export class IssuesDB {
   async processSettingsImport(jsonText, mode = "add") {
     try {
       const data = JSON.parse(jsonText);
+      if (
+        !data ||
+        typeof data !== "object" ||
+        (!data.settings &&
+          !data.projectSettings &&
+          data.otherCollapsed === undefined &&
+          data.maxHistoryCount === undefined)
+      ) {
+        throw new Error("Invalid settings JSON");
+      }
       const getNextId = (currentMaxId) => {
         let nextId = Math.max(Date.now(), currentMaxId + 1);
         return () => (nextId++).toString();

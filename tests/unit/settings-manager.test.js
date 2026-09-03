@@ -34,6 +34,13 @@ describe("SettingsManager", () => {
           <button id="confirm-ok"></button>
           <button id="confirm-cancel"></button>
         </div>
+        <div id="import-dialog" class="hidden">
+          <h3 id="import-dialog-title"></h3>
+          <textarea id="import-textarea"></textarea>
+          <div id="import-error-msg" class="hidden"></div>
+          <button id="confirm-import"></button>
+          <button id="cancel-import"></button>
+        </div>
         <div id="extension-version"></div>
         <div id="stat-hosts"></div>
         <div id="stat-projects"></div>
@@ -340,5 +347,45 @@ describe("SettingsManager", () => {
     const newSettings = db.setProjectSettings.mock.calls[0][0];
     expect(newSettings[0].key).toBe("PROJ2");
     expect(newSettings[1].key).toBe("PROJ1");
+  });
+
+  test("should open import dialog and handle confirm and cancel", async () => {
+    const onConfirm = jest.fn().mockResolvedValue();
+    manager.openImportDialog("history", onConfirm);
+
+    expect(
+      document.getElementById("import-dialog").classList.contains("hidden"),
+    ).toBe(false);
+    expect(document.getElementById("import-dialog-title").textContent).toBe(
+      "importHistoryTitle",
+    );
+
+    document.getElementById("import-textarea").value =
+      '{"url":"https://test.atlassian.net/browse/TEST-1"}';
+    document.getElementById("confirm-import").click();
+
+    expect(onConfirm).toHaveBeenCalledWith(
+      '{"url":"https://test.atlassian.net/browse/TEST-1"}',
+    );
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(
+      document.getElementById("import-dialog").classList.contains("hidden"),
+    ).toBe(true);
+  });
+
+  test("should show error in import dialog if confirm fails or text empty", async () => {
+    const onConfirm = jest.fn().mockRejectedValue(new Error("Invalid JSON"));
+    manager.openImportDialog("settings", onConfirm);
+
+    document.getElementById("import-textarea").value = "invalid json";
+    document.getElementById("confirm-import").click();
+
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(
+      document.getElementById("import-error-msg").classList.contains("hidden"),
+    ).toBe(false);
+    expect(
+      document.getElementById("import-dialog").classList.contains("hidden"),
+    ).toBe(false);
   });
 });
