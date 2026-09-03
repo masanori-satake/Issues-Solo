@@ -187,10 +187,18 @@ class SidePanel {
       .getElementById("import-history-btn")
       .addEventListener("click", async () => {
         try {
-          const text = prompt(
-            chrome.i18n.getMessage("pasteImportPrompt") ||
-              "Paste data to import:",
-          );
+          let text = "";
+          try {
+            text = await navigator.clipboard.readText();
+          } catch (e) {
+            text = "";
+          }
+          if (!text || !text.trim()) {
+            text = prompt(
+              chrome.i18n.getMessage("pasteImportPrompt") ||
+                "Paste data to import:",
+            );
+          }
           if (!text || !text.trim()) return;
 
           const mode = document.querySelector(
@@ -233,10 +241,18 @@ class SidePanel {
       .getElementById("import-settings-btn")
       .addEventListener("click", async () => {
         try {
-          const text = prompt(
-            chrome.i18n.getMessage("pasteImportPrompt") ||
-              "Paste data to import:",
-          );
+          let text = "";
+          try {
+            text = await navigator.clipboard.readText();
+          } catch (e) {
+            text = "";
+          }
+          if (!text || !text.trim()) {
+            text = prompt(
+              chrome.i18n.getMessage("pasteImportPrompt") ||
+                "Paste data to import:",
+            );
+          }
           if (!text || !text.trim()) return;
 
           const mode = document.querySelector(

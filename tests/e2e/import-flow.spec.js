@@ -52,8 +52,14 @@ test.describe("Import and Interaction Flow", () => {
 
     await sidePanel.click("#settings-btn");
 
-    // Playwright handle alert/confirm
-    sidePanel.on("dialog", (dialog) => dialog.accept());
+    // Playwright handle alert/confirm/prompt
+    sidePanel.on("dialog", (dialog) => {
+      if (dialog.type() === "prompt") {
+        dialog.accept(ndjson);
+      } else {
+        dialog.accept();
+      }
+    });
 
     await sidePanel.click("#import-history-btn");
     await sidePanel.click("#close-settings");
