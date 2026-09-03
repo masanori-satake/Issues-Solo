@@ -107,7 +107,7 @@ class SidePanel {
     const importDialog = document.getElementById("import-dialog");
     if (importDialog) {
       importDialog.addEventListener("click", (e) => {
-        if (e.target === importDialog) importDialog.classList.add("hidden");
+        if (e.target === importDialog) this.settings.closeImportDialog();
       });
     }
 

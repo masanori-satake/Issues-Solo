@@ -387,5 +387,113 @@ describe("SettingsManager", () => {
     expect(
       document.getElementById("import-dialog").classList.contains("hidden"),
     ).toBe(false);
+    expect(document.getElementById("confirm-import").disabled).toBe(false);
+  });
+
+  test("should prevent re-entry during async confirm and clean up on closeImportDialog", async () => {
+    let resolveConfirm;
+    const onConfirm = jest.fn().mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolveConfirm = resolve;
+      });
+    });
+
+    manager.openImportDialog("history", onConfirm);
+    const confirmBtn = document.getElementById("confirm-import");
+    document.getElementById("import-textarea").value =
+      '{"url":"https://test.com"}';
+
+    // First click
+    confirmBtn.click();
+    expect(confirmBtn.disabled).toBe(true);
+
+    // Second click while running should not call onConfirm again
+    confirmBtn.click();
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+
+    // Resolve confirm
+    resolveConfirm();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(
+      document.getElementById("import-dialog").classList.contains("hidden"),
+    ).toBe(true);
+    expect(confirmBtn.disabled).toBe(false);
+  });
+
+  test("old confirmation resolving should not close a reopened import dialog", async () => {
+    let resolveOldConfirm;
+    const oldConfirm = jest.fn(
+      () =>
+        new Promise((resolve) => {
+          resolveOldConfirm = resolve;
+        }),
+    );
+    const newConfirm = jest.fn().mockResolvedValue();
+
+    manager.openImportDialog("history", oldConfirm);
+    document.getElementById("import-textarea").value = "old import";
+    document.getElementById("confirm-import").click();
+
+    manager.closeImportDialog();
+    manager.openImportDialog("settings", newConfirm);
+    resolveOldConfirm();
+    await Promise.resolve();
+
+    expect(
+      document.getElementById("import-dialog").classList.contains("hidden"),
+    ).toBe(false);
+    expect(document.getElementById("confirm-import").disabled).toBe(false);
+
+    document.getElementById("import-textarea").value = "new import";
+    document.getElementById("confirm-import").click();
+    expect(newConfirm).toHaveBeenCalledWith("new import");
+  });
+
+  test("old confirmation rejecting should not alter a reopened import dialog", async () => {
+    let rejectOldConfirm;
+    const oldConfirm = jest.fn(
+      () =>
+        new Promise((resolve, reject) => {
+          rejectOldConfirm = reject;
+        }),
+    );
+
+    manager.openImportDialog("history", oldConfirm);
+    document.getElementById("import-textarea").value = "old import";
+    document.getElementById("confirm-import").click();
+
+    manager.closeImportDialog();
+    manager.openImportDialog("settings", jest.fn().mockResolvedValue());
+    rejectOldConfirm(new Error("old import failed"));
+    await Promise.resolve();
+
+    expect(
+      document.getElementById("import-dialog").classList.contains("hidden"),
+    ).toBe(false);
+    expect(
+      document.getElementById("import-error-msg").classList.contains("hidden"),
+    ).toBe(true);
+    expect(document.getElementById("confirm-import").disabled).toBe(false);
+  });
+
+  test("closeImportDialog should hide dialog and remove event listeners", () => {
+    const onConfirm = jest.fn().mockResolvedValue();
+    manager.openImportDialog("history", onConfirm);
+
+    expect(
+      document.getElementById("import-dialog").classList.contains("hidden"),
+    ).toBe(false);
+
+    manager.closeImportDialog();
+
+    expect(
+      document.getElementById("import-dialog").classList.contains("hidden"),
+    ).toBe(true);
+
+    // Clicking confirm now should not invoke onConfirm
+    document.getElementById("import-textarea").value = "test";
+    document.getElementById("confirm-import").click();
+    expect(onConfirm).not.toHaveBeenCalled();
   });
 });
