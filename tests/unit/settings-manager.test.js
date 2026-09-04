@@ -167,9 +167,13 @@ describe("SettingsManager", () => {
     expect(mainRow).not.toBeNull();
     expect(subRow).not.toBeNull();
 
-    expect(mainRow.querySelector(".project-key-label").textContent).toBe(
-      "PROJ",
-    );
+    const keyLabel = mainRow.querySelector(".project-key-label");
+    expect(keyLabel.tagName).toBe("BUTTON");
+    expect(keyLabel.type).toBe("button");
+    expect(keyLabel.textContent).toBe("PROJ");
+    manager.openProjectDialog = jest.fn();
+    keyLabel.click();
+    expect(manager.openProjectDialog).toHaveBeenCalledWith(mockProj[0]);
     expect(subRow.querySelector(".color-picker")).not.toBeNull();
   });
 

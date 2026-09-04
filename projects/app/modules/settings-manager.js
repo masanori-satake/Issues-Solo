@@ -373,7 +373,8 @@ export class SettingsManager {
     reorderBtns.appendChild(upBtn);
     reorderBtns.appendChild(downBtn);
 
-    const keyLabel = document.createElement("span");
+    const keyLabel = document.createElement("button");
+    keyLabel.type = "button";
     keyLabel.className = "project-key-label";
     keyLabel.textContent = proj.key;
     keyLabel.addEventListener("click", () => {

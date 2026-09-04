@@ -704,6 +704,7 @@ section:last-child {
 
 .project-key-label {
   flex-grow: 1;
+  border: none;
   font-weight: bold;
   font-size: 14px;
   overflow: hidden;
@@ -716,6 +717,8 @@ section:last-child {
   display: flex;
   align-items: center;
   box-sizing: border-box;
+  font-family: inherit;
+  text-align: left;
   color: var(--text-color);
   background-color: rgba(0, 0, 0, 0.03);
   transition:
