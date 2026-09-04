@@ -153,16 +153,28 @@ describe("SettingsManager", () => {
     expect(db.setSettings).toHaveBeenCalledWith([]);
   });
 
-  test("should render project settings", async () => {
+  test("should render project settings with 2-row layout", async () => {
     const mockProj = [{ key: "PROJ", color: "#0061A4" }];
     db.getProjectSettings.mockResolvedValue(mockProj);
 
     await manager.renderProjectSettings();
 
-    expect(document.querySelectorAll(".project-item").length).toBe(1);
-    expect(document.querySelector(".project-key-label").textContent).toBe(
-      "PROJ",
-    );
+    const items = document.querySelectorAll(".project-item");
+    expect(items.length).toBe(1);
+
+    const mainRow = items[0].querySelector(".project-item-main");
+    const subRow = items[0].querySelector(".project-item-sub");
+    expect(mainRow).not.toBeNull();
+    expect(subRow).not.toBeNull();
+
+    const keyLabel = mainRow.querySelector(".project-key-label");
+    expect(keyLabel.tagName).toBe("BUTTON");
+    expect(keyLabel.type).toBe("button");
+    expect(keyLabel.textContent).toBe("PROJ");
+    manager.openProjectDialog = jest.fn();
+    keyLabel.click();
+    expect(manager.openProjectDialog).toHaveBeenCalledWith(mockProj[0]);
+    expect(subRow.querySelector(".color-picker")).not.toBeNull();
   });
 
   test("should change project color", async () => {
