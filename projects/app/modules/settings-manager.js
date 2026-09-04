@@ -326,6 +326,10 @@ export class SettingsManager {
     li.dataset.key = proj.key;
     li.draggable = true;
 
+    // 1行目: ドラッグハンドル, 上下移動ボタン, プロジェクトキーラベル, 削除ボタン
+    const mainRow = document.createElement("div");
+    mainRow.className = "project-item-main";
+
     const dragHandle = document.createElement("div");
     dragHandle.className = "drag-handle";
     const dragIcon = document.createElement("span");
@@ -376,6 +380,27 @@ export class SettingsManager {
       this.openProjectDialog(proj);
     });
 
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete-btn";
+    const deleteIcon = document.createElement("span");
+    deleteIcon.className = "material-symbols-outlined";
+    deleteIcon.textContent = "delete";
+    deleteBtn.appendChild(deleteIcon);
+    deleteBtn.addEventListener("click", async (e) => {
+      const newSettings = allSettings.filter((_, i) => i !== index);
+      await this.db.setProjectSettings(newSettings);
+      this.renderProjectSettings();
+    });
+
+    mainRow.appendChild(dragHandle);
+    mainRow.appendChild(reorderBtns);
+    mainRow.appendChild(keyLabel);
+    mainRow.appendChild(deleteBtn);
+
+    // 2行目: カラーピッカー
+    const subRow = document.createElement("div");
+    subRow.className = "project-item-sub";
+
     const colorPicker = document.createElement("div");
     colorPicker.className = "color-picker";
     M3_COLORS.forEach((color) => {
@@ -392,23 +417,10 @@ export class SettingsManager {
       colorPicker.appendChild(option);
     });
 
-    const deleteBtn = document.createElement("button");
-    deleteBtn.className = "delete-btn";
-    const deleteIcon = document.createElement("span");
-    deleteIcon.className = "material-symbols-outlined";
-    deleteIcon.textContent = "delete";
-    deleteBtn.appendChild(deleteIcon);
-    deleteBtn.addEventListener("click", async (e) => {
-      const newSettings = allSettings.filter((_, i) => i !== index);
-      await this.db.setProjectSettings(newSettings);
-      this.renderProjectSettings();
-    });
+    subRow.appendChild(colorPicker);
 
-    li.appendChild(dragHandle);
-    li.appendChild(reorderBtns);
-    li.appendChild(keyLabel);
-    li.appendChild(colorPicker);
-    li.appendChild(deleteBtn);
+    li.appendChild(mainRow);
+    li.appendChild(subRow);
 
     li.addEventListener("dragstart", (e) => {
       li.classList.add("dragging");
