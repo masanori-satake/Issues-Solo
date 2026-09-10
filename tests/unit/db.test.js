@@ -184,11 +184,11 @@ describe("IssuesDB", () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
       callback({ maxHistoryCount: 50 });
     });
-    await db.upsertIssue({ url: "url1", issueKey: "K1" });
+    await db.upsertIssue({ url: "https://test.atlassian.net/browse/K1", issueKey: "K1" });
     const ndjson =
-      JSON.stringify({ url: "url2", issueKey: "K2" }) +
+      JSON.stringify({ url: "https://test.atlassian.net/browse/K2", issueKey: "K2" }) +
       "\n" +
-      JSON.stringify({ url: "url3", issueKey: "K3" });
+      JSON.stringify({ url: "https://test.atlassian.net/browse/K3", issueKey: "K3" });
 
     await db.importIssues(ndjson, "add");
     const count = await db.getIssueCount();
@@ -200,7 +200,7 @@ describe("IssuesDB", () => {
       callback({ maxHistoryCount: 50 });
     });
     const ndjson = JSON.stringify({
-      url: "url1",
+      url: "https://test.atlassian.net/browse/K1",
       issueKey: "K1",
       isOpened: true,
       tabId: 999,
@@ -216,8 +216,8 @@ describe("IssuesDB", () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
       callback({ maxHistoryCount: 50 });
     });
-    await db.upsertIssue({ url: "url1", issueKey: "K1" });
-    const ndjson = JSON.stringify({ url: "url2", issueKey: "K2" });
+    await db.upsertIssue({ url: "https://test.atlassian.net/browse/K1", issueKey: "K1" });
+    const ndjson = JSON.stringify({ url: "https://test.atlassian.net/browse/K2", issueKey: "K2" });
 
     await db.importIssues(ndjson, "overwrite");
     const issues = await db.getAllIssues();
@@ -230,7 +230,7 @@ describe("IssuesDB", () => {
       callback({ maxHistoryCount: 50 });
     });
     const ndjson =
-      '{"url": "url1", "issueKey": "K1"}\nINVALID\n{"url": "url2", "issueKey": "K2"}';
+      '{"url": "https://test.atlassian.net/browse/K1", "issueKey": "K1"}\nINVALID\n{"url": "https://test.atlassian.net/browse/K2", "issueKey": "K2"}';
     await expect(db.importIssues(ndjson, "add")).rejects.toThrow(
       "Invalid NDJSON data",
     );
@@ -243,7 +243,7 @@ describe("IssuesDB", () => {
       callback({ maxHistoryCount: 50 });
     });
     const ndjson =
-      '{"url": "url1", "issueKey": "K1"}\n{"issueKey": "K2"}\n{"url": "url3", "issueKey": "K3"}';
+      '{"url": "https://test.atlassian.net/browse/K1", "issueKey": "K1"}\n{"issueKey": "K2"}\n{"url": "https://test.atlassian.net/browse/K3", "issueKey": "K3"}';
     await expect(db.importIssues(ndjson, "add")).rejects.toThrow(
       "Invalid NDJSON data",
     );
@@ -257,7 +257,7 @@ describe("IssuesDB", () => {
     });
 
     for (const issueKey of [undefined, 123, null]) {
-      const issue = { url: "url1" };
+      const issue = { url: "https://test.atlassian.net/browse/K1" };
       if (issueKey !== undefined) issue.issueKey = issueKey;
 
       await expect(

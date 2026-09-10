@@ -335,6 +335,16 @@ class SidePanel {
       return;
     }
 
+    // URLの有効性・プロトコルチェック (http: / https: のみ許可)
+    try {
+      const parsedUrl = new URL(issue.url);
+      if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
+        return;
+      }
+    } catch (e) {
+      return;
+    }
+
     // ホスト設定がない場合は追加を促す
     const settings = await this.db.getSettings();
     const isConfigured = settings.some((host) =>
