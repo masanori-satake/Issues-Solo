@@ -331,12 +331,21 @@ export class IssuesDB {
         throw new Error("Invalid NDJSON data");
       }
 
+      let isUrlValid = false;
+      try {
+        const u = new URL(parsed.url);
+        isUrlValid = u.protocol === "http:" || u.protocol === "https:";
+      } catch (e) {
+        isUrlValid = false;
+      }
+
       if (
         !parsed ||
         typeof parsed !== "object" ||
         Array.isArray(parsed) ||
         !parsed.url ||
         typeof parsed.url !== "string" ||
+        !isUrlValid ||
         typeof parsed.issueKey !== "string"
       ) {
         throw new Error("Invalid NDJSON data");
@@ -415,6 +424,8 @@ export class IssuesDB {
               typeof s === "object" &&
               !Array.isArray(s) &&
               typeof s.name === "string" &&
+              typeof s.url === "string" &&
+              s.url.trim().length > 0 &&
               typeof s.visible === "boolean",
           )
         ) {

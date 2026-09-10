@@ -26,6 +26,7 @@ ALLOWED_DIRS = {
     "releases",
     "node_modules",
     ".git",
+    ".jules",
     ".ruff_cache",
     ".cache",
     "tests",
