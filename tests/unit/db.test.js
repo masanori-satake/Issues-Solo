@@ -184,11 +184,20 @@ describe("IssuesDB", () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
       callback({ maxHistoryCount: 50 });
     });
-    await db.upsertIssue({ url: "https://test.atlassian.net/browse/K1", issueKey: "K1" });
+    await db.upsertIssue({
+      url: "https://test.atlassian.net/browse/K1",
+      issueKey: "K1",
+    });
     const ndjson =
-      JSON.stringify({ url: "https://test.atlassian.net/browse/K2", issueKey: "K2" }) +
+      JSON.stringify({
+        url: "https://test.atlassian.net/browse/K2",
+        issueKey: "K2",
+      }) +
       "\n" +
-      JSON.stringify({ url: "https://test.atlassian.net/browse/K3", issueKey: "K3" });
+      JSON.stringify({
+        url: "https://test.atlassian.net/browse/K3",
+        issueKey: "K3",
+      });
 
     await db.importIssues(ndjson, "add");
     const count = await db.getIssueCount();
@@ -216,8 +225,14 @@ describe("IssuesDB", () => {
     chrome.storage.local.get.mockImplementation((keys, callback) => {
       callback({ maxHistoryCount: 50 });
     });
-    await db.upsertIssue({ url: "https://test.atlassian.net/browse/K1", issueKey: "K1" });
-    const ndjson = JSON.stringify({ url: "https://test.atlassian.net/browse/K2", issueKey: "K2" });
+    await db.upsertIssue({
+      url: "https://test.atlassian.net/browse/K1",
+      issueKey: "K1",
+    });
+    const ndjson = JSON.stringify({
+      url: "https://test.atlassian.net/browse/K2",
+      issueKey: "K2",
+    });
 
     await db.importIssues(ndjson, "overwrite");
     const issues = await db.getAllIssues();

@@ -103,9 +103,9 @@ describe("Vulnerability and Edge Case Tests", () => {
 
     for (const setting of invalidSettings) {
       const json = JSON.stringify({ settings: [setting] });
-      await expect(
-        issuesDB.processSettingsImport(json, "add"),
-      ).rejects.toThrow("Invalid settings JSON");
+      await expect(issuesDB.processSettingsImport(json, "add")).rejects.toThrow(
+        "Invalid settings JSON",
+      );
     }
   });
 });
