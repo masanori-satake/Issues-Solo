@@ -1,8 +1,8 @@
 # Issues-Solo - Jira Issues Side Panel Viewer
 
-[![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Extension-blue?logo=googlechrome)](#)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Extension-blue?logo=googlechrome)](https://chromewebstore.google.com/detail/issues-solo/cehkajdhieihmoghbneckifpkoafmbco)
 [![version](https://img.shields.io/badge/version-1.0.6-blue)](projects/app/manifest.json)
-[![Coverage](https://img.shields.io/badge/coverage-51%25-orange)](#)
+![Coverage](https://img.shields.io/badge/coverage-51%25-orange)
 [![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
 
