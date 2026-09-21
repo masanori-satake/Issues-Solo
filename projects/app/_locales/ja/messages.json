@@ -1,9 +1,9 @@
 {
-   "extName": {
-     "message": "Issues-Solo"
-   },
+  "extName": {
+    "message": "Issues-Solo - Jira Issueをサイドパネルで管理"
+  },
   "extDescription": {
-    "message": "JIRA閲覧履歴を管理するローカル完結型Chrome拡張機能"
+    "message": "JiraのIssueや履歴をサイドパネルで瞬時に確認。完全ローカル・プライバシー重視で開発効率を最大化するChrome拡張機能。"
   },
   "actionTitle": {
     "message": "Issues-Soloを開く"
