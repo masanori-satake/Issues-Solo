@@ -1,9 +1,9 @@
 {
   "extName": {
-    "message": "Issues-Solo"
+    "message": "Issues-Solo - Jira Issues Side Panel Viewer"
   },
   "extDescription": {
-    "message": "Local-only Chrome extension to manage JIRA browsing history."
+    "message": "100% local Chrome Side Panel viewer for Jira Issues. Privacy-first, zero external server for max velocity."
   },
   "actionTitle": {
     "message": "Open Issues-Solo"

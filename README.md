@@ -1,64 +1,62 @@
-# Issues-Solo
+# Issues-Solo - Jira Issues Side Panel Viewer
 
-[![version](https://img.shields.io/badge/version-1.0.5-blue)](manifest.json)
+[![Chrome Web Store](https://img.shields.io/badge/Chrome_Web_Store-Extension-blue?logo=googlechrome)](#)
+[![version](https://img.shields.io/badge/version-1.0.6-blue)](projects/app/manifest.json)
 [![Coverage](https://img.shields.io/badge/coverage-51%25-orange)](#)
-[![Privacy-Local Only](https://img.shields.io/badge/Privacy-Local%20Only-brightgreen)](AGENTS.md)
-[![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](manifest.json)
+[![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](AGENTS.md)
+[![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
 
-〜JIRA閲覧履歴を管理するローカル完結型Chrome拡張機能〜
+> **View and manage assigned Jira Issues instantly in Chrome Side Panel with zero context switching for maximum developer velocity.**
 
-## プロジェクト概要
+## 💡 Overview & Problem Solved
 
-Issues-Soloは、プライバシーを最優先に設計された、JIRA専用の閲覧履歴管理ツールです。
-JIRAで多くのタスクを並行して進める際に、「どのタスクをいつ見たか」という文脈の喪失を防ぎ、スムーズな作業復帰をサポートします。
+Managing multiple Jira tabs during software development often leads to tab overload, lost context, and wasted time searching for recently viewed issues.
 
-設計思想や行動指針については [AGENTS.md](AGENTS.md) を参照してください。
+**Issues-Solo** is a privacy-first `chrome-extension` designed for developers. Operating directly within the Chrome `side-panel`, it automatically captures your browsing history for Jira tickets, allowing you to instantly reopen, filter, and organize your `jira-issues` without interrupting your workflow.
 
-## 特徴
+## ✨ Key Features
 
-- **JIRA閲覧履歴の自動記録**:
-  atlassian.net ドメインの課題ページを表示すると、自動的に課題キーとタイトルを抽出して履歴に保存します。
-- **完全ローカル実行**:
-  すべてのデータはブラウザ内の IndexedDB に保存されます。外部サーバーへの送信は一切行われず、機密性の高いJIRAの情報を安全に管理できます。
-- **Vanilla JS & ゼロ依存**:
-  外部ライブラリを一切使用せず、ブラウザ標準のAPIのみで構築されています。OSSのEOLリスクを排除し、長期にわたる安定動作を保証します。
-- **Material 3 デザイン**:
-  Google Material 3 (M3) に準拠したUI。サイドパネルに常駐し、作業を妨げることなくクイックにアクセス可能です。
+- **Automatic Jira History Tracking**: Effortlessly records viewed Jira issue keys and titles from registered Cloud and self-hosted Jira instances.
+- **Side Panel Integration**: Access your active tasks and recently opened `jira-issues` at any time directly from the Chrome `side-panel`.
+- **Flexible Sorting & Organization**: Group and sort issues by last accessed time, issue key, priority, or status.
+- **Multi-Host & Custom Project Support**: Track issues across multiple Jira hosts and customize project color tags.
+- **Import & Export**: Backup and transfer history and settings data via clean NDJSON/JSON format.
 
-## インストール方法
+## 🔒 Privacy & Security
 
-### 🛠️ 開発版 (Zip)
+- **100% Local Execution**: All issue details and browsing history are stored exclusively in your browser's IndexedDB. Zero external servers, zero telemetry, and zero network tracking.
+- **Pure Vanilla JS (Zero Dependencies)**: Built entirely with standard Web APIs without external third-party libraries, eliminating supply chain security risks and EOL issues.
+- **Zero User Data Collection**: We do not collect, transmit, or monetize any user data.
 
-1. このリポジトリからソースコードをダウンロードまたはクローンします。
-1. ブラウザで拡張機能管理ページを開きます（Chrome: `chrome://extensions`）。
-1. 「デベロッパー モード」をオンにします。
-1. 「パッケージ化されていない拡張機能を読み込む」ボタンをクリックし、解凍したフォルダを選択します。
-1. ツールバーの拡張機能アイコンをクリックし、Issues-Solo をピン留めして使用します。
+## 🚀 Installation & Usage
 
-## 使用方法
+### 🛠️ Developer Mode Setup
 
-1. **履歴の記録**: 普段通りJIRA（atlassian.net）を使用するだけで、閲覧した課題が自動的にリスト化されます。
-1. **サイドパネルの活用**: ブラウザ右側のサイドパネルから Issues-Solo を開くと、履歴の一覧が表示されます。
-1. **作業の復元**: 履歴をクリックすると該当の課題ページに移動します。
+1. Download or clone this repository.
+2. Open Chrome and navigate to `chrome://extensions`.
+3. Enable **Developer mode** in the top-right corner.
+4. Click **Load unpacked** and select the `projects/app` directory (or root folder containing `manifest.json`).
+5. Open the Chrome Side Panel, select **Issues-Solo**, and pin it to your toolbar for quick access.
 
-## プライバシーとセキュリティ
+---
 
-- **Local Only**: 本アプリは、外部への通信を一切行わないことが保証されています。
-- **トラッキングなし**: アクセス解析や広告、外部サービスへのデータ送信は一切行いません。
-- **透明性**: プログラムは Vanilla JS で記述されており、依存関係によるブラックボックスがありません。
+## 🇯🇵 日本語
 
-## 開発者向け情報
+# Issues-Solo - Jira Issueをサイドパネルで一括管理
 
-ディレクトリ構成やビルド方法などの詳細は [AGENTS.md](AGENTS.md) を参照してください。
+JiraのIssueや閲覧履歴をタブを切り替えずにChromeサイドパネルで素早く確認・管理。開発作業の手を止めずに、アサインされた課題や進捗を一目で把握できます。
 
-______________________________________________________________________
+### 💡 課題と解決策
+複数のJiraタブを行き来する開発作業では、「どの課題を見ていたか」の文脈が見失われがちです。Issues-Soloは閲覧したJiraの課題を自動的にサイドパネルに記録し、ワンクリックで元の作業に復帰できるようにします。
 
-This project uses Material Design 3, an open-source design system by Google.
+### ✨ 主な機能
+- **Jira閲覧履歴の自動追跡**: クラウド・オンプレミスのJira課題ページを閲覧するだけでキーとタイトルを自動保存。
+- **サイドパネル常駐**: 作業の邪魔にならないサイドパネル上で、いつでも課題を確認可能。
+- **ソート＆グループ化**: 最終アクセス日時・課題ID・優先度・ステータス別に並び替え可能。
+- **完全ローカル保存**: IndexedDBにデータを保存し、外部サーバーへのデータ送信は一切行いません。
 
-## 免責事項 (Disclaimer)
+---
 
-【免責事項】
-本ソフトウェアは個人開発によるオープンソースプロジェクトであり、無保証です。利用により生じたいかなる損害についても、開発者は一切の責任を負いません。自己責任でご利用ください。
+## 📄 Disclaimer
 
-[Disclaimer]
 This software is a personal open-source project and is provided "AS IS" without warranty of any kind. Use at your own risk, as per the MIT License.
