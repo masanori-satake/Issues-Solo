@@ -33,12 +33,12 @@ Managing multiple Jira tabs during software development often leads to tab overl
 ### 🛠️ Developer Mode Setup
 
 1. Download or clone this repository.
-2. Open Chrome and navigate to `chrome://extensions`.
-3. Enable **Developer mode** in the top-right corner.
-4. Click **Load unpacked** and select the `projects/app` directory (or root folder containing `manifest.json`).
-5. Open the Chrome Side Panel, select **Issues-Solo**, and pin it to your toolbar for quick access.
+1. Open Chrome and navigate to `chrome://extensions`.
+1. Enable **Developer mode** in the top-right corner.
+1. Click **Load unpacked** and select the `projects/app` directory (or root folder containing `manifest.json`).
+1. Open the Chrome Side Panel, select **Issues-Solo**, and pin it to your toolbar for quick access.
 
----
+______________________________________________________________________
 
 ## 🇯🇵 日本語
 
@@ -47,15 +47,17 @@ Managing multiple Jira tabs during software development often leads to tab overl
 JiraのIssueや閲覧履歴をタブを切り替えずにChromeサイドパネルで素早く確認・管理。開発作業の手を止めずに、アサインされた課題や進捗を一目で把握できます。
 
 ### 💡 課題と解決策
+
 複数のJiraタブを行き来する開発作業では、「どの課題を見ていたか」の文脈が見失われがちです。Issues-Soloは閲覧したJiraの課題を自動的にサイドパネルに記録し、ワンクリックで元の作業に復帰できるようにします。
 
 ### ✨ 主な機能
+
 - **Jira閲覧履歴の自動追跡**: クラウド・オンプレミスのJira課題ページを閲覧するだけでキーとタイトルを自動保存。
 - **サイドパネル常駐**: 作業の邪魔にならないサイドパネル上で、いつでも課題を確認可能。
 - **ソート＆グループ化**: 最終アクセス日時・課題ID・優先度・ステータス別に並び替え可能。
 - **完全ローカル保存**: IndexedDBにデータを保存し、外部サーバーへのデータ送信は一切行いません。
 
----
+______________________________________________________________________
 
 ## 📄 Disclaimer
 
