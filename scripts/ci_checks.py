@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """共通CIポリシーチェックの単一エントリ (Single entry point for CI policy checks).
 
 common-workflows の base-ci.yml は、このファイルが存在すれば自動的に実行する。
@@ -37,7 +36,7 @@ def main() -> int:
     failed = []
     for label, command in CHECKS:
         print(f"::group::{label}")
-        result = subprocess.run(command)
+        result = subprocess.run(command, check=False)
         print("::endgroup::")
         if result.returncode != 0:
             failed.append(label)
