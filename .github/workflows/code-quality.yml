@@ -26,4 +26,3 @@ jobs:
     # ローカル/手動実行に留める（統一方針）。
     # Python 検証は scripts/ci_checks.py（ルート整合性・ポリシー・バージョン・依存ゼロ）に集約済み。
     # 統一パラメータ（Node=lts/*, Python=3.12, npm ci）は base 側デフォルトに閉じ込め済み。
-

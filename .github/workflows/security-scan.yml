@@ -28,4 +28,3 @@ jobs:
     name: '共通セキュリティスキャン実行 (Execute Base Security)'
     uses: masanori-satake/common-workflows/.github/workflows/base-security.yml@v1
     # npm audit / OSV-Scanner の統一パラメータは base 側に閉じ込められているため with: は不要。
-

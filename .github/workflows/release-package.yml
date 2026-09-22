@@ -24,4 +24,3 @@ jobs:
     # SVG パス/出力先は base 既定 (projects/app/assets/icon.svg → projects/app/icons) と一致するため指定不要。
     # マニフェストは projects/app/manifest.json のためリネーム不要。
     # npm run build (= check_version.py) はリリース前のバージョン整合性検証のみを行う。
-

@@ -21,9 +21,15 @@ import sys
 # 実行するチェックスクリプトの一覧（順に実行する）
 CHECKS = [
     ("ルート整合性 (Root Cleanliness)", ["python3", "scripts/check_root_files.py"]),
-    ("プロジェクトポリシー (Project Policy)", ["python3", "scripts/verify_project_policies.py"]),
+    (
+        "プロジェクトポリシー (Project Policy)",
+        ["python3", "scripts/verify_project_policies.py"],
+    ),
     ("バージョン整合性 (Version Consistency)", ["python3", "scripts/check_version.py"]),
-    ("依存関係ゼロ確認 (No Production Dependencies)", ["python3", "scripts/audit_production_dependencies.py"]),
+    (
+        "依存関係ゼロ確認 (No Production Dependencies)",
+        ["python3", "scripts/audit_production_dependencies.py"],
+    ),
 ]
 
 
