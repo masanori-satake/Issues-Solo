@@ -14,7 +14,8 @@ playwright/.cache/
 # Production
 releases/
 *.zip
-projects/app/assets/icon*.png
+# 生成される PNG アイコンは共通 generate-icons action で projects/app/icons へ出力する（git管理外）
+projects/app/icons/
 
 # Misc
 .DS_Store

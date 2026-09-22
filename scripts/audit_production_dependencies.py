@@ -4,7 +4,7 @@ import sys
 
 def audit_dependencies():
     try:
-        with open("package.json", "r") as f:
+        with open("package.json", "r", encoding="utf-8") as f:
             package = json.load(f)
             dependencies = package.get("dependencies", {})
 
