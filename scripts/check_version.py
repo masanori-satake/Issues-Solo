@@ -6,17 +6,17 @@ import sys
 def check_version_consistency():
     try:
         # package.json (Base Version)
-        with open("package.json", "r") as f:
+        with open("package.json", "r", encoding="utf-8") as f:
             package = json.load(f)
             base_version = package.get("version")
 
         # manifest.json
-        with open("projects/app/manifest.json", "r") as f:
+        with open("projects/app/manifest.json", "r", encoding="utf-8") as f:
             manifest = json.load(f)
             manifest_version = manifest.get("version")
 
         # package-lock.json
-        with open("package-lock.json", "r") as f:
+        with open("package-lock.json", "r", encoding="utf-8") as f:
             package_lock = json.load(f)
             package_lock_version = package_lock.get("version")
             package_lock_root_version = (
@@ -25,7 +25,7 @@ def check_version_consistency():
 
         # README.md (Badge)
         readme_version = None
-        with open("README.md", "r") as f:
+        with open("README.md", "r", encoding="utf-8") as f:
             readme_content = f.read()
             # [![version](https://img.shields.io/badge/version-X.Y.Z-blue)](manifest.json)
             readme_match = re.search(

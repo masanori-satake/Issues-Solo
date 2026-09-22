@@ -1,5 +1,8 @@
-import { chrome } from "jest-chrome";
 import { IssuesDB } from "../../projects/app/db.js";
+
+// chrome は jest.setup.js が global に用意する最小モック（storage.local.get/set は jest.fn）。
+// 以前は jest-chrome から import していたが、jest@29 との peer 依存競合で除去した。
+const chrome = global.chrome;
 
 /**
  * IssuesDB クラスのユニットテスト。
@@ -16,7 +19,6 @@ describe("IssuesDB", () => {
 
   beforeEach(() => {
     db = new IssuesDB();
-    global.chrome = chrome;
   });
 
   afterEach(async () => {

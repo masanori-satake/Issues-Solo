@@ -13,6 +13,7 @@ ALLOWED_FILES = {
     "README.md",
     "SECURITY.md",
     "jest.config.js",
+    "jest.setup.js",
     "playwright.config.js",
     ".babelrc",
 }
@@ -89,7 +90,7 @@ def check_project_cleanliness():
         "LICENSE",
         "MaterialSymbolsOutlined.woff2",
     }
-    app_allowed_dirs = {"_locales", "assets", "modules"}
+    app_allowed_dirs = {"_locales", "assets", "icons", "modules"}
     app_success = check_directory_cleanliness(
         app_dir, app_allowed_files, app_allowed_dirs
     )

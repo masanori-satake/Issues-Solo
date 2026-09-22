@@ -1,0 +1,28 @@
+name: 'コード品質検証 (Code Quality)'
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    name: '共通品質チェック実行 (Execute Base CI)'
+    uses: masanori-satake/common-workflows/.github/workflows/base-ci.yml@v1
+    with:
+      # Vanilla JS プロジェクトのため型チェックは不要
+      run_typecheck: false
+    # lint スクリプトは未定義のため base 側の `npm run lint --if-present` で自動スキップされる。
+    # test(jest)はブラウザ不要のため base CI で実行する。E2E(Playwright)は CI から外し、
+    # ローカル/手動実行に留める（統一方針）。
+    # Python 検証は scripts/ci_checks.py（ルート整合性・ポリシー・バージョン・依存ゼロ）に集約済み。
+    # 統一パラメータ（Node=lts/*, Python=3.12, npm ci）は base 側デフォルトに閉じ込め済み。

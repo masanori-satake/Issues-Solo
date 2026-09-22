@@ -1,6 +1,6 @@
 # Issues-Solo - Jira Issues Side Panel Viewer
 
-[![version](https://img.shields.io/badge/version-1.0.6-blue)](projects/app/manifest.json)
+[![version](https://img.shields.io/badge/version-1.0.7-blue)](projects/app/manifest.json)
 [![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](AGENTS.md)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
 
