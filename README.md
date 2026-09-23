@@ -1,8 +1,13 @@
 # Issues-Solo - Jira Issues Side Panel Viewer
 
+[![Chrome Web Store](https://img.shields.io/chrome-web-store/v/cehkajdhieihmoghbneckifpkoafmbco?logo=google-chrome&logoColor=white&label=Chrome%20Web%20Store)](https://chromewebstore.google.com/detail/cehkajdhieihmoghbneckifpkoafmbco)
 [![version](https://img.shields.io/badge/version-1.0.7-blue)](projects/app/manifest.json)
-[![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](AGENTS.md)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Privacy: 100% Local](https://img.shields.io/badge/Privacy-100%25%20Local-brightgreen)](#-privacy--security)
 [![Manifest V3](https://img.shields.io/badge/Manifest-V3-orange)](projects/app/manifest.json)
+[![Tests](https://img.shields.io/github/actions/workflow/status/masanori-satake/Issues-Solo/code-quality.yml?branch=main&label=Tests)](https://github.com/masanori-satake/Issues-Solo/actions/workflows/code-quality.yml)
+[![Coverage](https://img.shields.io/github/actions/workflow/status/masanori-satake/Issues-Solo/coverage.yml?branch=main&label=Coverage)](https://github.com/masanori-satake/Issues-Solo/actions/workflows/coverage.yml)
+[![Pure Vanilla JS](https://img.shields.io/badge/Pure%20Vanilla%20JS-Zero%20Dependencies-informational?logo=javascript&logoColor=white)](#-privacy--security)
 
 > **View and manage assigned Jira Issues instantly in Chrome Side Panel with zero context switching for maximum developer velocity.**
 
@@ -71,7 +76,7 @@ JiraのIssueや閲覧履歴をタブを切り替えずにChromeサイドパネ�
 
 ### 🔒 プライバシーとセキュリティ
 
-- **Local Only**: 外部への通信を一切行わないことが保証されています。
+- **100% Local**: 収集したIssue情報と閲覧履歴はIndexedDBに保存し、外部サーバーへ送信しません。
 - **トラッキングなし**: アクセス解析や広告、外部サービスへのデータ送信は一切行いません。
 - **透明性**: Vanilla JS で記述されており、依存関係によるブラックボックスがありません。
 
