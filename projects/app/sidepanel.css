@@ -268,7 +268,9 @@ header {
 
 .badge-link {
   display: inline-flex;
-  transition: opacity 0.2s, transform 0.1s;
+  transition:
+    opacity 0.2s,
+    transform 0.1s;
 }
 
 .badge-link img {
