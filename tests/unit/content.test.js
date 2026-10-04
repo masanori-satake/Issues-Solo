@@ -1,3 +1,8 @@
+/**
+ * @jest-environment jsdom
+ * @jest-environment-options {"url": "https://test.atlassian.net/browse/PROJ-1"}
+ */
+
 import fs from "fs";
 import path from "path";
 import { TextEncoder, TextDecoder } from "util";
@@ -14,8 +19,8 @@ describe("content.js real logic extraction", () => {
   );
 
   function setupDOM(url = "https://test.atlassian.net/browse/PROJ-1") {
-    delete global.window.location;
-    global.window.location = new URL(url);
+    const parsedUrl = new URL(url);
+    window.history.pushState({}, "", parsedUrl.pathname);
 
     document = global.document;
 
