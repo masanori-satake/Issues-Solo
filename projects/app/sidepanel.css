@@ -245,6 +245,38 @@ header {
   color: var(--secondary-text);
 }
 
+/* Solo Tab */
+.solo-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.solo-section {
+  margin-bottom: 24px;
+}
+
+.solo-section:last-child {
+  margin-bottom: 0;
+}
+
+.badge-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.badge-link {
+  display: inline-flex;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.badge-link img {
+  display: block;
+  height: 20px;
+  width: auto;
+}
+
 .error-msg {
   color: #b3261e;
   font-size: 11px;
@@ -1021,6 +1053,10 @@ section:last-child {
     background-color: rgba(0, 82, 204, 0.1);
     color: #0052cc;
   }
+
+  .badge-link:hover {
+    opacity: 0.85;
+  }
 }
 
 /* Touch feedback and focus states */
@@ -1032,7 +1068,8 @@ section:last-child {
 .fab-btn:active,
 .delete-btn:active,
 .visibility-toggle:active,
-.reorder-btn:not(:disabled):active {
+.reorder-btn:not(:disabled):active,
+.badge-link:active {
   opacity: 0.7;
   transform: scale(0.96);
 }

@@ -32,8 +32,20 @@
   "tabProjects": {
     "message": "プロジェクトキー"
   },
+  "tabSolo": {
+    "message": "Solo"
+  },
   "tabAbout": {
     "message": "About"
+  },
+  "categoryProductivity": {
+    "message": "作業効率化"
+  },
+  "categoryMeetings": {
+    "message": "会議/授業支援"
+  },
+  "categoryDeveloper": {
+    "message": "開発者向け"
   },
   "sectionJiraSite": {
     "message": "Jira サイト"
