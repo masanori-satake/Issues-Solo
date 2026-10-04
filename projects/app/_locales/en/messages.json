@@ -32,8 +32,20 @@
   "tabProjects": {
     "message": "Project Keys"
   },
+  "tabSolo": {
+    "message": "Solo"
+  },
   "tabAbout": {
     "message": "About"
+  },
+  "categoryProductivity": {
+    "message": "Productivity"
+  },
+  "categoryMeetings": {
+    "message": "Meetings & Classes"
+  },
+  "categoryDeveloper": {
+    "message": "For Developers"
   },
   "sectionJiraSite": {
     "message": "Jira Sites"
