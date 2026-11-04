@@ -6,7 +6,7 @@
     "message": "Issues-Solo"
   },
   "extDescription": {
-    "message": "Never lose a Jira issue again. Auto-saves recently viewed issues in the side panel - reopen by project/host. 100% local only."
+    "message": "Recently viewed Jira issues, auto-saved in the side panel. Reopen in one click, organized by project/host - stored 100% locally."
   },
   "actionTitle": {
     "message": "Open Issues-Solo"

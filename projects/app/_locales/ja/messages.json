@@ -6,7 +6,7 @@
     "message": "Issues-Solo"
   },
   "extDescription": {
-    "message": "開いたJira Issueを自動で履歴保存。『あの課題どこだっけ？』をサイドパネルから即再オープン。プロジェクト別整理・完全ローカル。"
+    "message": "開いたJira Issueを閲覧履歴として自動で保存。サイドパネルからすぐに開き直せます。プロジェクト別に整理でき、データは完全ローカル保存です。"
   },
   "actionTitle": {
     "message": "Issues-Soloを開く"
