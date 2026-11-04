@@ -1,12 +1,12 @@
 {
   "extName": {
-    "message": "Issues-Solo - Jira Issues Side Panel Viewer"
+    "message": "Issues-Solo - Jira Issue History & Recently Viewed"
   },
   "extShortName": {
     "message": "Issues-Solo"
   },
   "extDescription": {
-    "message": "100% local Chrome Side Panel viewer for Jira Issues. Privacy-first, zero external server for max velocity."
+    "message": "Never lose a Jira issue again. Auto-saves recently viewed issues in the side panel - reopen by project/host. 100% local only."
   },
   "actionTitle": {
     "message": "Open Issues-Solo"
