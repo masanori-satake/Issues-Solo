@@ -36,7 +36,7 @@
     "message": "Project Keys"
   },
   "tabSolo": {
-    "message": "Solo"
+    "message": "Solo/Duo"
   },
   "tabAbout": {
     "message": "About"
@@ -49,6 +49,9 @@
   },
   "categoryDeveloper": {
     "message": "For Developers"
+  },
+  "categoryEditor": {
+    "message": "Editor Extensions"
   },
   "sectionJiraSite": {
     "message": "Jira Sites"

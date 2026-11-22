@@ -36,7 +36,7 @@
     "message": "プロジェクトキー"
   },
   "tabSolo": {
-    "message": "Solo"
+    "message": "Solo/Duo"
   },
   "tabAbout": {
     "message": "About"
@@ -49,6 +49,9 @@
   },
   "categoryDeveloper": {
     "message": "開発者向け"
+  },
+  "categoryEditor": {
+    "message": "エディタ拡張"
   },
   "sectionJiraSite": {
     "message": "Jira サイト"
