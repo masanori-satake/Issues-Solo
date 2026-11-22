@@ -73,7 +73,9 @@ def check_project_cleanliness():
     """
     # 1. Check Root
     root_success = check_directory_cleanliness(
-        ".", ALLOWED_FILES | {".pre-commit-config.yaml"}, ALLOWED_DIRS
+        ".",
+        ALLOWED_FILES | {".pre-commit-config.yaml", ".markdownlint.json"},
+        ALLOWED_DIRS,
     )
 
     # 2. Check projects/app
