@@ -29,6 +29,8 @@ jobs:
       stores: ${{ inputs.stores }}
       # Issues-Solo の Chrome Web Store アイテム ID
       chrome_item_id: 'cehkajdhieihmoghbneckifpkoafmbco'
+      # Issues-Solo の Edge 製品 ID（Partner Center、初回提出 2026-11-22）
+      edge_product_id: '2dc62cd1-8d19-4f04-b507-02f945ad74f0'
       # アイコンは release-package と同じく base の generate-icons で生成する
       generate_icons: true
       # 提出 ZIP は release-package と同じく projects/app から base 側で生成する
