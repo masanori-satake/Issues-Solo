@@ -18,7 +18,7 @@ JIRAの閲覧履歴をサイドパネルに一覧表示し、タブの生存確�
 
 ### 3.1. 課題データ (IndexedDB)
 
-- `url`: string (KeyPath, e.g., "https://xxx.atlassian.net/browse/PROJ-1")
+- `url`: string (KeyPath, e.g., `https://xxx.atlassian.net/browse/PROJ-1`)
 - `issueKey`: string (e.g., "PROJ-123")
 - `title`: string (要約)
 - `priority`: string (優先度)
