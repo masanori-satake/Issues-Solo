@@ -24,14 +24,6 @@ repos:
     hooks:
       - id: markdownlint
         args: ["--config", ".markdownlint.json"]
-  - repo: https://github.com/executablebooks/mdformat
-    rev: 1.0.0
-    hooks:
-      - id: mdformat
-        exclude: SECURITY\.md
-        additional_dependencies:
-          - mdformat-gfm
-
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.17.5
     hooks:
